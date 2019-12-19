@@ -1,0 +1,10 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "fhirServer": {
+    "baseURL": "http://scratchpad.ihris.org/hapi",
+    "username": "hapi",
+    "password": "hapi"
+  }
+}
