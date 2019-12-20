@@ -1,5 +1,6 @@
 const request = require('request');
 const URI = require('urijs');
+const async = require('async');
 const logger = require('./winston');
 const config = require('./config');
 
@@ -12,30 +13,42 @@ module.exports = () => ({
    * @param {Integer} count
    * @param {Object} callback
    */
-  getResource({
+  getResource ({
     resource,
     url,
     id,
+    query,
     count
   }, callback) {
+    const resourceData = {};
+    resourceData.entry = [];
     if (!url) {
       url = URI(config.get('fhirServer:baseURL'))
         .segment('fhir')
-        .segment(resource)
+        .segment(resource);
       if (id) {
-        url.segment(id)
+        url.segment(id);
       }
       if (count && !isNaN(count)) {
-        url.addQuery("_count", count)
+        url.addQuery('_count', count);
       } else {
-        count = 0
+        count = 0;
+      }
+      if (query) {
+        const queries = query.split('&');
+        for (const qr of queries) {
+          const qrArr = qr.split('=');
+          if (qrArr.length !== 2) {
+            logger.error('Invalid query supplied, stop getting resources');
+            return callback(resourceData);
+          }
+          url.addQuery(qrArr[0], qrArr[1]);
+        }
       }
       url = url.toString();
     } else {
-      count = true
+      count = true;
     }
-    let resourceData = {};
-    resourceData.entry = []
     logger.info(`Getting ${url} from server`);
     async.whilst(
       callback => {
@@ -73,12 +86,78 @@ module.exports = () => ({
               url = next.url;
             }
           }
-          resourceData.next = next
+          resourceData.next = next;
           return callback(null, url);
         });
       }, () => {
         return callback(resourceData);
       }
     );
+  },
+
+  saveResource ({
+    resourceData
+  }, callback) {
+    const url = URI(config.getConf('mCSD:url')).segment('fhir').toString();
+    const options = {
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      json: resourceData,
+    };
+    request.post(options, (err, res, body) => {
+      if (err) {
+        logger.error(err);
+        return callback(err);
+      }
+      callback(err, body);
+    });
+  },
+  /**
+   *
+   * @param {PatientsBundle} patients
+   * @param {Reference} linkReference // i.e Patient/123
+   */
+  linkPatients ({
+    patients,
+    linkReference
+  }, callback) {
+    const promises = [];
+    for (const patient of patients.entry) {
+      promises.push(new Promise((resolve, reject) => {
+        if (!Array.isArray(patient.resource.link)) {
+          patient.resource.link = [];
+        }
+        const linkExist = patient.resource.link.find((link) => {
+          return link.other.reference === linkReference;
+        });
+        if (!linkExist) {
+          patient.resource.link.push({
+            other: {
+              reference: linkReference
+            },
+            type: 'seealso'
+          });
+          patient.request = {
+            method: 'PUT',
+            url: `Patient/${patient.resource.id}`,
+          };
+        }
+        resolve();
+      }));
+    }
+    Promise.all(promises).then(() => {
+      const bundle = {};
+      bundle.entry = [];
+      bundle.type = 'batch';
+      bundle.resourceType = 'Bundle';
+      bundle.entry = bundle.entry.concat(patients.entry);
+      this.saveResource({
+        bundle
+      }, () => {
+        callback();
+      });
+    });
   }
-})
+});

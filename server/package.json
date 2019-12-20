@@ -1,0 +1,35 @@
+{
+  "name": "client-registry",
+  "version": "1.0.0",
+  "description": "Client Registry",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "client registry",
+    "master patient index"
+  ],
+  "author": "Intrahealth International",
+  "license": "ISC",
+  "dependencies": {
+    "damerau-levenshtein": "^1.0.5",
+    "express": "^4.17.1",
+    "fast-levenshtein": "^2.0.6",
+    "fhir": "^4.7.0",
+    "nconf": "^0.10.0",
+    "request": "^2.88.0",
+    "urijs": "^1.19.2",
+    "uuid": "^3.3.3",
+    "uuid4": "^1.1.4",
+    "winston": "^3.2.1"
+  },
+  "devDependencies": {
+    "eslint-config-standard": "^14.1.0",
+    "eslint-plugin-import": "^2.19.1",
+    "eslint-plugin-node": "^10.0.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "eslint": "^6.7.2"
+  }
+}
