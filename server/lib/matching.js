@@ -9,40 +9,49 @@ const Fhir = require('fhir').Fhir;
 const fhir = new Fhir();
 
 module.exports = () => ({
-  performMatch ({ sourceResource, url }, callback) {
-    let matches = [];
-    fhirWrapper.getResource(
-      {
-        resource: 'Patient',
-        count: 10,
-        url,
+  performMatch ({
+    sourceResource,
+    url
+  }, callback) {
+    const matches = {};
+    matches.entry = [];
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      count: 10,
+      url,
+    },
+    targetResources => {
+      this.getMatches({
+        sourceResource,
+        targetResources,
       },
-      targetResources => {
-        this.getMatches(
-          {
+      matched => {
+        matches.entry = matches.entry.concat(matched.entry);
+        if (targetResources.next) {
+          const next = targetResources.next;
+          targetResources = [];
+          this.performMatch({
             sourceResource,
-            targetResources,
-          },
-          matched => {
-            matches = matches.concat(matched);
-            if (targetResources.next) {
-              const next = targetResources.next;
-              targetResources = [];
-              this.performMatch({ sourceResource, next }, matched => {
-                matches = matches.concat(matched);
-                return callback(matches);
-              });
-            } else {
-              return callback(matches);
-            }
-          }
-        );
+            next
+          }, matched => {
+            matches.entry = matches.entry.concat(matched.entry);
+            return callback(matches);
+          });
+        } else {
+          return callback(matches);
+        }
       }
+      );
+    }
     );
   },
-  getMatches ({ sourceResource, targetResources }, callback) {
+  getMatches ({
+    sourceResource,
+    targetResources
+  }, callback) {
     const decisionRules = config.get('rules');
-    const matches = [];
+    const matches = {};
+    matches.entry = [];
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(
@@ -54,28 +63,23 @@ module.exports = () => ({
               new Promise(ruleResolve => {
                 const rule = decisionRules[ruleField];
                 const sourceValue = fhir.evaluate(sourceResource, rule.path);
-                const targetValue = fhir.evaluate(targetResource, rule.path);
+                const targetValue = fhir.evaluate(targetResource.resource, rule.path);
                 if (
                   !sourceValue ||
                   !targetValue ||
-                  typeof sourceValue === 'object' ||
-                  typeof targetValue === 'object'
+                  (typeof sourceValue === 'object' && !Array.isArray(sourceValue)) ||
+                  (typeof targetValue === 'object' && !Array.isArray(targetValue))
                 ) {
                   if (typeof sourceValue === 'object') {
-                    logger.warn(
-                      'Object comparison are not supported ' +
-                        JSON.stringify(sourceValue)
-                    );
+                    logger.warn('Object comparison are not supported ' + JSON.stringify(sourceValue));
                   }
                   if (typeof targetValue === 'object') {
-                    logger.warn(
-                      'Object comparison are not supported ' +
-                        JSON.stringify(targetValue)
-                    );
+                    logger.warn('Object comparison are not supported ' + JSON.stringify(targetValue));
                   }
-                  return;
+                  missMatchFound = true;
+                  return ruleResolve();
                 }
-                const algorith = rule.algorith;
+                const algorith = rule.algorithm;
                 let isMatch;
                 switch (algorith) {
                 case 'exact':
@@ -115,7 +119,7 @@ module.exports = () => ({
           Promise.all(rulePromises)
             .then(() => {
               if (!missMatchFound) {
-                matches.push(targetResource);
+                matches.entry.push(targetResource);
               }
               resolve();
             })
@@ -140,25 +144,109 @@ module.exports = () => ({
    * @param {*} value2
    */
   exactMatcher (value1, value2) {
-    value1 = value1.toLowerCase();
-    value1 = cleanValue(value1);
-    value2 = value2.toLowerCase();
-    value2 = cleanValue(value2);
-    if (value1 == value2) {
+    if (!Array.isArray(value1)) {
+      value1 = [value1];
+    }
+    if (!Array.isArray(value2)) {
+      value2 = [value2];
+    }
+    let array1;
+    let array2;
+    if (value1.length <= value2.length) {
+      array1 = value1;
+      array2 = value2;
+    } else {
+      array2 = value1;
+      array1 = value2;
+    }
+    let allMatches = true;
+    for (let val1 of array1) {
+      let matchFound = false;
+      for (let val2 of array2) {
+        val1 = val1.toLowerCase();
+        val1 = cleanValue(val1);
+        val2 = val2.toLowerCase();
+        val2 = cleanValue(val2);
+        if (val1 == val2) {
+          matchFound = true;
+        }
+      }
+      if (!matchFound) {
+        allMatches = false;
+      }
+    }
+    if (allMatches) {
+      logger.error('all ' + allMatches);
       return true;
     }
     return false;
   },
+
   levenshteinMatcher (value1, value2, threshold) {
-    const score = levenshtein.get(value1, value2);
-    if (threshold >= score) {
+    if (!Array.isArray(value1)) {
+      value1 = [value1];
+    }
+    if (!Array.isArray(value2)) {
+      value2 = [value2];
+    }
+    let array1;
+    let array2;
+    if (value1.length <= value2.length) {
+      array1 = value1;
+      array2 = value2;
+    } else {
+      array2 = value1;
+      array1 = value2;
+    }
+    let withinThreshold = true;
+    for (const val1 of array1) {
+      let score = false;
+      for (const val2 of array2) {
+        const thisScore = levenshtein.get(val1, val2);
+        if (score === false || thisScore < score) {
+          score = thisScore;
+        }
+      }
+      if (score > threshold) {
+        withinThreshold = false;
+      }
+    }
+    if (withinThreshold) {
       return true;
     }
     return false;
   },
+
   damerauLevenshteinMatcher (value1, value2, threshold) {
-    const scores = dlevenshtein(value1, value2);
-    if (threshold >= scores.steps) {
+    if (!Array.isArray(value1)) {
+      value1 = [value1];
+    }
+    if (!Array.isArray(value2)) {
+      value2 = [value2];
+    }
+    let array1;
+    let array2;
+    if (value1.length <= value2.length) {
+      array1 = value1;
+      array2 = value2;
+    } else {
+      array2 = value1;
+      array1 = value2;
+    }
+    let withinThreshold = true;
+    for (const val1 of array1) {
+      let score = false;
+      for (const val2 of array2) {
+        const thisScore = dlevenshtein(val1, val2);
+        if (score === false || thisScore.steps < score) {
+          score = thisScore.steps;
+        }
+      }
+      if (score > threshold) {
+        withinThreshold = false;
+      }
+    }
+    if (withinThreshold) {
       return true;
     }
     return false;

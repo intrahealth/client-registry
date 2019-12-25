@@ -1,6 +1,7 @@
 const request = require('request');
 const URI = require('urijs');
 const async = require('async');
+const isJSON = require('is-json');
 const logger = require('./winston');
 const config = require('./config');
 
@@ -51,8 +52,8 @@ module.exports = () => ({
     }
     logger.info(`Getting ${url} from server`);
     async.whilst(
-      callback => {
-        return callback(null, url !== false);
+      callback1 => {
+        return callback1(null, url !== false);
       },
       callback => {
         const options = {

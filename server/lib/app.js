@@ -11,6 +11,14 @@ const config = require('./config');
 const app = express();
 app.use(bodyParser.json());
 
+app.get('/test', (req, res) => {
+  const patient = require('/home/ally/Desktop/patient.json');
+  matching.performMatch({
+    sourceResource: patient
+  }, matches => {
+    logger.error(JSON.stringify(matches, 0, 2));
+  });
+});
 app.post('/addPatient', (req, res) => {
   const patientsBundle = req.body;
   if (!patientsBundle) {
@@ -35,7 +43,7 @@ app.post('/addPatient', (req, res) => {
           (callback) => {
             // link all matches to the new patient
             const promises = [];
-            for (const match of matches) {
+            for (const match of matches.entry) {
               promises.push(new Promise((resolve, reject) => {
                 fhirWrapper.linkPatients({
                   patients: patientEntry,
