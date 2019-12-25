@@ -99,11 +99,17 @@ module.exports = () => ({
   saveResource ({
     resourceData
   }, callback) {
-    const url = URI(config.getConf('mCSD:url')).segment('fhir').toString();
+    logger.info('Saving resource data');
+    const url = URI(config.get('fhirServer:baseURL')).segment('fhir').toString();
     const options = {
       url,
       headers: {
         'Content-Type': 'application/json',
+      },
+      withCredentials: true,
+      auth: {
+        username: config.get('fhirServer:username'),
+        password: config.get('fhirServer:password'),
       },
       json: resourceData,
     };
@@ -112,39 +118,42 @@ module.exports = () => ({
         logger.error(err);
         return callback(err);
       }
+      logger.info('Resource(s) data saved successfully');
       callback(err, body);
     });
   },
   /**
    *
    * @param {PatientsBundle} patients
-   * @param {Reference} linkReference // i.e Patient/123
+   * @param {Array} linkReference // i.e ["Patient/123"]
    */
   linkPatients ({
     patients,
-    linkReference
+    linkReferences
   }, callback) {
     const promises = [];
     for (const patient of patients.entry) {
-      promises.push(new Promise((resolve, reject) => {
-        if (!Array.isArray(patient.resource.link)) {
+      promises.push(new Promise((resolve) => {
+        if (!patient.resource.link || !Array.isArray(patient.resource.link)) {
           patient.resource.link = [];
         }
-        const linkExist = patient.resource.link.find((link) => {
-          return link.other.reference === linkReference;
-        });
-        if (!linkExist) {
-          patient.resource.link.push({
-            other: {
-              reference: linkReference
-            },
-            type: 'seealso'
+        for (const linkReference of linkReferences) {
+          const linkExist = patient.resource.link.find((link) => {
+            return link.other.reference === linkReference;
           });
-          patient.request = {
-            method: 'PUT',
-            url: `Patient/${patient.resource.id}`,
-          };
+          if (!linkExist) {
+            patient.resource.link.push({
+              other: {
+                reference: linkReference
+              },
+              type: 'seealso'
+            });
+          }
         }
+        patient.request = {
+          method: 'PUT',
+          url: `Patient/${patient.resource.id}`,
+        };
         resolve();
       }));
     }
@@ -155,10 +164,13 @@ module.exports = () => ({
       bundle.resourceType = 'Bundle';
       bundle.entry = bundle.entry.concat(patients.entry);
       this.saveResource({
-        bundle
+        resourceData: bundle
       }, () => {
         callback();
       });
+    }).catch((err) => {
+      logger.error(err);
+      throw err;
     });
   }
 });

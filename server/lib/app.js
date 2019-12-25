@@ -11,15 +11,8 @@ const config = require('./config');
 const app = express();
 app.use(bodyParser.json());
 
-app.get('/test', (req, res) => {
-  const patient = require('/home/ally/Desktop/patient.json');
-  matching.performMatch({
-    sourceResource: patient
-  }, matches => {
-    logger.error(JSON.stringify(matches, 0, 2));
-  });
-});
 app.post('/addPatient', (req, res) => {
+  logger.info('Received a request to add new patient');
   const patientsBundle = req.body;
   if (!patientsBundle) {
     logger.error('Received empty request');
@@ -29,42 +22,42 @@ app.post('/addPatient', (req, res) => {
   if (patientsBundle.resourceType !== 'Bundle') {
     logger.error('Request is not a bundle');
     res.status(400).send('Request is not a bundle');
+    return;
   }
   const addLinks = (patients, callback) => {
-    async.each(patients.entry, (patient, nxtPatient) => {
+    /**
+     * this needs to be processed in series
+     * Dont change it to parallel unless you know what you are doing
+     * Parallel processing may overwrite links of the new patient if new patient is a match of another new patient in the patients array
+     */
+    async.eachSeries(patients.entry, (patient, nxtPatient) => {
       const patientEntry = {};
       patientEntry.entry = [{
         resource: patient.resource
       }];
       matching.performMatch({
-        sourceResource: patient.resource
+        sourceResource: patient.resource,
+        ignoreList: [patient.resource.id]
       }, matches => {
         async.series([
           (callback) => {
             // link all matches to the new patient
-            const promises = [];
+            const linkReferences = [];
             for (const match of matches.entry) {
-              promises.push(new Promise((resolve, reject) => {
-                fhirWrapper.linkPatients({
-                  patients: patientEntry,
-                  linkReference: `Patient/${match.resource.id}`
-                }, () => {
-                  resolve();
-                });
-              }));
+              linkReferences.push(`Patient/${match.resource.id}`);
             }
-            Promise.all(promises).then(() => {
+            fhirWrapper.linkPatients({
+              patients: patientEntry,
+              linkReferences
+            }, () => {
               return callback(null);
             });
           },
           (callback) => {
             // link new patient to all matches
-            const matchesEntry = {};
-            matchesEntry.entry = [];
-            matchesEntry.entry = matchesEntry.entry.concat(matches);
             fhirWrapper.linkPatients({
-              patients: matchesEntry,
-              linkReference: `Patient/${patient.resource.id}`
+              patients: matches,
+              linkReferences: [`Patient/${patient.resource.id}`]
             }, () => {
               return callback(null);
             });
@@ -77,6 +70,8 @@ app.post('/addPatient', (req, res) => {
       return callback();
     });
   };
+
+  logger.info('Searching to check if the patient exists');
   async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
     let invalidId = true;
     const existingPatients = {};
@@ -86,7 +81,8 @@ app.post('/addPatient', (req, res) => {
       promises.push(new Promise((resolve, reject) => {
         if (identifier.system && identifier.value) {
           invalidId = false;
-          const query = `identifier=${identifier.system}|${identifier.value}`;
+          // const query = `identifier=${identifier.system}|${identifier.value}`;
+          const query = `identifier=${identifier.value}`;
           fhirWrapper.getResource({
             resource: 'Patient',
             query
@@ -101,6 +97,7 @@ app.post('/addPatient', (req, res) => {
     }
     Promise.all(promises).then(() => {
       if (existingPatients.entry.length === 0 && !invalidId) {
+        logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} doesnt exist, adding to the database`);
         newPatient.resource.id = uuid4();
         const bundle = {};
         bundle.entry = [{
@@ -113,7 +110,7 @@ app.post('/addPatient', (req, res) => {
         bundle.type = 'batch';
         bundle.resourceType = 'Bundle';
         fhirWrapper.saveResource({
-          bundle
+          resourceData: bundle
         }, () => {
           const newPatientEntry = {};
           newPatientEntry.entry = [{
@@ -124,45 +121,100 @@ app.post('/addPatient', (req, res) => {
           });
         });
       } else if (existingPatients.entry.length > 0) {
-        /**
-         * overwrite existing CR patients with this new Patient
-         * all links willbe broken because new patient come without any link
-         */
-        const promises = [];
-        for (const existingPatient of existingPatients.entry) {
-          promises.push(new Promise((resolve, reject) => {
-            const id = existingPatient.resource.id;
-            existingPatient.resource = newPatient.resource;
-            existingPatient.resource.id = id;
+        logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
+        async.series([
+          /**
+           * overwrite with this new Patient all existing CR patients who has same identifier as the new patient
+           * This will also break all links, links will be added after matching is done again due to updates
+           */
+          (callback) => {
             const bundle = {};
-            bundle.entry = [{
-              resource: existingPatient.resource,
-              request: {
-                method: 'PUT',
-                url: `Patient/${existingPatient.resource.id}`,
-              }
-            }];
             bundle.type = 'batch';
             bundle.resourceType = 'Bundle';
+            bundle.entry = [];
+            for (const existingPatient of existingPatients.entry) {
+              const id = existingPatient.resource.id;
+              existingPatient.resource = Object.assign({}, newPatient.resource);
+              existingPatient.resource.id = id;
+              bundle.entry.push({
+                resource: existingPatient.resource,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${existingPatient.resource.id}`,
+                }
+              });
+            }
+            logger.info('Breaking all links of the new patient to other patients');
             fhirWrapper.saveResource({
-              bundle
+              resourceData: bundle
             }, () => {
-              resolve();
+              callback(null);
             });
-          }));
-        }
-        Promise.all(promises).then(() => {
+          },
+          /**
+           * Drop links to every CR patient who is linked to this new patient
+           */
+          (callback) => {
+            const bundle = {};
+            bundle.type = 'batch';
+            bundle.resourceType = 'Bundle';
+            bundle.entry = [];
+            const promises = [];
+            for (const existingPatient of existingPatients.entry) {
+              promises.push(new Promise((resolve) => {
+                const link = `Patient/${existingPatient.resource.id}`;
+                const query = `link=${link}`;
+                fhirWrapper.getResource({
+                  resource: 'Patient',
+                  query
+                }, (dbLinkedPatients) => {
+                  for (const linkedPatient of dbLinkedPatients.entry) {
+                    for (const index in linkedPatient.resource.link) {
+                      if (linkedPatient.resource.link[index].other.reference === link) {
+                        linkedPatient.resource.link.splice(index, 1);
+                        bundle.entry.push({
+                          resource: linkedPatient.resource,
+                          request: {
+                            method: 'PUT',
+                            url: `Patient/${linkedPatient.resource.id}`,
+                          }
+                        });
+                      }
+                    }
+                  }
+                  resolve();
+                });
+              }));
+            }
+            Promise.all(promises).then(() => {
+              if (bundle.entry.length > 0) {
+                logger.info(`Breaking ${bundle.entry.length} links of patients pointing to new patient`);
+                fhirWrapper.saveResource({
+                  resourceData: bundle
+                }, () => {
+                  return callback(null);
+                });
+              } else {
+                return callback(null);
+              }
+            }).catch((err) => {
+              callback(null);
+              throw err;
+            });
+          }
+        ], () => {
           addLinks(existingPatients, () => {
             return nxtPatient();
           });
-        }).catch((err) => {
-          logger.error(err);
-          return nxtPatient();
         });
       }
+    }).catch((err) => {
+      logger.error(err);
+      throw err;
     });
   }, () => {
-    res.status(200).send();
+    logger.info('Done adding patient');
+    res.status(200).send('Done');
   });
 });
 

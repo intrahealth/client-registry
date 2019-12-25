@@ -11,6 +11,7 @@ const fhir = new Fhir();
 module.exports = () => ({
   performMatch ({
     sourceResource,
+    ignoreList,
     url
   }, callback) {
     const matches = {};
@@ -24,6 +25,7 @@ module.exports = () => ({
       this.getMatches({
         sourceResource,
         targetResources,
+        ignoreList
       },
       matched => {
         matches.entry = matches.entry.concat(matched.entry);
@@ -32,7 +34,8 @@ module.exports = () => ({
           targetResources = [];
           this.performMatch({
             sourceResource,
-            next
+            ignoreList,
+            url: next
           }, matched => {
             matches.entry = matches.entry.concat(matched.entry);
             return callback(matches);
@@ -47,7 +50,8 @@ module.exports = () => ({
   },
   getMatches ({
     sourceResource,
-    targetResources
+    targetResources,
+    ignoreList = []
   }, callback) {
     const decisionRules = config.get('rules');
     const matches = {};
@@ -55,7 +59,13 @@ module.exports = () => ({
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(
-        new Promise((resolve, reject) => {
+        new Promise((resolve) => {
+          const ignore = ignoreList.find((ignoreId) => {
+            return ignoreId === targetResource.resource.id;
+          });
+          if (ignore) {
+            return resolve();
+          }
           let missMatchFound = false;
           const rulePromises = [];
           for (const ruleField in decisionRules) {
@@ -126,6 +136,7 @@ module.exports = () => ({
             .catch(err => {
               resolve();
               logger.error(err);
+              throw err;
             });
         })
       );
@@ -136,6 +147,7 @@ module.exports = () => ({
       })
       .catch(err => {
         logger.error(err);
+        throw err;
       });
   },
   /**
@@ -176,7 +188,6 @@ module.exports = () => ({
       }
     }
     if (allMatches) {
-      logger.error('all ' + allMatches);
       return true;
     }
     return false;
