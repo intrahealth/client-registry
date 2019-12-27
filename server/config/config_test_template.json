@@ -1,9 +1,19 @@
 {
-  "server": {
+  "app": {
     "port": 3000
   },
+  "mediator": {
+    "api": {
+      "username": "root@openhim.org",
+      "password": "openhim-password",
+      "apiURL": "https://localhost:8080",
+      "trustSelfSigned": true,
+      "urn": ""
+    },
+    "register": false
+  },
   "fhirServer": {
-    "baseURL": "http://scratchpad.ihris.org/hapi",
+    "baseURL": "http://localhost:8080/hapi/fhir",
     "username": "hapi",
     "password": "hapi"
   }

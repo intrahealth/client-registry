@@ -24,9 +24,7 @@ module.exports = () => ({
     const resourceData = {};
     resourceData.entry = [];
     if (!url) {
-      url = URI(config.get('fhirServer:baseURL'))
-        .segment('fhir')
-        .segment(resource);
+      url = URI(config.get('fhirServer:baseURL')).segment(resource);
       if (id) {
         url.segment(id);
       }
@@ -100,7 +98,7 @@ module.exports = () => ({
     resourceData
   }, callback) {
     logger.info('Saving resource data');
-    const url = URI(config.get('fhirServer:baseURL')).segment('fhir').toString();
+    const url = URI(config.get('fhirServer:baseURL')).toString();
     const options = {
       url,
       headers: {
