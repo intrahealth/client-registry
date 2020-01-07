@@ -10,7 +10,7 @@
   "rules": {
     "givenName": {
       "algorithm": "jaro-winkler",
-      "threshold": 0.8,
+      "threshold": 0.89,
       "path": "name.where(use='official').last().given",
       "type": "string"
     },
