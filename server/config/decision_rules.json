@@ -1,7 +1,7 @@
 {
   "__comments": {
     "path": "Its a fhir path, for syntax refer to https://www.hl7.org/fhir/fhirpath.html",
-    "type": "String, Date, Number",
+    "type": "String, Date, Number or Boolean",
     "threshold": {
       "levenshtein": "Lower the number, the closer the match, 0 being exact match",
       "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
@@ -16,7 +16,7 @@
     },
     "familyName": {
       "algorithm": "damerau-levenshtein",
-      "threshold": 1,
+      "threshold": 3,
       "path": "name.where(use='official').last().family",
       "type": "String"
     },
@@ -24,6 +24,11 @@
       "algorithm": "exact",
       "path": "birthDate",
       "type": "Date"
+    },
+    "gender": {
+      "algorithm": "exact",
+      "path": "gender",
+      "type": "String"
     }
   }
 }

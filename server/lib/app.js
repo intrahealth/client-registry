@@ -86,32 +86,25 @@ function appRoutes() {
 
     logger.info('Searching to check if the patient exists');
     async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
-      let invalidId = true;
       const existingPatients = {};
       existingPatients.entry = [];
-      const promises = [];
-      for (const identifier of newPatient.resource.identifier) {
-        promises.push(new Promise((resolve, reject) => {
-          if (identifier.system && identifier.value) {
-            invalidId = false;
-            // const query = `identifier=${identifier.system}|${identifier.value}`;
-            const query = `identifier=${identifier.value}`;
-            fhirWrapper.getResource({
-              resource: 'Patient',
-              query,
-            }, dbPatients => {
-              existingPatients.entry = existingPatients.entry.concat(
-                dbPatients.entry
-              );
-              resolve();
-            });
-          } else {
-            resolve();
-          }
-        }));
+      let validSystem = newPatient.resource.identifier.find((identifier) => {
+        let systemName = identifier.system.split('/').pop()
+        return config.get('systems:' + systemName)
+      })
+      if (!validSystem) {
+        logger.error('Patient resource has no identifiers registered by client registry, stop processing')
+        return nxtPatient()
       }
-      Promise.all(promises).then(() => {
-        if (existingPatients.entry.length === 0 && !invalidId) {
+
+      // const query = `identifier=${validSystem.system}|${validSystem.value}`;
+      const query = `identifier=${validSystem.value}`;
+      fhirWrapper.getResource({
+        resource: 'Patient',
+        query,
+      }, dbPatients => {
+        existingPatients.entry = existingPatients.entry.concat(dbPatients.entry);
+        if (existingPatients.entry.length === 0) {
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} doesnt exist, adding to the database`);
           newPatient.resource.id = uuid4();
           const bundle = {};
@@ -232,9 +225,6 @@ function appRoutes() {
             });
           });
         }
-      }).catch(err => {
-        logger.error(err);
-        throw err;
       });
     }, () => {
       logger.info('Done adding patient');
