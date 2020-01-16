@@ -27,6 +27,7 @@ function appRoutes() {
   app.post('/addPatient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patientsBundle = req.body;
+    const clientID = req.headers['x-openhim-clientid']
     if (!patientsBundle) {
       logger.error('Received empty request');
       res.status(400).send('Empty request body');
@@ -95,8 +96,8 @@ function appRoutes() {
       const existingPatients = {};
       existingPatients.entry = [];
       let validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
-        let systemName = identifier.system.split('/').pop();
-        return config.get('systems:' + systemName);
+        let uri = config.get("systems:" + clientID + ":uri")
+        return identifier.system === uri
       });
       if (!validSystem) {
         logger.error('Patient resource has no identifiers registered by client registry, stop processing');
