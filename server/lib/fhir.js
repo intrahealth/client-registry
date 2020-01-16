@@ -14,14 +14,14 @@ module.exports = () => ({
    * @param {Integer} count
    * @param {Object} callback
    */
-  getResource ({
+  getResource({
     resource,
     url,
     id,
     query,
     count
   }, callback) {
-    const resourceData = {};
+    let resourceData = {};
     resourceData.entry = [];
     if (!url) {
       url = URI(config.get('fhirServer:baseURL')).segment(resource);
@@ -64,6 +64,9 @@ module.exports = () => ({
         };
         url = false;
         request.get(options, (err, res, body) => {
+          if (res.statusCode < 200 || res.statusCode > 299) {
+            logger.error(JSON.stringify(body, 0, 2))
+          }
           if (err) {
             logger.error(err);
           }
@@ -76,16 +79,23 @@ module.exports = () => ({
             logger.error('Non resource data returned for resource ' + resource);
             return callback(null, false);
           }
-          if (body.total > 0 && body.entry && body.entry.length > 0) {
+          if (id && body) {
+            resourceData = body
+          } else if (body.entry && body.entry.length > 0) {
             resourceData.entry = resourceData.entry.concat(body.entry);
           }
-          const next = body.link.find(link => link.relation === 'next');
+          const next = body.link && body.link.find(link => link.relation === 'next');
+
           if (!count || (count && !isNaN(count) && resourceData.entry.length < count)) {
             if (next) {
               url = next.url;
             }
           }
-          resourceData.next = next;
+          if (next) {
+            resourceData.next = next.url;
+          } else {
+            resourceData.next = false
+          }
           return callback(null, url);
         });
       }, () => {
@@ -94,7 +104,31 @@ module.exports = () => ({
     );
   },
 
-  saveResource ({
+  deleteResource(resource, callback) {
+    const url = URI(config.get('fhirServer:baseURL'))
+      .segment(resource)
+      .toString();
+    const options = {
+      url,
+      withCredentials: true,
+      auth: {
+        username: config.get('fhirServer:username'),
+        password: config.get('fhirServer:password'),
+      },
+    };
+    request.delete(options, (err, res, body) => {
+      if (err) {
+        logger.error(err);
+        return callback(err);
+      }
+      if (res.statusCode && (res.statusCode < 200 || res.statusCode > 399)) {
+        return callback(true)
+      }
+      callback(err, body);
+    });
+  },
+
+  saveResource({
     resourceData
   }, callback) {
     logger.info('Saving resource data');
@@ -112,6 +146,9 @@ module.exports = () => ({
       json: resourceData,
     };
     request.post(options, (err, res, body) => {
+      if (res.statusCode < 200 || res.statusCode > 299) {
+        logger.error(JSON.stringify(body, 0, 2))
+      }
       if (err) {
         logger.error(err);
         return callback(err);
@@ -125,7 +162,7 @@ module.exports = () => ({
    * @param {PatientsBundle} patients
    * @param {Array} linkReference // i.e ["Patient/123"]
    */
-  linkPatients ({
+  linkPatients({
     patients,
     linkReferences
   }, callback) {

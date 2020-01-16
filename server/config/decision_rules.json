@@ -12,18 +12,14 @@
       "algorithm": "jaro-winkler",
       "threshold": 0.89,
       "path": "name.where(use='official').last().given",
-      "type": "string"
+      "type": "string",
+      "systems": ["system1", "system2", "system3"]
     },
     "familyName": {
       "algorithm": "damerau-levenshtein",
       "threshold": 3,
       "path": "name.where(use='official').last().family",
       "type": "String"
-    },
-    "birthDate": {
-      "algorithm": "exact",
-      "path": "birthDate",
-      "type": "Date"
     },
     "gender": {
       "algorithm": "exact",

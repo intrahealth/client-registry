@@ -3,10 +3,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const async = require('async');
 const uuid4 = require('uuid/v4');
+const prerequisites = require('./prerequisites');
 const medUtils = require('openhim-mediator-utils');
 const fs = require('fs');
 const fhirWrapper = require('./fhir')();
 const matching = require('./matching')();
+const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
@@ -52,22 +54,26 @@ function appRoutes() {
         }, matches => {
           async.series([
             callback => {
+              if (matches.entry.length === 0) {
+                return callback(null)
+              }
               // link all matches to the new patient
               const linkReferences = [];
               for (const match of matches.entry) {
                 linkReferences.push(`Patient/${match.resource.id}`);
               }
               fhirWrapper.linkPatients({
-                  patients: patientEntry,
-                  linkReferences,
-                },
-                () => {
-                  return callback(null);
-                }
-              );
+                patients: patientEntry,
+                linkReferences,
+              }, () => {
+                return callback(null);
+              });
             },
             callback => {
               // link new patient to all matches
+              if (matches.entry.length === 0) {
+                return callback(null)
+              }
               fhirWrapper.linkPatients({
                 patients: matches,
                 linkReferences: [`Patient/${patient.resource.id}`],
@@ -88,13 +94,13 @@ function appRoutes() {
     async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
       const existingPatients = {};
       existingPatients.entry = [];
-      let validSystem = newPatient.resource.identifier.find((identifier) => {
-        let systemName = identifier.system.split('/').pop()
-        return config.get('systems:' + systemName)
-      })
+      let validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
+        let systemName = identifier.system.split('/').pop();
+        return config.get('systems:' + systemName);
+      });
       if (!validSystem) {
-        logger.error('Patient resource has no identifiers registered by client registry, stop processing')
-        return nxtPatient()
+        logger.error('Patient resource has no identifiers registered by client registry, stop processing');
+        return nxtPatient();
       }
 
       // const query = `identifier=${validSystem.system}|${validSystem.value}`;
@@ -179,16 +185,9 @@ function appRoutes() {
                     query,
                   }, dbLinkedPatients => {
                     for (const linkedPatient of dbLinkedPatients.entry) {
-                      for (const index in linkedPatient.resource
-                          .link) {
-                        if (
-                          linkedPatient.resource.link[index].other
-                          .reference === link
-                        ) {
-                          linkedPatient.resource.link.splice(
-                            index,
-                            1
-                          );
+                      for (const index in linkedPatient.resource.link) {
+                        if (linkedPatient.resource.link[index].other.reference === link) {
+                          linkedPatient.resource.link.splice(index, 1);
                           bundle.entry.push({
                             resource: linkedPatient.resource,
                             request: {
@@ -242,7 +241,7 @@ function appRoutes() {
  */
 function reloadConfig(data, callback) {
   const tmpFile = `${__dirname}/../config/tmpConfig.json`;
-  fs.writeFile(tmpFile, JSON.stringify(data, 0, 2), (err) => {
+  fs.writeFile(tmpFile, JSON.stringify(data, 0, 2), err => {
     if (err) {
       throw err;
     }
@@ -274,6 +273,13 @@ function start(callback) {
           config.set('mediator:api:urn', mediatorConfig.urn);
           logger.info('Received initial config:', newConfig);
           logger.info('Successfully registered mediator!');
+          if (!config.get('app:installed')) {
+            prerequisites.loadResources((err) => {
+              if (!err) {
+                mixin.updateConfigFile(['app', 'installed'], true, () => {});
+              }
+            });
+          }
           const app = appRoutes();
           const server = app.listen(config.get('app:port'), () => {
             const configEmitter = medUtils.activateHeartbeat(config.get('mediator:api'));
@@ -281,6 +287,13 @@ function start(callback) {
               logger.info('Received updated config:', newConfig);
               const updatedConfig = Object.assign(configFile, newConfig);
               reloadConfig(updatedConfig, () => {
+                if (!config.get('app:installed')) {
+                  prerequisites.loadResources((err) => {
+                    if (!err) {
+                      mixin.updateConfigFile(['app', 'installed'], true, () => {});
+                    }
+                  });
+                }
                 config.set('mediator:api:urn', mediatorConfig.urn);
               });
             });
@@ -292,7 +305,16 @@ function start(callback) {
   } else {
     logger.info('Running client registry as a stand alone');
     const app = appRoutes();
-    const server = app.listen(config.get('app:port'), () => callback(server));
+    const server = app.listen(config.get('app:port'), () => {
+      if (!config.get('app:installed')) {
+        prerequisites.loadResources((err) => {
+          if (!err) {
+            mixin.updateConfigFile(['app', 'installed'], true, () => {});
+          }
+        });
+      }
+      callback(server)
+    });
   }
 }
 
@@ -300,5 +322,7 @@ exports.start = start;
 
 if (!module.parent) {
   // if this script is run directly, start the server
-  start(() => logger.info(`Server is running and listening on port: ${config.get('app:port')}`));
+  start(() =>
+    logger.info(`Server is running and listening on port: ${config.get('app:port')}`)
+  );
 }

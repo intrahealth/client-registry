@@ -20,7 +20,7 @@ module.exports = () => ({
     matches.entry = [];
     fhirWrapper.getResource({
         resource: 'Patient',
-        count: 10,
+        count: 3000,
         url,
       },
       targetResources => {
@@ -184,6 +184,9 @@ module.exports = () => ({
     for (let val1 of array1) {
       let matchFound = false;
       for (let val2 of array2) {
+        if (!val2 || !val1) {
+          continue
+        }
         val1 = val1.toLowerCase();
         val1 = cleanValue(val1);
         val2 = val2.toLowerCase();
@@ -222,12 +225,15 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val2 || !val1) {
+          continue
+        }
         const thisScore = levenshtein.get(val1, val2);
         if (score === false || thisScore < score) {
           score = thisScore;
         }
       }
-      if (score > threshold) {
+      if (score > threshold || score === false) {
         withinThreshold = false;
       }
     }
@@ -257,12 +263,15 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val2 || !val1) {
+          continue
+        }
         const thisScore = dlevenshtein(val1, val2);
         if (score === false || thisScore.steps < score) {
           score = thisScore.steps;
         }
       }
-      if (score > threshold) {
+      if (score > threshold || score === false) {
         withinThreshold = false;
       }
     }
@@ -292,12 +301,15 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val2 || !val1) {
+          continue
+        }
         const thisScore = jaroWankler(val1, val2);
         if (score === false || thisScore > score) {
           score = thisScore;
         }
       }
-      if (score < threshold) {
+      if (score < threshold || score === false) {
         withinThreshold = false;
       }
     }
@@ -327,6 +339,9 @@ module.exports = () => ({
     for (let val1 of array1) {
       let matchFound = false;
       for (let val2 of array2) {
+        if (!val2 || !val1) {
+          continue
+        }
         val1 = val1.toLowerCase();
         val1 = cleanValue(val1);
         val2 = val2.toLowerCase();
