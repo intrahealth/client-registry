@@ -6,12 +6,21 @@ const uuid4 = require('uuid/v4');
 const prerequisites = require('./prerequisites');
 const medUtils = require('openhim-mediator-utils');
 const fs = require('fs');
+const https = require('https')
 const fhirWrapper = require('./fhir')();
 const matching = require('./matching')();
 const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
+
+const serverOpts = {
+  key: fs.readFileSync(`${__dirname}/../certificates/server_key.pem`),
+  cert: fs.readFileSync(`${__dirname}/../certificates/server_cert.pem`),
+  requestCert: true,
+  rejectUnauthorized: false,
+  ca: [fs.readFileSync(`${__dirname}/../certificates/server_cert.pem`)]
+}
 
 if (config.get('mediator:register')) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
@@ -24,10 +33,41 @@ function appRoutes() {
   const app = express();
   app.use(bodyParser.json());
 
+  function certificateValidity(req, res, next) {
+    const cert = req.connection.getPeerCertificate()
+    if (req.client.authorized) {
+      if (!cert.subject.CN) {
+        logger.error(`Client has submitted a valid certificate but missing Common Name (CN)`)
+        return res.status(400).send(`You have submitted a valid certificate but missing Common Name (CN)`)
+      }
+    } else if (cert.subject) {
+      logger.error(`Client ${cert.subject.CN} has submitted an invalid certificate`)
+      return res.status(403).send(`Sorry you have submitted an invalid certificate, make sure that your certificate is signed by client registry`)
+    } else {
+      logger.error('Client has submitted request without certificate')
+      return res.status(401).send(`Sorry, but you need to provide a client certificate to continue.`)
+    }
+    next()
+  }
+  if (!config.get('mediator:register')) {
+    app.use(certificateValidity)
+  }
+
+  app.get('/test', (req, res) => {
+    const cert = req.connection.getPeerCertificate()
+    logger.error(cert.subject.CN)
+    res.status(200).send('Done')
+  })
   app.post('/addPatient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patientsBundle = req.body;
-    const clientID = req.headers['x-openhim-clientid']
+    let clientID
+    if (config.get('mediator:register')) {
+      clientID = req.headers['x-openhim-clientid']
+    } else {
+      const cert = req.connection.getPeerCertificate()
+      clientID = cert.subject.CN
+    }
     if (!patientsBundle) {
       logger.error('Received empty request');
       res.status(400).send('Empty request body');
@@ -414,7 +454,7 @@ function start(callback) {
   } else {
     logger.info('Running client registry as a stand alone');
     const app = appRoutes();
-    const server = app.listen(config.get('app:port'), () => {
+    const server = https.createServer(serverOpts, app).listen(config.get('app:port'), () => {
       if (!config.get('app:installed')) {
         prerequisites.loadResources((err) => {
           if (!err) {

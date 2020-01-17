@@ -63,7 +63,7 @@ module.exports = () => ({
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(new Promise(resolve => {
-        let isBroken = isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id)
+        let isBroken = this.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id)
         if (isBroken) {
           return resolve()
         }
@@ -375,7 +375,7 @@ module.exports = () => ({
   },
 
   isMatchBroken(resourceData, reference) {
-    let isBroken = resourceData.meta.extension.find((extension) => {
+    let isBroken = resourceData.meta && resourceData.meta.extension && resourceData.meta.extension.find((extension) => {
       return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === reference
     })
     return isBroken
