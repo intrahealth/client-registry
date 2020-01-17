@@ -231,6 +231,114 @@ function appRoutes() {
       res.status(200).send('Done');
     });
   });
+
+  app.get('/breakMatch', (req, res) => {
+    let id1 = req.query.id1
+    let id2 = req.query.id2
+    const promises = []
+    promises.push(new Promise((resolve) => {
+      fhirWrapper.getResource({
+        resource: 'Patient',
+        id: id1
+      }, (resourceData) => {
+        resolve(resourceData)
+      })
+    }))
+
+    promises.push(new Promise((resolve) => {
+      fhirWrapper.getResource({
+        resource: 'Patient',
+        id: id2
+      }, (resourceData) => {
+        resolve(resourceData)
+      })
+    }))
+
+    Promise.all(promises).then((resourcesData) => {
+      let resourceData1 = resourcesData[0]
+      let resourceData2 = resourcesData[1]
+      if (!Array.isArray(resourceData1.link) || !Array.isArray(resourceData2.link)) {
+        return res.status(500).send()
+      }
+      let matchBroken = false
+      let id1Reference = resourceData1.resourceType + '/' + resourceData1.id
+      let id2Reference = resourceData2.resourceType + '/' + resourceData2.id
+      for (let linkIndex in resourceData1.link) {
+        if (resourceData1.link[linkIndex].other.reference === id2Reference) {
+          resourceData1.link.splice(linkIndex, 1)
+          matchBroken = true
+        }
+      }
+
+      for (let linkIndex in resourceData2.link) {
+        if (resourceData2.link[linkIndex].other.reference === resourceData1.resourceType + '/' + resourceData1.id) {
+          resourceData2.link.splice(linkIndex, 1)
+          matchBroken = true
+        }
+      }
+
+      if (matchBroken) {
+        if (!resourceData1.meta.extension) {
+          resourceData1.meta.extension = []
+        }
+        let extExist1 = resourceData1.meta.extension.find((extension) => {
+          return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === id2Reference
+        })
+        if (!extExist1) {
+          resourceData1.meta.extension.push({
+            url: config.get("systems:brokenMatch:uri"),
+            valueReference: {
+              reference: id2Reference
+            }
+          })
+        }
+
+        if (!resourceData2.meta.extension) {
+          resourceData2.meta.extension = []
+        }
+        let extExist2 = resourceData2.meta.extension.find((extension) => {
+          return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === id1Reference
+        })
+        if (!extExist2) {
+          resourceData2.meta.extension.push({
+            url: config.get("systems:brokenMatch:uri"),
+            valueReference: {
+              reference: id1Reference
+            }
+          })
+        }
+      }
+
+      const bundle = {};
+      bundle.entry = [];
+      bundle.type = 'batch';
+      bundle.resourceType = 'Bundle';
+      bundle.entry.push({
+        resource: resourceData1,
+        request: {
+          method: 'PUT',
+          url: id1Reference
+        }
+      }, {
+        resource: resourceData2,
+        request: {
+          method: 'PUT',
+          url: id2Reference
+        }
+      })
+
+      fhirWrapper.saveResource({
+        resourceData: bundle
+      }, (err, body) => {
+        if (err) {
+          res.status(500).send()
+        } else {
+          res.status(200).send()
+        }
+      })
+
+    })
+  })
   return app;
 }
 

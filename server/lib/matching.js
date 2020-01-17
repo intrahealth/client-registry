@@ -63,6 +63,10 @@ module.exports = () => ({
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(new Promise(resolve => {
+        let isBroken = isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id)
+        if (isBroken) {
+          return resolve()
+        }
         const ignore = ignoreList.find(ignoreId => {
           return ignoreId === targetResource.resource.id;
         });
@@ -364,6 +368,17 @@ module.exports = () => ({
 
   identifiersMatcher(identifiers1, identifiers2) {
 
+  },
+
+  breakMatch(id1, id2) {
+
+  },
+
+  isMatchBroken(resourceData, reference) {
+    let isBroken = resourceData.meta.extension.find((extension) => {
+      return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === reference
+    })
+    return isBroken
   }
 });
 

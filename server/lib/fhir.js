@@ -148,10 +148,11 @@ module.exports = () => ({
     request.post(options, (err, res, body) => {
       if (res.statusCode < 200 || res.statusCode > 299) {
         logger.error(JSON.stringify(body, 0, 2))
+        err = true
       }
       if (err) {
         logger.error(err);
-        return callback(err);
+        return callback(err, body);
       }
       logger.info('Resource(s) data saved successfully');
       callback(err, body);
