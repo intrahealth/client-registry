@@ -1,0 +1,9 @@
+# node
+node_modules
+
+# modified configs
+config_development.json
+
+# vscode
+.vscode
+
