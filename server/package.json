@@ -14,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "async": "^3.1.0",
+    "axios": "^0.19.1",
     "damerau-levenshtein": "^1.0.5",
     "express": "^4.17.1",
     "fast-levenshtein": "^2.0.6",
@@ -23,6 +24,8 @@
     "nconf": "^0.10.0",
     "openhim-mediator-utils": "^0.2.3",
     "request": "^2.88.0",
+    "request-promise-native": "^1.0.8",
+    "slashes": "^1.0.5",
     "soundex-code": "^1.0.4",
     "urijs": "^1.19.2",
     "uuid": "^3.3.3",

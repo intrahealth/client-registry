@@ -8,7 +8,8 @@ const medUtils = require('openhim-mediator-utils');
 const fs = require('fs');
 const https = require('https')
 const fhirWrapper = require('./fhir')();
-const matching = require('./matching')();
+const medMatching = require('./medMatching')();
+const esMatching = require('./esMatching')
 const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
@@ -89,7 +90,13 @@ function appRoutes() {
         patientEntry.entry = [{
           resource: patient.resource,
         }];
-        matching.performMatch({
+        let matchingTool
+        if (config.get("matching:tool") === "mediator") {
+          matchingTool = medMatching
+        } else if (config.get("matching:tool") === "elasticsearch") {
+          matchingTool = esMatching
+        }
+        matchingTool.performMatch({
           sourceResource: patient.resource,
           ignoreList: [patient.resource.id],
         }, matches => {

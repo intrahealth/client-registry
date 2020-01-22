@@ -30,6 +30,33 @@ const updateConfigFile = (path, newValue, callback) => {
   });
 };
 
+const flattenComplex = extension => {
+  let results = {};
+  for (let ext of extension) {
+    let value = '';
+    for (let key of Object.keys(ext)) {
+      if (key !== 'url') {
+        value = ext[key];
+      }
+    }
+    if (results[ext.url]) {
+      if (Array.isArray(results[ext.url])) {
+        results[ext.url].push(value);
+      } else {
+        results[ext.url] = [results[ext.url], value];
+      }
+    } else {
+      if (Array.isArray(value)) {
+        results[ext.url] = [value];
+      } else {
+        results[ext.url] = value;
+      }
+    }
+  }
+  return results;
+};
+
 module.exports = {
-  updateConfigFile
+  updateConfigFile,
+  flattenComplex
 };

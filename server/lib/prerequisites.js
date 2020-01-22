@@ -1,18 +1,19 @@
 const request = require('request');
 const URI = require('urijs');
-const nconf = require('nconf');
 const config = require('./config');
 const logger = require('./winston');
 const fs = require('fs');
 const Fhir = require('fhir').Fhir;
 
-nconf.argv();
-
 const convert = new Fhir();
 
 const loadResources = (callback) => {
   let processingError = false;
-  const folders = [`${__dirname}/../../resources/StructureDefinition`, `${__dirname}/../../resources/SearchParameter`];
+  const folders = [
+    `${__dirname}/../../resources/StructureDefinition`,
+    `${__dirname}/../../resources/SearchParameter`,
+    `${__dirname}/../../resources/Relationships`
+  ];
   const promises = [];
   for (const folder of folders) {
     fs.readdirSync(folder).forEach(file => {
@@ -26,7 +27,6 @@ const loadResources = (callback) => {
           } else {
             fhir = JSON.parse(data);
           }
-
           const dest = URI(config.get('fhirServer:baseURL')).segment(fhir.resourceType).segment(fhir.id).toString();
           const options = {
             url: dest,
@@ -58,6 +58,8 @@ const loadResources = (callback) => {
           } else {
             logger.info('Saving ' + fhir.resourceType + ' - ' + fhir.id);
             request.put(options, (err, res, body) => {
+              if (fhir.id === "patientreport")
+                console.log(body);
               resolve();
               if (err) {
                 logger.error(err)

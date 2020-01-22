@@ -8,22 +8,25 @@
     }
   },
   "rules": {
-    "givenName": {
-      "algorithm": "jaro-winkler",
-      "threshold": 0.89,
-      "path": "name.where(use='official').last().given",
-      "type": "string",
-      "systems": ["system1", "system2", "system3"]
-    },
     "familyName": {
       "algorithm": "damerau-levenshtein",
       "threshold": 3,
-      "path": "name.where(use='official').last().family",
+      "fhirpath": "name.where(use='official').last().family",
+      "espath": "family",
       "type": "String"
+    },
+    "givenName": {
+      "algorithm": "jaro-winkler",
+      "threshold": 0.89,
+      "fhirpath": "name.where(use='official').last().given",
+      "espath": "given",
+      "type": "string",
+      "systems": ["system1", "system2", "system3"]
     },
     "gender": {
       "algorithm": "exact",
-      "path": "gender",
+      "fhirpath": "gender",
+      "espath": "gender",
       "type": "String"
     }
   }

@@ -8,6 +8,16 @@
           "username": "hapi",
           "password": "hapi",
           "baseURL": "http://localhost:8080/hapi/fhir"
+        },
+        "elastic": {
+          "server": "http://localhost:9200",
+          "username": "",
+          "password": "",
+          "max_compilations_rate": "10000/1m",
+          "index": "patients"
+        },
+        "matching": {
+          "tool": "elasticsearch"
         }
       },
       "configDefs": [{
@@ -34,6 +44,54 @@
             "param": "password"
           }
         ],
+        "values": []
+      }, {
+        "param": "elastic",
+        "displayName": "Elasticsearch Server",
+        "description": "Elasticsearch Server Configuration Details",
+        "type": "struct",
+        "template": [{
+            "type": "string",
+            "description": "The base URL (e.g. http://localhost:9200)",
+            "displayName": "Base URL",
+            "param": "server"
+          },
+          {
+            "type": "string",
+            "description": "Username required to access elasticsearch server",
+            "displayName": "Username",
+            "param": "username"
+          },
+          {
+            "type": "password",
+            "description": "Password required to access elasticsearch server",
+            "displayName": "Password",
+            "param": "password"
+          }, {
+            "type": "string",
+            "description": "Number of requests to compile per minute",
+            "displayName": "Maximum Compilations Rate",
+            "param": "max_compilations_rate"
+          }, {
+            "type": "string",
+            "description": "index to use for data storage",
+            "displayName": "Index Name",
+            "param": "index"
+          }
+        ],
+        "values": []
+      }, {
+        "param": "matching",
+        "displayName": "FHIR Server",
+        "description": "FHIR Server Configuration Details",
+        "type": "struct",
+        "template": [{
+          "type": "option",
+          "values": ["mediator", "elasticsearch"],
+          "description": "Tool to Use for Matching",
+          "displayName": "Tool to Use for Matching",
+          "param": "tool"
+        }],
         "values": []
       }],
       "defaultChannelConfig": [{
