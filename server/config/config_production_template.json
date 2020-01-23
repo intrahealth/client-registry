@@ -14,8 +14,38 @@
     "register": false
   },
   "fhirServer": {
-    "baseURL": "http://localhost:8080/hapi/fhir",
+    "baseURL": "http://localhost:8080/clientregistry/fhir",
     "username": "hapi",
     "password": "hapi"
+  },
+  "elastic": {
+    "server": "http://localhost:9200",
+    "username": "",
+    "password": "",
+    "max_compilations_rate": "10000/1m",
+    "index": "patients"
+  },
+  "structureDefinition": {
+    "reportRelationship": "patientreport"
+  },
+  "matching": {
+    "tool": "mediator"
+  },
+  "systems": {
+    "openmrs": {
+      "uri": "http://clientregistry.org/openmrs"
+    },
+    "dhis2": {
+      "uri": "http://clientregistry.org/dhis2"
+    },
+    "lims": {
+      "uri": "http://clientregistry.org/lims"
+    },
+    "brokenMatch": {
+      "uri": "http://ihris.org/CR/brokenMatch"
+    }
+  },
+  "__comments": {
+    "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"
   }
 }
