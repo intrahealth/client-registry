@@ -1,7 +1,7 @@
 {
   "app": {
     "port": 3000,
-    "installed": true
+    "installed": false
   },
   "mediator": {
     "api": {
@@ -44,6 +44,9 @@
     "brokenMatch": {
       "uri": "http://ihris.org/CR/brokenMatch"
     }
+  },
+  "sync": {
+    "lastFHIR2ESSync": "1970-01-01T00:00:06"
   },
   "__comments": {
     "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"
