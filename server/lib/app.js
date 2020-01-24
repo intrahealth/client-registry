@@ -10,6 +10,7 @@ const https = require('https')
 const fhirWrapper = require('./fhir')();
 const medMatching = require('./medMatching')();
 const esMatching = require('./esMatching')
+const cacheFHIR = require('./tools/cacheFHIR')
 const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
@@ -56,7 +57,6 @@ function appRoutes() {
 
   app.get('/test', (req, res) => {
     const cert = req.connection.getPeerCertificate()
-    logger.error(cert.subject.CN)
     res.status(200).send('Done')
   })
   app.post('/addPatient', (req, res) => {
@@ -174,13 +174,25 @@ function appRoutes() {
           fhirWrapper.saveResource({
             resourceData: bundle,
           }, () => {
-            const newPatientEntry = {};
-            newPatientEntry.entry = [{
-              resource: newPatient.resource,
-            }];
-            addLinks(newPatientEntry, () => {
-              return nxtPatient();
-            });
+            let cacheDataPromise = new Promise((resolve, reject) => {
+              if (config.get("matching:tool") === "elasticsearch") {
+                let runsLastSync = config.get("sync:lastFHIR2ESSync")
+                cacheFHIR.fhir2ES(runsLastSync, (err) => {
+                  resolve()
+                })
+              } else {
+                resolve()
+              }
+            })
+            cacheDataPromise.then(() => {
+              const newPatientEntry = {};
+              newPatientEntry.entry = [{
+                resource: newPatient.resource,
+              }];
+              addLinks(newPatientEntry, () => {
+                return nxtPatient();
+              });
+            })
           });
         } else if (existingPatients.entry.length > 0) {
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
@@ -267,9 +279,21 @@ function appRoutes() {
               });
             },
           ], () => {
-            addLinks(existingPatients, () => {
-              return nxtPatient();
-            });
+            let cacheDataPromise = new Promise((resolve, reject) => {
+              if (config.get("matching:tool") === "elasticsearch") {
+                let runsLastSync = config.get("sync:lastFHIR2ESSync")
+                cacheFHIR.fhir2ES(runsLastSync, (err) => {
+                  resolve()
+                })
+              } else {
+                resolve()
+              }
+            })
+            cacheDataPromise.then(() => {
+              addLinks(existingPatients, () => {
+                return nxtPatient();
+              });
+            })
           });
         }
       });
@@ -407,6 +431,10 @@ function reloadConfig(data, callback) {
 }
 
 function start(callback) {
+  if (config.get("matching:tool") === "elasticsearch" && config.get('app:installed')) {
+    let runsLastSync = config.get("sync:lastFHIR2ESSync")
+    cacheFHIR.fhir2ES(runsLastSync, (err) => {})
+  }
   if (config.get('mediator:register')) {
     logger.info('Running client registry as a mediator');
     medUtils.registerMediator(config.get('mediator:api'), mediatorConfig, err => {
@@ -433,6 +461,10 @@ function start(callback) {
             prerequisites.loadResources((err) => {
               if (!err) {
                 mixin.updateConfigFile(['app', 'installed'], true, () => {});
+              }
+              if (config.get("matching:tool") === "elasticsearch") {
+                let runsLastSync = config.get("sync:lastFHIR2ESSync")
+                cacheFHIR.fhir2ES(runsLastSync, (err) => {})
               }
             });
           }
@@ -466,6 +498,10 @@ function start(callback) {
         prerequisites.loadResources((err) => {
           if (!err) {
             mixin.updateConfigFile(['app', 'installed'], true, () => {});
+          }
+          if (config.get("matching:tool") === "elasticsearch") {
+            let runsLastSync = config.get("sync:lastFHIR2ESSync")
+            cacheFHIR.fhir2ES(runsLastSync, (err) => {})
           }
         });
       }

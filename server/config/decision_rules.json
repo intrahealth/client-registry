@@ -16,8 +16,8 @@
       "type": "String"
     },
     "givenName": {
-      "algorithm": "jaro-winkler",
-      "threshold": 0.89,
+      "algorithm": "damerau-levenshtein",
+      "threshold": 1,
       "fhirpath": "name.where(use='official').last().given",
       "espath": "given",
       "type": "string",
