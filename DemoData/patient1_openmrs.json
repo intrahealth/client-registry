@@ -1,0 +1,32 @@
+{
+  "resourceType": "Bundle",
+  "entry": [{
+    "resource": {
+      "resourceType": "Patient",
+      "identifier": [{
+        "system": "http://clientregistry.org/openmrs",
+        "value": "431287"
+      }, {
+        "system": "http://system1.org",
+        "value": "12349",
+        "period": {
+          "start": "2001-05-06"
+        },
+        "assigner": {
+          "display": "test Org"
+        }
+      }],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Gideon",
+        "given": [
+          "Namaalwa",
+          "Emmanuel"
+        ]
+      }],
+      "gender": "male",
+      "birthDate": "1974-12-25"
+    }
+  }]
+}
