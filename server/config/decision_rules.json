@@ -10,14 +10,14 @@
   "rules": {
     "familyName": {
       "algorithm": "damerau-levenshtein",
-      "threshold": 3,
+      "threshold": 2,
       "fhirpath": "name.where(use='official').family",
       "espath": "family",
       "type": "String"
     },
     "givenName": {
       "algorithm": "damerau-levenshtein",
-      "threshold": 1,
+      "threshold": 2,
       "fhirpath": "name.where(use='official').given",
       "espath": "given",
       "type": "string",
@@ -27,6 +27,12 @@
       "algorithm": "exact",
       "fhirpath": "gender",
       "espath": "gender",
+      "type": "String"
+    },
+    "phone": {
+      "algorithm": "exact",
+      "fhirpath": "telecom.where(system='phone').value",
+      "espath": "phone",
       "type": "String"
     }
   }

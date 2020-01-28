@@ -153,27 +153,6 @@ const getImmediateLinks = (orderedResources, links, callback) => {
   });
 };
 
-const getReportRelationship = callback => {
-  let url = URI(config.get('fhirServer:baseURL')).segment('Basic');
-  url.addQuery('code', 'iHRISRelationship');
-  url = url.toString();
-  axios
-    .get(url, {
-      withCredentials: true,
-      auth: {
-        username: config.get('fhirServer:username'),
-        password: config.get('fhirServer:password'),
-      },
-    })
-    .then(relationships => {
-      return callback(false, relationships.data);
-    })
-    .catch(err => {
-      logger.error(err);
-      return callback(err, false);
-    });
-};
-
 const getFields = (links, reportDetails) => {
   let details =
     reportDetails[
@@ -513,9 +492,7 @@ const fhir2ES = ({
       updateESCompilationsRate(() => {
         createESIndex(reportDetails.name, IDFields, reportFields, err => {
           if (err) {
-            logger.error(
-              'Stop creating report due to error in creating index'
-            );
+            logger.error('Stop creating report due to error in creating index');
             return callback(true);
           }
           getImmediateLinks(orderedResources, links, () => {

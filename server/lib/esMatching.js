@@ -65,6 +65,7 @@ const performMatch = ({
       })
     }
   }
+
   let url = URI(config.get("elastic:server"))
     .segment(config.get("elastic:index"))
     .segment('_search')
@@ -153,6 +154,39 @@ module.exports = {
 //   }],
 //   "gender": "male",
 //   "birthDate": "1974-12-25"
+// }
+// let sourceResource = {
+//   "resourceType": "Patient",
+//   "id": "41ad1ed6-1cfa-42f3-a202-6dd4cbe5bc42",
+//   "meta": {
+//     "versionId": "2",
+//     "lastUpdated": "2020-01-27T22:09:52.546+03:00",
+//     "source": "#upPYbqEEtCROoKcb"
+//   },
+//   "text": {
+//     "status": "generated",
+//     "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\"/><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>rec-3798-dup-0</td></tr></tbody></table></div>"
+//   },
+//   "identifier": [{
+//       "system": "http://clientregistry.org/openmrs",
+//       "value": "rec-3798-dup-0"
+//     },
+//     {
+//       "system": "http://system1/nationalid",
+//       "value": "CF46874076AVLZ"
+//     },
+//     {
+//       "system": "http://system1/artnumber",
+//       "value": "KUL-596214"
+//     }
+//   ],
+//   "name": [{
+//     "use": "official"
+//   }],
+//   "telecom": [{
+//     "system": "phone",
+//     "value": "774 234044"
+//   }]
 // }
 // performMatch({
 //   sourceResource,
