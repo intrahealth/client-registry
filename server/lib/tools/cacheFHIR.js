@@ -393,75 +393,63 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
   );
 };
 
-const updateESDocument = (body, record, index, orderedResource, resourceId, callback) => {
+const updateESDocument = (id, index, record, callback) => {
   let url = URI(config.get('elastic:server'))
     .segment(index)
-    .segment('_update_by_query')
+    .segment('_doc')
+    .segment(id)
     .toString();
   axios({
-      method: 'post',
-      url,
-      data: body,
-      auth: {
-        username: config.get('elastic:username'),
-        password: config.get('elastic.password'),
-      },
-    })
-    .then(response => {
-      // if nothing was updated and its from the primary (top) resource then create as new
-      if (response.data.updated == 0 && !orderedResource.hasOwnProperty('linkElement')) {
-        logger.info('No record with id ' + resourceId + ' found on elastic search, creating new');
-        let url = URI(config.get('elastic:server'))
-          .segment(index)
-          .segment('_doc')
-          .toString();
-        axios({
-            method: 'post',
-            url,
-            data: record,
-            auth: {
-              username: config.get('elastic:username'),
-              password: config.get('elastic:password'),
-            },
-          })
-          .then(response => {
-            return callback();
-          })
-          .catch(err => {
-            return callback();
-          });
-      } else {
-        return callback();
+    method: 'POST',
+    url,
+    data: record,
+    auth: {
+      username: config.get('elastic:username'),
+      password: config.get('elastic:password'),
+    },
+  }).then(response => {
+    logger.info(response.data)
+    if (response.data._shards.failed) {
+      logger.warn('Transaction failed, rerunning again');
+      setTimeout(() => {
+        updateESDocument(id, index, record, () => {
+          return callback();
+        });
+      }, 2000);
+    } else {
+      return callback();
+    }
+  }).catch(err => {
+    if (err.response && (err.response.statusText === 'Conflict' || err.response.status === 409)) {
+      logger.warn('Conflict occured, rerunning this request');
+      setTimeout(() => {
+        updateESDocument(id, index, record, () => {
+          return callback();
+        });
+      }, 2000);
+    } else {
+      logger.error('Error Occured');
+      if (err.response && err.response.data) {
+        logger.error(err.response.data);
       }
-    })
-    .catch(err => {
-      if (err.response && (err.response.statusText === 'Conflict' || err.response.status === 409)) {
-        logger.warn('Conflict occured, rerunning this request');
-        setTimeout(() => {
-          updateESDocument(body, record, index, orderedResource, resourceId, () => {
-            return callback();
-          });
-        }, 2000);
-      } else {
-        logger.error('Error Occured');
-        if (err.response && err.response.data) {
-          logger.error(err.response.data);
-        }
-        if (err.error) {
-          logger.error(err.error);
-        }
-        if (!err.response) {
-          logger.error(err);
-        }
-        return callback();
+      if (err.error) {
+        logger.error(err.error);
       }
-    });
+      if (!err.response) {
+        logger.error(err);
+      }
+      return callback();
+    }
+  });
 };
 
-const fhir2ES = (lastSync, callback) => {
-  const isValid = moment(lastSync, 'Y-MM-DDTH:mm:ss').isValid();
+const fhir2ES = ({
+  lastSync,
+  patientsBundle
+}, callback) => {
+  const isValid = moment(lastSync, 'Y-MM-DDTHH:mm:ss').isValid();
   if (!isValid) {
-    lastSync = moment('1970-01-01').format('Y-MM-DDTH:mm:ss');
+    lastSync = moment('1970-01-01').format('Y-MM-DDTHH:mm:ss');
   }
   let newLastSyncTime
   let relId = config.get('structureDefinition:reportRelationship');
@@ -532,231 +520,130 @@ const fhir2ES = (lastSync, callback) => {
           }
           getImmediateLinks(orderedResources, links, () => {
             async.eachSeries(orderedResources, (orderedResource, nxtResource) => {
-              let url = URI(config.get('fhirServer:baseURL'))
-                .segment(orderedResource.resource)
-                .segment('_history')
-                .addQuery('_since', lastSync)
-                .addQuery('_count', 200)
-                .toString()
+              newLastSyncTime = moment().format('Y-MM-DDTHH:mm:ss');
               let resourceData = [];
-              logger.info(`Getting data for resource ${orderedResource.name}`);
-              newLastSyncTime = moment().format('Y-MM-DDTH:mm:ss');
-              async.whilst(
-                callback => {
-                  return callback(null, url != false);
-                }, callback => {
-                  axios.get(url, {
-                    withCredentials: true,
-                    auth: {
-                      username: config.get('fhirServer:username'),
-                      password: config.get('fhirServer:password'),
-                    },
-                  }).then(response => {
-                    url = false;
-                    const next = response.data.link.find(
-                      link => link.relation === 'next'
-                    );
-                    if (next) {
-                      url = next.url;
-                    }
-                    if (
-                      response.data.entry &&
-                      response.data.entry.length > 0
-                    ) {
-                      resourceData = resourceData.concat(response.data.entry);
-                    }
-                    return callback(null, url);
-                  }).catch(err => {
-                    logger.error(err);
-                  });
-                }, () => {
-                  logger.info('Done fetching data for resource ' + orderedResource.resource);
-                  logger.info('Writting resource data for resource ' + orderedResource.resource + ' into elastic search');
-                  let processedRecords = [];
-                  let count = 1;
-                  async.eachSeries(resourceData, (data, next) => {
-                    logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
-                    count++;
-                    if (!data.resource || !data.resource.resourceType) {
-                      return next();
-                    }
-                    let id = data.resource.resourceType + '/' + data.resource.id;
-                    let processed = processedRecords.find(record => {
-                      return record === id;
-                    });
-                    if (processed) {
-                      return next();
-                    } else {
-                      processedRecords.push(id);
-                    }
-                    let queries = [];
-                    // just in case there are multiple queries
-                    if (orderedResource.query) {
-                      queries = orderedResource.query.split('&');
-                    }
-                    for (let query of queries) {
-                      let limits = query.split('=');
-                      let limitParameters = limits[0];
-                      let limitValue = limits[1];
-                      let resourceValue = fhir.evaluate(
-                        data.resource,
-                        limitParameters
-                      );
-                      if (JSON.stringify(resourceValue) != limitValue) {
-                        return next();
-                      }
-                    }
-                    let record = {};
-                    (async () => {
-                      for (let element of orderedResource[
-                          'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
-                        ]) {
-                        let fieldLabel;
-                        let fieldName;
-                        let fieldAutogenerated = false;
-                        for (let el of element) {
-                          let value = '';
-                          for (let key of Object.keys(el)) {
-                            if (key !== 'url') {
-                              value = el[key];
-                            }
-                          }
-                          if (el.url === 'label') {
-                            let fleldChars = value.split(' ');
-                            //if label has space then format it
-                            if (fleldChars.length > 1) {
-                              fieldLabel = value
-                                .toLowerCase()
-                                .split(' ')
-                                .map(word =>
-                                  word.replace(
-                                    word[0],
-                                    word[0].toUpperCase()
-                                  )
-                                )
-                                .join('');
-                            } else {
-                              fieldLabel = value;
-                            }
-                          } else if (el.url === 'name') {
-                            fieldName = value;
-                          } else if (el.url === 'autoGenerated') {
-                            fieldAutogenerated = value;
-                          }
-                        }
-                        let displayData = fhir.evaluate(
-                          data.resource,
-                          fieldName
-                        );
-                        let value;
-                        if (
-                          (!displayData ||
-                            (Array.isArray(displayData) &&
-                              displayData.length === 1 &&
-                              displayData[0] === undefined)) &&
-                          data.resource.extension
-                        ) {
-                          value = await getElementValFromExtension(
-                            data.resource.extension,
-                            fieldName
-                          );
-                        } else if (
-                          Array.isArray(displayData) &&
-                          displayData.length === 1 &&
-                          displayData[0] === undefined
-                        ) {
-                          value = undefined;
-                        } else {
-                          value = displayData;
-                        }
-                        if (value) {
-                          if (typeof value == 'object') {
-                            if (value.reference && fieldAutogenerated) {
-                              value = value.reference;
-                            } else if (
-                              value.reference &&
-                              !fieldAutogenerated
-                            ) {
-                              let referencedResource = await getResourceFromReference(
-                                value.reference
-                              );
-                              if (referencedResource) {
-                                value = referencedResource.name;
-                              }
-                            }
-                          }
-                          record[fieldLabel] = value;
-                        }
-                      }
-                      record[orderedResource.name] = id;
-                      let match = {};
-                      if (
-                        orderedResource.hasOwnProperty('linkElement') &&
-                        orderedResource.linkElement.startsWith(
-                          orderedResource.resource + '.'
-                        )
-                      ) {
-                        //remove resource name from link element i.e if PractionerRole.practioner then remove PractitionerRole. and remain with practioner
-                        let linkElement = orderedResource.linkElement.replace(
-                          orderedResource.resource + '.',
-                          ''
-                        );
-                        let linkTo = fhir.evaluate(
-                          data.resource,
-                          linkElement + '.reference'
-                        );
-                        match[orderedResource.linkTo] = linkTo;
-                        deleteLinkTo = linkTo;
-                      } else if (
-                        orderedResource.hasOwnProperty('linkElement') &&
-                        !orderedResource.linkElement.startsWith(
-                          orderedResource.resource + '.'
-                        )
-                      ) {
-                        let linkElement = orderedResource.linkElement
-                          .split('.')
-                          .pop();
-                        match[linkElement] = data.resource.resourceType + '/' + data.resource.id;
-                      } else {
-                        match[orderedResource.name] = data.resource.resourceType + '/' + data.resource.id;
-                      }
-                      let ctx = '';
-                      for (let field in record) {
-                        let fieldValue = record[field];
-                        if (!fieldValue || (Array.isArray(fieldValue) && fieldValue.length === 1 && fieldValue[0] === undefined)) {
-                          continue;
-                        }
-                        if (typeof fieldValue === 'string') {
-                          ctx += 'ctx._source.' + field + "='" + fieldValue + "';";
-                        } else if (typeof fieldValue === 'object') {
-                          ctx += 'ctx._source.' + field + '=' + JSON.stringify(fieldValue) + ';';
-                        } else {
-                          ctx += 'ctx._source.' + field + '=' + fieldValue + ';';
-                        }
-                      }
-                      let body = {
-                        script: {
-                          lang: 'painless',
-                          source: ctx,
-                        },
-                        query: {
-                          match,
-                        },
-                      };
-                      updateESDocument(body, record, reportDetails.name, orderedResource, data.resource.id, () => {
-                        return next();
-                      });
-                    })();
-                  }, () => {
-                    logger.info('Done Writting resource data for resource ' + orderedResource.name + ' into elastic search');
-                    return nxtResource();
-                  });
+              let promise = new Promise((resolve) => {
+                if (patientsBundle && patientsBundle.entry && Array.isArray(patientsBundle.entry) && patientsBundle.entry.length > 0) {
+                  resourceData = resourceData.concat(patientsBundle.entry)
+                  resolve()
+                } else {
+                  fhirWrapper.getResource({
+                    resource: orderedResource.resource,
+                    extraPath: ['_history'],
+                    query: '_since=' + lastSync
+                  }, (data) => {
+                    resourceData = resourceData.concat(data.entry)
+                    resolve()
+                  })
                 }
-              );
-            }, () => {
-              mixin.updateConfigFile(['sync', 'lastFHIR2ESSync'], newLastSyncTime, () => {
-                return callback();
+              })
+              promise.then(() => {
+                logger.info('Writting resource data for resource ' + orderedResource.resource + ' into elastic search');
+                let processedRecords = [];
+                let count = 1;
+                async.eachSeries(resourceData, (data, next) => {
+                  logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
+                  count++;
+                  if (!data.resource || !data.resource.resourceType) {
+                    return next();
+                  }
+                  let id = data.resource.resourceType + '/' + data.resource.id;
+                  let processed = processedRecords.find(record => {
+                    return record === id;
+                  });
+                  if (processed) {
+                    return next();
+                  } else {
+                    processedRecords.push(id);
+                  }
+                  let queries = [];
+                  // just in case there are multiple queries
+                  if (orderedResource.query) {
+                    queries = orderedResource.query.split('&');
+                  }
+                  for (let query of queries) {
+                    let limits = query.split('=');
+                    let limitParameters = limits[0];
+                    let limitValue = limits[1];
+                    let resourceValue = fhir.evaluate(
+                      data.resource,
+                      limitParameters
+                    );
+                    if (JSON.stringify(resourceValue) != limitValue) {
+                      return next();
+                    }
+                  }
+                  let record = {};
+                  (async () => {
+                    for (let element of orderedResource['http://ihris.org/fhir/StructureDefinition/iHRISReportElement']) {
+                      let fieldLabel;
+                      let fieldName;
+                      let fieldAutogenerated = false;
+                      for (let el of element) {
+                        let value = '';
+                        for (let key of Object.keys(el)) {
+                          if (key !== 'url') {
+                            value = el[key];
+                          }
+                        }
+                        if (el.url === 'label') {
+                          let fleldChars = value.split(' ');
+                          //if label has space then format it
+                          if (fleldChars.length > 1) {
+                            fieldLabel = value.toLowerCase().split(' ').map(word => word.replace(word[0], word[0].toUpperCase())).join('');
+                          } else {
+                            fieldLabel = value;
+                          }
+                        } else if (el.url === 'name') {
+                          fieldName = value;
+                        } else if (el.url === 'autoGenerated') {
+                          fieldAutogenerated = value;
+                        }
+                      }
+                      let displayData = fhir.evaluate(data.resource, fieldName);
+                      let value;
+                      if ((!displayData || (Array.isArray(displayData) && displayData.length === 1 && displayData[0] === undefined)) && data.resource.extension) {
+                        value = await getElementValFromExtension(data.resource.extension, fieldName);
+                      } else if (Array.isArray(displayData) && displayData.length === 1 && displayData[0] === undefined) {
+                        value = undefined;
+                      } else {
+                        value = displayData;
+                      }
+                      if (value) {
+                        if (typeof value == 'object') {
+                          if (value.reference && fieldAutogenerated) {
+                            value = value.reference;
+                          } else if (
+                            value.reference &&
+                            !fieldAutogenerated
+                          ) {
+                            let referencedResource = await getResourceFromReference(value.reference);
+                            if (referencedResource) {
+                              value = referencedResource.name;
+                            }
+                          }
+                        }
+                        record[fieldLabel] = value;
+                      }
+                    }
+                    record[orderedResource.name] = id;
+                    updateESDocument(data.resource.id, reportDetails.name, record, () => {
+                      return next();
+                    });
+                  })();
+                }, () => {
+                  logger.info('Done Writting resource data for resource ' + orderedResource.name + ' into elastic search');
+                  return nxtResource();
+                });
               });
+            }, () => {
+              if (patientsBundle && patientsBundle.entry && Array.isArray(patientsBundle.entry) && patientsBundle.entry.length > 0) {
+                return callback()
+              } else {
+                mixin.updateConfigFile(['sync', 'lastFHIR2ESSync'], newLastSyncTime, () => {
+                  return callback();
+                });
+              }
             });
           });
         });

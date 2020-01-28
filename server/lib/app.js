@@ -55,10 +55,6 @@ function appRoutes() {
     app.use(certificateValidity)
   }
 
-  app.get('/test', (req, res) => {
-    const cert = req.connection.getPeerCertificate()
-    res.status(200).send('Done')
-  })
   app.post('/addPatient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patientsBundle = req.body;
@@ -171,28 +167,32 @@ function appRoutes() {
           }];
           bundle.type = 'batch';
           bundle.resourceType = 'Bundle';
-          fhirWrapper.saveResource({
-            resourceData: bundle,
-          }, () => {
-            let cacheDataPromise = new Promise((resolve, reject) => {
+          async.parallel([
+            (callback) => {
+              fhirWrapper.saveResource({
+                resourceData: bundle,
+              }, () => {
+                return callback(null)
+              })
+            }, (callback) => {
               if (config.get("matching:tool") === "elasticsearch") {
-                let runsLastSync = config.get("sync:lastFHIR2ESSync")
-                cacheFHIR.fhir2ES(runsLastSync, (err) => {
-                  resolve()
+                cacheFHIR.fhir2ES({
+                  "patientsBundle": bundle
+                }, (err) => {
+                  return callback(null)
                 })
               } else {
-                resolve()
+                return callback(null)
               }
-            })
-            cacheDataPromise.then(() => {
-              const newPatientEntry = {};
-              newPatientEntry.entry = [{
-                resource: newPatient.resource,
-              }];
-              addLinks(newPatientEntry, () => {
-                return nxtPatient();
-              });
-            })
+            }
+          ], () => {
+            const newPatientEntry = {};
+            newPatientEntry.entry = [{
+              resource: newPatient.resource,
+            }];
+            addLinks(newPatientEntry, () => {
+              return nxtPatient();
+            });
           });
         } else if (existingPatients.entry.length > 0) {
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
@@ -220,12 +220,29 @@ function appRoutes() {
                   },
                 });
               }
-              logger.info('Breaking all links of the new patient to other patients');
-              fhirWrapper.saveResource({
-                resourceData: bundle,
-              }, () => {
+              async.parallel([
+                (callback) => {
+                  logger.info('Breaking all links of the new patient to other patients');
+                  fhirWrapper.saveResource({
+                    resourceData: bundle,
+                  }, () => {
+                    callback(null);
+                  });
+                },
+                (callback) => {
+                  if (config.get("matching:tool") === "elasticsearch") {
+                    cacheFHIR.fhir2ES({
+                      "patientsBundle": bundle
+                    }, (err) => {
+                      return callback(null)
+                    })
+                  } else {
+                    return callback(null)
+                  }
+                }
+              ], () => {
                 callback(null);
-              });
+              })
             },
             /**
              * Drop links to every CR patient who is linked to this new patient
@@ -264,12 +281,28 @@ function appRoutes() {
               }
               Promise.all(promises).then(() => {
                 if (bundle.entry.length > 0) {
-                  logger.info(`Breaking ${bundle.entry.length} links of patients pointing to new patient`);
-                  fhirWrapper.saveResource({
-                    resourceData: bundle,
-                  }, () => {
-                    return callback(null);
-                  });
+                  async.parallel([
+                    (callback) => {
+                      logger.info(`Breaking ${bundle.entry.length} links of patients pointing to new patient`);
+                      fhirWrapper.saveResource({
+                        resourceData: bundle,
+                      }, () => {
+                        return callback(null);
+                      });
+                    }, (callback) => {
+                      if (config.get("matching:tool") === "elasticsearch") {
+                        cacheFHIR.fhir2ES({
+                          "patientsBundle": bundle
+                        }, (err) => {
+                          return callback(null)
+                        })
+                      } else {
+                        return callback(null)
+                      }
+                    }
+                  ], () => {
+                    return callback(null)
+                  })
                 } else {
                   return callback(null);
                 }
@@ -279,21 +312,9 @@ function appRoutes() {
               });
             },
           ], () => {
-            let cacheDataPromise = new Promise((resolve, reject) => {
-              if (config.get("matching:tool") === "elasticsearch") {
-                let runsLastSync = config.get("sync:lastFHIR2ESSync")
-                cacheFHIR.fhir2ES(runsLastSync, (err) => {
-                  resolve()
-                })
-              } else {
-                resolve()
-              }
-            })
-            cacheDataPromise.then(() => {
-              addLinks(existingPatients, () => {
-                return nxtPatient();
-              });
-            })
+            addLinks(existingPatients, () => {
+              return nxtPatient();
+            });
           });
         }
       });
@@ -433,7 +454,9 @@ function reloadConfig(data, callback) {
 function start(callback) {
   if (config.get("matching:tool") === "elasticsearch" && config.get('app:installed')) {
     let runsLastSync = config.get("sync:lastFHIR2ESSync")
-    cacheFHIR.fhir2ES(runsLastSync, (err) => {})
+    cacheFHIR.fhir2ES({
+      lastSync: runsLastSync
+    }, (err) => {})
   }
   if (config.get('mediator:register')) {
     logger.info('Running client registry as a mediator');
@@ -464,7 +487,9 @@ function start(callback) {
               }
               if (config.get("matching:tool") === "elasticsearch") {
                 let runsLastSync = config.get("sync:lastFHIR2ESSync")
-                cacheFHIR.fhir2ES(runsLastSync, (err) => {})
+                cacheFHIR.fhir2ES({
+                  lastSync: runsLastSync
+                }, (err) => {})
               }
             });
           }
@@ -501,7 +526,9 @@ function start(callback) {
           }
           if (config.get("matching:tool") === "elasticsearch") {
             let runsLastSync = config.get("sync:lastFHIR2ESSync")
-            cacheFHIR.fhir2ES(runsLastSync, (err) => {})
+            cacheFHIR.fhir2ES({
+              lastSync: runsLastSync
+            }, (err) => {})
           }
         });
       }

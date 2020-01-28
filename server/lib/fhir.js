@@ -9,6 +9,7 @@ module.exports = () => ({
   /**
    *
    * @param {FHIRResource} resource
+   * @param {Array} extraPath // i.e ['_history]
    * @param {FHIRURL} url
    * @param {ResourceID} id // id of a resource
    * @param {Integer} count
@@ -16,6 +17,7 @@ module.exports = () => ({
    */
   getResource({
     resource,
+    extraPath = [],
     url,
     id,
     query,
@@ -25,6 +27,9 @@ module.exports = () => ({
     resourceData.entry = [];
     if (!url) {
       url = URI(config.get('fhirServer:baseURL')).segment(resource);
+      for (let path of extraPath) {
+        url.segment(path)
+      }
       if (id) {
         url.segment(id);
       }

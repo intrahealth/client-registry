@@ -11,14 +11,14 @@
     "familyName": {
       "algorithm": "damerau-levenshtein",
       "threshold": 3,
-      "fhirpath": "name.where(use='official').last().family",
+      "fhirpath": "name.where(use='official').family",
       "espath": "family",
       "type": "String"
     },
     "givenName": {
       "algorithm": "damerau-levenshtein",
       "threshold": 1,
-      "fhirpath": "name.where(use='official').last().given",
+      "fhirpath": "name.where(use='official').given",
       "espath": "given",
       "type": "string",
       "systems": ["system1", "system2", "system3"]
