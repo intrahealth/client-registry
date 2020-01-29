@@ -11,7 +11,6 @@ const loadResources = (callback) => {
   let processingError = false;
   const folders = [
     `${__dirname}/../../resources/StructureDefinition`,
-    `${__dirname}/../../resources/SearchParameter`,
     `${__dirname}/../../resources/Relationships`
   ];
   const promises = [];

@@ -1,0 +1,21 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "fast-csv": "^4.0.2"
+  },
+  "dependencies": {
+    "async": "^3.1.1",
+    "js-excel-date-convert": "^1.0.2",
+    "json-csv": "^3.0.1",
+    "request": "^2.88.0",
+    "uuid": "^3.3.3"
+  }
+}

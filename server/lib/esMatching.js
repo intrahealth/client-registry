@@ -1,3 +1,4 @@
+'use strict'
 const request = require('request');
 const URI = require('urijs');
 const Fhir = require('fhir').Fhir;
@@ -23,6 +24,14 @@ const performMatch = ({
     match[rule.espath] = {}
     let pathValue = fhir.evaluate(sourceResource, rule.fhirpath)
     if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+      if (pathValue.length === 0) {
+        match[rule.espath] = {
+          query: ""
+        }
+        esquery.query.bool.must.push({
+          match: match
+        })
+      }
       for (let value of pathValue) {
         match[rule.espath] = {
           query: value
@@ -65,7 +74,6 @@ const performMatch = ({
       })
     }
   }
-
   let url = URI(config.get("elastic:server"))
     .segment(config.get("elastic:index"))
     .segment('_search')
@@ -147,10 +155,10 @@ module.exports = {
 //   "name": [{
 //     "use": "official",
 //     "family": "Gideon",
-//     "given": [
-//       "Namalwa",
-//       "Emanuel"
-//     ]
+//     // "given": [
+//     //   "Namalwa",
+//     //   "Emanuel"
+//     // ]
 //   }],
 //   "gender": "male",
 //   "birthDate": "1974-12-25"
