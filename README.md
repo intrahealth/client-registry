@@ -8,7 +8,7 @@ This is a lightweight mediator for [OpenHIM](http://openhim.org) that, in combin
 
 Clone the repository
 ```
-git clone https://github.com/openhie/client-registry.git
+git clone https://github.com/intrahealth/client-registry.git
 ```
 
 Enter the server directory, install node packages.
