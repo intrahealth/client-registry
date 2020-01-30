@@ -5,6 +5,16 @@
     "threshold": {
       "levenshtein": "Lower the number, the closer the match, 0 being exact match",
       "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
+    },
+    "supported_algorithms": {
+      "mediator": [
+        "levenshtein",
+        "damerau-levenshtein",
+        "jaro-winkler",
+        "soundex",
+        "exact"
+      ],
+      "elasticsearch": ["levenshtein", "damerau-levenshtein", "phonetic"]
     }
   },
   "rules": [{

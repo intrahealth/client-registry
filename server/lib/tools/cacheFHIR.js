@@ -3,7 +3,7 @@ const async = require('async');
 const URI = require('urijs');
 const _ = require('lodash');
 const moment = require('moment');
-const mixin = require('../mixin')
+const mixin = require('../mixin');
 const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('../fhir')();
 const structureDefinition = require('./structureDefinition');
@@ -195,7 +195,10 @@ const getFields = (links, reportDetails) => {
     let urlPos = keys.indexOf('url');
     keys.splice(urlPos, 1);
     if (keys.length !== 1) {
-      logger.error('Something is wrong with the report relationship, cant determine data type for ' + JSON.stringify(field, 0, 2));
+      logger.error(
+        'Something is wrong with the report relationship, cant determine data type for ' +
+          JSON.stringify(field, 0, 2)
+      );
       return;
     }
     let fhirDataType = keys[0];
@@ -239,14 +242,14 @@ const updateESCompilationsRate = callback => {
     },
   };
   axios({
-      method: 'PUT',
-      url,
-      auth: {
-        username: config.get('elastic:username'),
-        password: config.get('elastic:password'),
-      },
-      data: body,
-    })
+    method: 'PUT',
+    url,
+    auth: {
+      username: config.get('elastic:username'),
+      password: config.get('elastic:password'),
+    },
+    data: body,
+  })
     .then(response => {
       if (response.status > 199 && response.status < 299) {
         logger.info('maximum compilation rate updated successfully');
@@ -264,7 +267,8 @@ const updateESCompilationsRate = callback => {
 };
 
 const createESIndex = (name, IDFields, reportFields, callback) => {
-  async.series({
+  async.series(
+    {
       createAnalyzer: callback => {
         logger.info('Creating analyzer into elasticsearch for index ' + name);
         let url = URI(config.get('elastic:server'))
@@ -274,24 +278,35 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           settings: {
             analysis: {
               analyzer: {
-                keyword_analyzer: {
+                levenshtein_analyzer: {
                   type: 'custom',
                   tokenizer: 'keyword',
                   filter: ['lowercase'],
+                },
+                phonetic_analyzer: {
+                  tokenizer: 'keyword',
+                  filter: ['lowercase', 'cr_metaphone'],
+                },
+              },
+              filter: {
+                cr_metaphone: {
+                  type: 'phonetic',
+                  encoder: 'metaphone',
+                  replace: false,
                 },
               },
             },
           },
         };
         axios({
-            method: 'PUT',
-            url,
-            data: settings,
-            auth: {
-              username: config.get('elastic:username'),
-              password: config.get('elastic:password'),
-            },
-          })
+          method: 'PUT',
+          url,
+          data: settings,
+          auth: {
+            username: config.get('elastic:username'),
+            password: config.get('elastic:password'),
+          },
+        })
           .then(response => {
             if (response.status >= 200 && response.status <= 299) {
               logger.info('Analyzer created successfully');
@@ -334,19 +349,24 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
         for (let field of reportFields) {
           mapping.properties[field.name] = {
             type: field.type,
-            //type: 'keyword',
-            analyzer: 'keyword_analyzer',
+            analyzer: 'levenshtein_analyzer',
+            fields: {
+              phonetic: {
+                type: field.type,
+                analyzer: 'phonetic_analyzer',
+              },
+            },
           };
         }
         axios({
-            method: 'PUT',
-            url,
-            data: mapping,
-            auth: {
-              username: config.get('elastic:username'),
-              password: config.get('elastic:password'),
-            },
-          })
+          method: 'PUT',
+          url,
+          data: mapping,
+          auth: {
+            username: config.get('elastic:username'),
+            password: config.get('elastic:password'),
+          },
+        })
           .then(response => {
             if (response.status >= 200 && response.status <= 299) {
               logger.info('Mappings added successfully into elasticsearch');
@@ -360,7 +380,9 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           })
           .catch(err => {
             logger.error(err);
-            logger.error('Something went wrong while adding mappings into elasticsearch');
+            logger.error(
+              'Something went wrong while adding mappings into elasticsearch'
+            );
             callback(err);
             throw err;
           });
@@ -386,248 +408,340 @@ const updateESDocument = (id, index, record, callback) => {
       username: config.get('elastic:username'),
       password: config.get('elastic:password'),
     },
-  }).then(response => {
-    logger.info(response.data)
-    if (response.data._shards.failed) {
-      logger.warn('Transaction failed, rerunning again');
-      setTimeout(() => {
-        updateESDocument(id, index, record, () => {
-          return callback();
-        });
-      }, 2000);
-    } else {
-      return callback();
-    }
-  }).catch(err => {
-    if (err.response && (err.response.statusText === 'Conflict' || err.response.status === 409)) {
-      logger.warn('Conflict occured, rerunning this request');
-      setTimeout(() => {
-        updateESDocument(id, index, record, () => {
-          return callback();
-        });
-      }, 2000);
-    } else {
-      logger.error('Error Occured');
-      if (err.response && err.response.data) {
-        logger.error(err.response.data);
+  })
+    .then(response => {
+      logger.info(response.data);
+      if (response.data._shards.failed) {
+        logger.warn('Transaction failed, rerunning again');
+        setTimeout(() => {
+          updateESDocument(id, index, record, () => {
+            return callback();
+          });
+        }, 2000);
+      } else {
+        return callback();
       }
-      if (err.error) {
-        logger.error(err.error);
+    })
+    .catch(err => {
+      if (
+        err.response &&
+        (err.response.statusText === 'Conflict' || err.response.status === 409)
+      ) {
+        logger.warn('Conflict occured, rerunning this request');
+        setTimeout(() => {
+          updateESDocument(id, index, record, () => {
+            return callback();
+          });
+        }, 2000);
+      } else {
+        logger.error('Error Occured');
+        if (err.response && err.response.data) {
+          logger.error(err.response.data);
+        }
+        if (err.error) {
+          logger.error(err.error);
+        }
+        if (!err.response) {
+          logger.error(err);
+        }
+        return callback();
       }
-      if (!err.response) {
-        logger.error(err);
-      }
-      return callback();
-    }
-  });
+    });
 };
 
-const fhir2ES = ({
-  lastSync,
-  patientsBundle
-}, callback) => {
+const fhir2ES = ({ lastSync, patientsBundle }, callback) => {
   const isValid = moment(lastSync, 'Y-MM-DDTHH:mm:ss').isValid();
   if (!isValid) {
     lastSync = moment('1970-01-01').format('Y-MM-DDTHH:mm:ss');
   }
-  let newLastSyncTime
+  let newLastSyncTime;
   let relId = config.get('structureDefinition:reportRelationship');
-  fhirWrapper.getResource({
-    resource: 'Basic',
-    id: relId,
-  }, relationship => {
-    if (!relationship) {
-      logger.error('No relationship with id ' + relId + ' found');
-      return callback(true);
-    }
-    logger.info('processing relationship ID ' + relationship.id);
-    let sd = relationship.subject.reference.substring(
-      relationship.subject.reference.lastIndexOf('/')
-    );
-    structureDefinition(sd, (err, subject) => {
-      if (err) {
+  fhirWrapper.getResource(
+    {
+      resource: 'Basic',
+      id: relId,
+    },
+    relationship => {
+      if (!relationship) {
+        logger.error('No relationship with id ' + relId + ' found');
         return callback(true);
       }
-      let details = relationship.extension.find(ext => ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails');
-      let links = relationship.extension.filter(ext => ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportLink');
-      let reportDetails = flattenComplex(details.extension);
-      let orderedResources = [];
-      let IDFields = [];
-      reportDetails.resource = subject._type;
-      orderedResources.push(reportDetails);
-      IDFields.push(reportDetails.name);
-      let reportFields = getFields(links, reportDetails);
-      for (let linkIndex1 in links) {
-        let link1 = links[linkIndex1];
-        let flattenedLink1 = flattenComplex(link1.extension);
-        IDFields.push(flattenedLink1.name);
-        for (let link2 of links) {
-          let flattenedLink2 = flattenComplex(link2.extension);
-          if (
-            flattenedLink2.linkTo === flattenedLink1.name &&
-            !flattenedLink2.linkElement.startsWith(
-              flattenedLink2.resource + '.'
-            )
-          ) {
-            let linkElement = flattenedLink2.linkElement.split('.').pop();
-            links[linkIndex1].extension.push({
-              url: 'http://ihris.org/fhir/StructureDefinition/iHRISReportElement',
-              extension: [{
-                  url: 'label',
-                  valueString: linkElement,
-                },
-                {
-                  url: 'name',
-                  valueString: linkElement,
-                },
-                {
-                  url: 'autoGenerated',
-                  valueBoolean: true,
-                },
-              ],
-            });
+      logger.info('processing relationship ID ' + relationship.id);
+      let sd = relationship.subject.reference.substring(
+        relationship.subject.reference.lastIndexOf('/')
+      );
+      structureDefinition(sd, (err, subject) => {
+        if (err) {
+          return callback(true);
+        }
+        let details = relationship.extension.find(
+          ext =>
+            ext.url ===
+            'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails'
+        );
+        let links = relationship.extension.filter(
+          ext =>
+            ext.url ===
+            'http://ihris.org/fhir/StructureDefinition/iHRISReportLink'
+        );
+        let reportDetails = flattenComplex(details.extension);
+        let orderedResources = [];
+        let IDFields = [];
+        reportDetails.resource = subject._type;
+        orderedResources.push(reportDetails);
+        IDFields.push(reportDetails.name);
+        let reportFields = getFields(links, reportDetails);
+        for (let linkIndex1 in links) {
+          let link1 = links[linkIndex1];
+          let flattenedLink1 = flattenComplex(link1.extension);
+          IDFields.push(flattenedLink1.name);
+          for (let link2 of links) {
+            let flattenedLink2 = flattenComplex(link2.extension);
+            if (
+              flattenedLink2.linkTo === flattenedLink1.name &&
+              !flattenedLink2.linkElement.startsWith(
+                flattenedLink2.resource + '.'
+              )
+            ) {
+              let linkElement = flattenedLink2.linkElement.split('.').pop();
+              links[linkIndex1].extension.push({
+                url:
+                  'http://ihris.org/fhir/StructureDefinition/iHRISReportElement',
+                extension: [
+                  {
+                    url: 'label',
+                    valueString: linkElement,
+                  },
+                  {
+                    url: 'name',
+                    valueString: linkElement,
+                  },
+                  {
+                    url: 'autoGenerated',
+                    valueBoolean: true,
+                  },
+                ],
+              });
+            }
           }
         }
-      }
-      updateESCompilationsRate(() => {
-        createESIndex(reportDetails.name, IDFields, reportFields, err => {
-          if (err) {
-            logger.error('Stop creating report due to error in creating index');
-            return callback(true);
-          }
-          getImmediateLinks(orderedResources, links, () => {
-            async.eachSeries(orderedResources, (orderedResource, nxtResource) => {
-              newLastSyncTime = moment().format('Y-MM-DDTHH:mm:ss');
-              let resourceData = [];
-              let promise = new Promise((resolve) => {
-                if (patientsBundle && patientsBundle.entry && Array.isArray(patientsBundle.entry) && patientsBundle.entry.length > 0) {
-                  resourceData = resourceData.concat(patientsBundle.entry)
-                  resolve()
-                } else {
-                  fhirWrapper.getResource({
-                    resource: orderedResource.resource,
-                    extraPath: ['_history'],
-                    query: '_since=' + lastSync
-                  }, (data) => {
-                    resourceData = resourceData.concat(data.entry)
-                    resolve()
-                  })
-                }
-              })
-              promise.then(() => {
-                logger.info('Writting resource data for resource ' + orderedResource.resource + ' into elastic search');
-                let processedRecords = [];
-                let count = 1;
-                async.eachSeries(resourceData, (data, next) => {
-                  logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
-                  count++;
-                  if (!data.resource || !data.resource.resourceType) {
-                    return next();
-                  }
-                  let id = data.resource.resourceType + '/' + data.resource.id;
-                  let processed = processedRecords.find(record => {
-                    return record === id;
+        updateESCompilationsRate(() => {
+          createESIndex(reportDetails.name, IDFields, reportFields, err => {
+            if (err) {
+              logger.error(
+                'Stop creating report due to error in creating index'
+              );
+              return callback(true);
+            }
+            getImmediateLinks(orderedResources, links, () => {
+              async.eachSeries(
+                orderedResources,
+                (orderedResource, nxtResource) => {
+                  newLastSyncTime = moment().format('Y-MM-DDTHH:mm:ss');
+                  let resourceData = [];
+                  let promise = new Promise(resolve => {
+                    if (
+                      patientsBundle &&
+                      patientsBundle.entry &&
+                      Array.isArray(patientsBundle.entry) &&
+                      patientsBundle.entry.length > 0
+                    ) {
+                      resourceData = resourceData.concat(patientsBundle.entry);
+                      resolve();
+                    } else {
+                      fhirWrapper.getResource(
+                        {
+                          resource: orderedResource.resource,
+                          extraPath: ['_history'],
+                          query: '_since=' + lastSync,
+                        },
+                        data => {
+                          resourceData = resourceData.concat(data.entry);
+                          resolve();
+                        }
+                      );
+                    }
                   });
-                  if (processed) {
-                    return next();
-                  } else {
-                    processedRecords.push(id);
-                  }
-                  let queries = [];
-                  // just in case there are multiple queries
-                  if (orderedResource.query) {
-                    queries = orderedResource.query.split('&');
-                  }
-                  for (let query of queries) {
-                    let limits = query.split('=');
-                    let limitParameters = limits[0];
-                    let limitValue = limits[1];
-                    let resourceValue = fhir.evaluate(
-                      data.resource,
-                      limitParameters
+                  promise.then(() => {
+                    logger.info(
+                      'Writting resource data for resource ' +
+                        orderedResource.resource +
+                        ' into elastic search'
                     );
-                    if (JSON.stringify(resourceValue) != limitValue) {
-                      return next();
-                    }
+                    let processedRecords = [];
+                    let count = 1;
+                    async.eachSeries(
+                      resourceData,
+                      (data, next) => {
+                        logger.info(
+                          'processing ' +
+                            count +
+                            '/' +
+                            resourceData.length +
+                            ' records of resource ' +
+                            orderedResource.resource
+                        );
+                        count++;
+                        if (!data.resource || !data.resource.resourceType) {
+                          return next();
+                        }
+                        let id =
+                          data.resource.resourceType + '/' + data.resource.id;
+                        let processed = processedRecords.find(record => {
+                          return record === id;
+                        });
+                        if (processed) {
+                          return next();
+                        } else {
+                          processedRecords.push(id);
+                        }
+                        let queries = [];
+                        // just in case there are multiple queries
+                        if (orderedResource.query) {
+                          queries = orderedResource.query.split('&');
+                        }
+                        for (let query of queries) {
+                          let limits = query.split('=');
+                          let limitParameters = limits[0];
+                          let limitValue = limits[1];
+                          let resourceValue = fhir.evaluate(
+                            data.resource,
+                            limitParameters
+                          );
+                          if (JSON.stringify(resourceValue) != limitValue) {
+                            return next();
+                          }
+                        }
+                        let record = {};
+                        (async () => {
+                          for (let element of orderedResource[
+                            'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
+                          ]) {
+                            let fieldLabel;
+                            let fieldName;
+                            let fieldAutogenerated = false;
+                            for (let el of element) {
+                              let value = '';
+                              for (let key of Object.keys(el)) {
+                                if (key !== 'url') {
+                                  value = el[key];
+                                }
+                              }
+                              if (el.url === 'label') {
+                                let fleldChars = value.split(' ');
+                                //if label has space then format it
+                                if (fleldChars.length > 1) {
+                                  fieldLabel = value
+                                    .toLowerCase()
+                                    .split(' ')
+                                    .map(word =>
+                                      word.replace(
+                                        word[0],
+                                        word[0].toUpperCase()
+                                      )
+                                    )
+                                    .join('');
+                                } else {
+                                  fieldLabel = value;
+                                }
+                              } else if (el.url === 'name') {
+                                fieldName = value;
+                              } else if (el.url === 'autoGenerated') {
+                                fieldAutogenerated = value;
+                              }
+                            }
+                            let displayData = fhir.evaluate(
+                              data.resource,
+                              fieldName
+                            );
+                            let value;
+                            if (
+                              (!displayData ||
+                                (Array.isArray(displayData) &&
+                                  displayData.length === 1 &&
+                                  displayData[0] === undefined)) &&
+                              data.resource.extension
+                            ) {
+                              value = await getElementValFromExtension(
+                                data.resource.extension,
+                                fieldName
+                              );
+                            } else if (
+                              Array.isArray(displayData) &&
+                              displayData.length === 1 &&
+                              displayData[0] === undefined
+                            ) {
+                              value = undefined;
+                            } else {
+                              value = displayData;
+                            }
+                            if (typeof value == 'object') {
+                              if (value.reference && fieldAutogenerated) {
+                                value = value.reference;
+                              } else if (
+                                value.reference &&
+                                !fieldAutogenerated
+                              ) {
+                                let referencedResource = await getResourceFromReference(
+                                  value.reference
+                                );
+                                if (referencedResource) {
+                                  value = referencedResource.name;
+                                }
+                              }
+                            }
+                            if (!value) {
+                              value = '';
+                            }
+                            record[fieldLabel] = value;
+                          }
+                          record[orderedResource.name] = id;
+                          updateESDocument(
+                            data.resource.id,
+                            reportDetails.name,
+                            record,
+                            () => {
+                              return next();
+                            }
+                          );
+                        })();
+                      },
+                      () => {
+                        logger.info(
+                          'Done Writting resource data for resource ' +
+                            orderedResource.name +
+                            ' into elastic search'
+                        );
+                        return nxtResource();
+                      }
+                    );
+                  });
+                },
+                () => {
+                  if (
+                    patientsBundle &&
+                    patientsBundle.entry &&
+                    Array.isArray(patientsBundle.entry) &&
+                    patientsBundle.entry.length > 0
+                  ) {
+                    return callback();
+                  } else {
+                    mixin.updateConfigFile(
+                      ['sync', 'lastFHIR2ESSync'],
+                      newLastSyncTime,
+                      () => {
+                        return callback();
+                      }
+                    );
                   }
-                  let record = {};
-                  (async () => {
-                    for (let element of orderedResource['http://ihris.org/fhir/StructureDefinition/iHRISReportElement']) {
-                      let fieldLabel;
-                      let fieldName;
-                      let fieldAutogenerated = false;
-                      for (let el of element) {
-                        let value = '';
-                        for (let key of Object.keys(el)) {
-                          if (key !== 'url') {
-                            value = el[key];
-                          }
-                        }
-                        if (el.url === 'label') {
-                          let fleldChars = value.split(' ');
-                          //if label has space then format it
-                          if (fleldChars.length > 1) {
-                            fieldLabel = value.toLowerCase().split(' ').map(word => word.replace(word[0], word[0].toUpperCase())).join('');
-                          } else {
-                            fieldLabel = value;
-                          }
-                        } else if (el.url === 'name') {
-                          fieldName = value;
-                        } else if (el.url === 'autoGenerated') {
-                          fieldAutogenerated = value;
-                        }
-                      }
-                      let displayData = fhir.evaluate(data.resource, fieldName);
-                      let value;
-                      if ((!displayData || (Array.isArray(displayData) && displayData.length === 1 && displayData[0] === undefined)) && data.resource.extension) {
-                        value = await getElementValFromExtension(data.resource.extension, fieldName);
-                      } else if (Array.isArray(displayData) && displayData.length === 1 && displayData[0] === undefined) {
-                        value = undefined;
-                      } else {
-                        value = displayData;
-                      }
-                      if (typeof value == 'object') {
-                        if (value.reference && fieldAutogenerated) {
-                          value = value.reference;
-                        } else if (
-                          value.reference &&
-                          !fieldAutogenerated
-                        ) {
-                          let referencedResource = await getResourceFromReference(value.reference);
-                          if (referencedResource) {
-                            value = referencedResource.name;
-                          }
-                        }
-                      }
-                      if (!value) {
-                        value = ''
-                      }
-                      record[fieldLabel] = value;
-                    }
-                    record[orderedResource.name] = id;
-                    updateESDocument(data.resource.id, reportDetails.name, record, () => {
-                      return next();
-                    });
-                  })();
-                }, () => {
-                  logger.info('Done Writting resource data for resource ' + orderedResource.name + ' into elastic search');
-                  return nxtResource();
-                });
-              });
-            }, () => {
-              if (patientsBundle && patientsBundle.entry && Array.isArray(patientsBundle.entry) && patientsBundle.entry.length > 0) {
-                return callback()
-              } else {
-                mixin.updateConfigFile(['sync', 'lastFHIR2ESSync'], newLastSyncTime, () => {
-                  return callback();
-                });
-              }
+                }
+              );
             });
           });
         });
       });
-    });
-  });
+    }
+  );
 };
 
 module.exports = {

@@ -1,159 +1,162 @@
-'use strict'
+'use strict';
 const request = require('request');
 const URI = require('urijs');
-const async = require('async')
+const async = require('async');
 const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('./fhir')();
-const mixin = require('./mixin')
 const logger = require('./winston');
 const config = require('./config');
-const matchingMixin = require('./matchingMixin')
+const matchingMixin = require('./matchingMixin');
 const fhir = new Fhir();
 
 const performMatch = ({
   sourceResource,
   ignoreList
 }, callback) => {
-  let matches = {}
-  matches.entry = []
+  let matches = {};
+  matches.entry = [];
   const decisionRules = config.get('rules');
   async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
-    let esquery = {}
-    esquery.query = {}
-    esquery.query.bool = {}
-    esquery.query.bool.must = []
+    let esquery = {};
+    esquery.query = {};
+    esquery.query.bool = {};
+    esquery.query.bool.must = [];
     for (const ruleField in decisionRule) {
       const rule = decisionRule[ruleField];
-      let match = {}
-      match[rule.espath] = {}
-      let pathValue = fhir.evaluate(sourceResource, rule.fhirpath)
+      let match = {};
+      let path = rule.espath;
+      if (rule.algorithm === 'phonetic') {
+        path += '.phonetic';
+      }
+      let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
       if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
         if (pathValue.length === 0) {
-          match[rule.espath] = {
-            query: ""
-          }
+          match[path] = {
+            query: '',
+          };
           esquery.query.bool.must.push({
-            match: match
-          })
+            match: match,
+          });
         }
         for (let value of pathValue) {
-          match[rule.espath] = {
-            query: value
-          }
-          if (rule.algorithm === "damerau-levenshtein" || rule.algorithm === "levenshtein") {
-            match[rule.espath].fuzziness = rule.threshold
-            if (rule.algorithm === "damerau-levenshtein") {
-              match[rule.espath].fuzzy_transpositions = true
+          match[path] = {
+            query: value,
+          };
+          if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+            match[path].fuzziness = rule.threshold;
+            if (rule.algorithm === 'damerau-levenshtein') {
+              match[path].fuzzy_transpositions = true;
             } else {
-              match[rule.espath].fuzzy_transpositions = false
+              match[path].fuzzy_transpositions = false;
             }
           }
           let tmpMatch = {
-            ...match
-          }
+            ...match,
+          };
           esquery.query.bool.must.push({
-            match: tmpMatch
-          })
+            match: tmpMatch,
+          });
         }
       } else {
-        if (!pathValue || (Array.isArray(pathValue) && (pathValue.length === 1 && pathValue[0] === undefined))) {
-          pathValue = ''
+        if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+          pathValue = '';
         }
-        if (typeof pathValue === "object" && Object.keys(pathValue).length === 0) {
-          pathValue == ''
+        if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+          pathValue == '';
         }
-        match[rule.espath] = {
-          query: pathValue
-        }
-        if (rule.algorithm === "damerau-levenshtein" || rule.algorithm === "levenshtein") {
-          match[rule.espath].fuzziness = rule.threshold
-          if (rule.algorithm === "damerau-levenshtein") {
-            match[rule.espath].fuzzy_transpositions = true
+        match[path] = {
+          query: pathValue,
+        };
+        if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+          match[path].fuzziness = rule.threshold;
+          if (rule.algorithm === 'damerau-levenshtein') {
+            match[path].fuzzy_transpositions = true;
           } else {
-            match[rule.espath].fuzzy_transpositions = false
+            match[path].fuzzy_transpositions = false;
           }
         }
         esquery.query.bool.must.push({
-          match
-        })
+          match,
+        });
       }
     }
-    let url = URI(config.get("elastic:server"))
-      .segment(config.get("elastic:index"))
+    let url = URI(config.get('elastic:server'))
+      .segment(config.get('elastic:index'))
       .segment('_search')
       .toString();
     const options = {
       url,
       auth: {
-        username: config.get("elastic:username"),
-        password: config.get("elastic.password"),
+        username: config.get('elastic:username'),
+        password: config.get('elastic.password'),
       },
-      json: esquery
-    }
+      json: esquery,
+    };
     request.get(options, (err, res, body) => {
-      let query
+      let query;
       if (!body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
-        logger.error(JSON.stringify(body, 0, 2))
-        return callback(matches)
+        logger.error(JSON.stringify(body, 0, 2));
+        return callback(matches);
       }
       if (body.hits.hits.length === 0) {
-        return nxtRule()
+        return nxtRule();
       }
       for (let hit of body.hits.hits) {
-        let id = hit["_id"]
+        let id = hit['_id'];
         if (ignoreList.includes(id)) {
-          continue
+          continue;
         }
-        let isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`)
+        let isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`);
         if (isBroken) {
-          continue
+          continue;
         }
         if (query) {
-          query += ',' + id
+          query += ',' + id;
         } else {
-          query = '_id=' + id
+          query = '_id=' + id;
         }
       }
       if (query) {
         fhirWrapper.getResource({
           resource: 'Patient',
-          query
-        }, (matches) => {
-          matches.entry.concat(matches)
-          return callback(matches)
-        })
+          query,
+        }, matches => {
+          matches.entry.concat(matches);
+          return callback(matches);
+        });
       } else {
-        return callback(matches)
+        return callback(matches);
       }
-    })
+    });
   }, () => {
-    return callback(matches)
-  })
-}
+    return callback(matches);
+  });
+};
 
 module.exports = {
-  performMatch
-}
+  performMatch,
+};
 
 // let sourceResource = {
-//   "resourceType": "Patient",
-//   "id": "5f64e716-f880-44ab-bada-7e78310d6c97",
-//   "identifier": [{
-//     "system": "http://clientregistry.org/dhis2",
-//     "value": "997542"
+//   resourceType: 'Patient',
+//   id: '5f64e716-f880-44ab-bada-7e78310d6c97',
+//   identifier: [{
+//     system: 'http://clientregistry.org/dhis2',
+//     value: '997542',
+//   }, ],
+//   active: true,
+//   name: [{
+//     use: 'official',
+//     family: 'Gideon',
+//     given: ['Namalwa', 'Emanuel'],
+//   }, ],
+//   telecom: [{
+//     system: 'phone',
+//     value: '774 234044',
 //   }],
-//   "active": true,
-//   "name": [{
-//     "use": "official",
-//     "family": "Gideon",
-//     // "given": [
-//     //   "Namalwa",
-//     //   "Emanuel"
-//     // ]
-//   }],
-//   "gender": "male",
-//   "birthDate": "1974-12-25"
-// }
+//   gender: 'male',
+//   birthDate: '1974-12-25',
+// };
 // let sourceResource = {
 //   "resourceType": "Patient",
 //   "id": "41ad1ed6-1cfa-42f3-a202-6dd4cbe5bc42",
@@ -188,8 +191,10 @@ module.exports = {
 //   }]
 // }
 // performMatch({
-//   sourceResource,
-//   ignoreList: []
-// }, (matches) => {
-//   logger.error(matches)
-// })
+//     sourceResource,
+//     ignoreList: [],
+//   },
+//   matches => {
+//     logger.error(matches);
+//   }
+// );
