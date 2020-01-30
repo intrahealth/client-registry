@@ -4,6 +4,7 @@ const csv = require('fast-csv');
 const path = require('path');
 const async = require('async');
 const jsoncsv = require('json-csv');
+const moment = require('moment')
 const logger = require('../server/lib/winston');
 const fhirWrapper = require('../server/lib/fhir')();
 
@@ -294,70 +295,57 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         {
           name: 'id2',
           label: 'ID2',
-        },
+        }
       ];
+      let date = moment().format('Y-MM-DDTHH:mm:ss')
       jsoncsv.buffered(allLinks, {
         fields: fields1
       }, (err, csv) => {
-        fs.writeFile('results/allLinks.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/allLinks_${date}.csv`, csv, 'utf8', () => {});
       });
 
       jsoncsv.buffered(linkedToAllTrueOnly, {
         fields: fields1
       }, (err, csv) => {
-        fs.writeFile('results/Linked_to_all_true_matches_only.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/Linked_to_all_true_matches_only_${date}.csv`, csv, 'utf8', () => {});
       });
 
       jsoncsv.buffered(linkedToAllTrueAndOthers, {
         fields: fields1,
       }, (err, csv) => {
-        fs.writeFile('results/Linked_to_all_the_true_matches_and_other_unexpected_matches.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/Linked_to_all_the_true_matches_and_other_unexpected_matches_${date}.csv`, csv, 'utf8', () => {});
       });
 
-      jsoncsv.buffered(
-        linkedToSomeTrue, {
-          fields: fields1,
-        },
-        (err, csv) => {
-          fs.writeFile(
-            'results/Linked_to_atleast_one_true_matches_but_not_all.csv',
-            csv,
-            'utf8',
-            () => {}
-          );
-        }
-      );
+      jsoncsv.buffered(linkedToSomeTrue, {
+        fields: fields1,
+      }, (err, csv) => {
+        fs.writeFile(`results/Linked_to_atleast_one_true_matches_but_not_all_${date}.csv`, csv, 'utf8', () => {});
+      });
 
       jsoncsv.buffered(
         hasMatchesButNoTrue, {
           fields: fields1,
-        },
-        (err, csv) => {
-          fs.writeFile(
-            'results/Linked_to_some_matches_but_excluding_the_true_match.csv',
-            csv,
-            'utf8',
-            () => {}
-          );
+        }, (err, csv) => {
+          fs.writeFile(`results/Linked_to_some_matches_but_excluding_the_true_match_${date}.csv`, csv, 'utf8', () => {});
         }
       );
 
       jsoncsv.buffered(notExpectedToMatch, {
         fields: fields1,
       }, (err, csv) => {
-        fs.writeFile('results/Didnt_expect_to_have_matches_but_match_found.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/Didnt_expect_to_have_matches_but_match_found_${date}.csv`, csv, 'utf8', () => {});
       });
 
       jsoncsv.buffered(expectedToMatchButNoMatch, {
         fields: fields1,
       }, (err, csv) => {
-        fs.writeFile('results/Expected_to_have_matches_but_matched_nothing.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/Expected_to_have_matches_but_matched_nothing_${date}.csv`, csv, 'utf8', () => {});
       });
 
       jsoncsv.buffered(noMatches, {
         fields: fields1,
       }, (err, csv) => {
-        fs.writeFile('results/All_no_matches.csv', csv, 'utf8', () => {});
+        fs.writeFile(`results/All_no_matches_${date}.csv`, csv, 'utf8', () => {});
       });
     });
   });

@@ -15,6 +15,7 @@
     "async": "^3.1.1",
     "js-excel-date-convert": "^1.0.2",
     "json-csv": "^3.0.1",
+    "moment": "^2.24.0",
     "request": "^2.88.0",
     "uuid": "^3.3.3"
   }

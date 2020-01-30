@@ -147,8 +147,8 @@ function appRoutes() {
         return nxtPatient();
       }
 
-      // const query = `identifier=${validSystem.system}|${validSystem.value}`;
-      const query = `identifier=${validSystem.value}`;
+      let query = `identifier=${validSystem.system}|${validSystem.value}`;
+      //const query = `identifier=${validSystem.value}`;
       fhirWrapper.getResource({
         resource: 'Patient',
         query,

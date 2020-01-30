@@ -1,6 +1,7 @@
 'use strict'
 const request = require('request');
 const URI = require('urijs');
+const async = require('async')
 const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('./fhir')();
 const mixin = require('./mixin')
@@ -13,28 +14,56 @@ const performMatch = ({
   sourceResource,
   ignoreList
 }, callback) => {
+  let matches = {}
+  matches.entry = []
   const decisionRules = config.get('rules');
-  let esquery = {}
-  esquery.query = {}
-  esquery.query.bool = {}
-  esquery.query.bool.must = []
-  for (const ruleField in decisionRules) {
-    const rule = decisionRules[ruleField];
-    let match = {}
-    match[rule.espath] = {}
-    let pathValue = fhir.evaluate(sourceResource, rule.fhirpath)
-    if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
-      if (pathValue.length === 0) {
-        match[rule.espath] = {
-          query: ""
+  async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
+    let esquery = {}
+    esquery.query = {}
+    esquery.query.bool = {}
+    esquery.query.bool.must = []
+    for (const ruleField in decisionRule) {
+      const rule = decisionRule[ruleField];
+      let match = {}
+      match[rule.espath] = {}
+      let pathValue = fhir.evaluate(sourceResource, rule.fhirpath)
+      if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+        if (pathValue.length === 0) {
+          match[rule.espath] = {
+            query: ""
+          }
+          esquery.query.bool.must.push({
+            match: match
+          })
         }
-        esquery.query.bool.must.push({
-          match: match
-        })
-      }
-      for (let value of pathValue) {
+        for (let value of pathValue) {
+          match[rule.espath] = {
+            query: value
+          }
+          if (rule.algorithm === "damerau-levenshtein" || rule.algorithm === "levenshtein") {
+            match[rule.espath].fuzziness = rule.threshold
+            if (rule.algorithm === "damerau-levenshtein") {
+              match[rule.espath].fuzzy_transpositions = true
+            } else {
+              match[rule.espath].fuzzy_transpositions = false
+            }
+          }
+          let tmpMatch = {
+            ...match
+          }
+          esquery.query.bool.must.push({
+            match: tmpMatch
+          })
+        }
+      } else {
+        if (!pathValue || (Array.isArray(pathValue) && (pathValue.length === 1 && pathValue[0] === undefined))) {
+          pathValue = ''
+        }
+        if (typeof pathValue === "object" && Object.keys(pathValue).length === 0) {
+          pathValue == ''
+        }
         match[rule.espath] = {
-          query: value
+          query: pathValue
         }
         if (rule.algorithm === "damerau-levenshtein" || rule.algorithm === "levenshtein") {
           match[rule.espath].fuzziness = rule.threshold
@@ -44,99 +73,61 @@ const performMatch = ({
             match[rule.espath].fuzzy_transpositions = false
           }
         }
-        let tmpMatch = {
-          ...match
-        }
         esquery.query.bool.must.push({
-          match: tmpMatch
+          match
         })
       }
-    } else {
-      if (!pathValue || (Array.isArray(pathValue) && (pathValue.length === 1 && pathValue[0] === undefined))) {
-        pathValue = ''
-      }
-      if (typeof pathValue === "object" && Object.keys(pathValue).length === 0) {
-        pathValue == ''
-      }
-      match[rule.espath] = {
-        query: pathValue
-      }
-      if (rule.algorithm === "damerau-levenshtein" || rule.algorithm === "levenshtein") {
-        match[rule.espath].fuzziness = rule.threshold
-        if (rule.algorithm === "damerau-levenshtein") {
-          match[rule.espath].fuzzy_transpositions = true
-        } else {
-          match[rule.espath].fuzzy_transpositions = false
-        }
-      }
-      esquery.query.bool.must.push({
-        match
-      })
     }
-  }
-  let url = URI(config.get("elastic:server"))
-    .segment(config.get("elastic:index"))
-    .segment('_search')
-    .toString();
-  const options = {
-    url,
-    auth: {
-      username: config.get("elastic:username"),
-      password: config.get("elastic.password"),
-    },
-    json: esquery
-  }
-  let matches = {}
-  matches.entry = []
-  request.get(options, (err, res, body) => {
-    fhirWrapper.getResource({
-      resource: "Basic",
-      id: config.get("structureDefinition:reportRelationship")
-    }, (relationship) => {
-      if (relationship) {
-        let details = relationship.extension && relationship.extension.find(ext => ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails');
-        if (!details) {
-          logger.error('Something is wrong with relationship ' + config.get("structureDefinition:reportRelationship"))
-          return callback(matches)
+    let url = URI(config.get("elastic:server"))
+      .segment(config.get("elastic:index"))
+      .segment('_search')
+      .toString();
+    const options = {
+      url,
+      auth: {
+        username: config.get("elastic:username"),
+        password: config.get("elastic.password"),
+      },
+      json: esquery
+    }
+    request.get(options, (err, res, body) => {
+      let query
+      if (!body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
+        logger.error(JSON.stringify(body, 0, 2))
+        return callback(matches)
+      }
+      if (body.hits.hits.length === 0) {
+        return nxtRule()
+      }
+      for (let hit of body.hits.hits) {
+        let id = hit["_id"]
+        if (ignoreList.includes(id)) {
+          continue
         }
-        let reportDetails = mixin.flattenComplex(details.extension);
-        let reportName = reportDetails.name
-        let query
-        if (!body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
-          logger.error(JSON.stringify(body, 0, 2))
-          return callback(matches)
-        }
-        for (let hit of body.hits.hits) {
-          let matchedId = hit["_source"][reportName]
-          let id = matchedId.split("/").pop()
-          if (ignoreList.includes(id)) {
-            continue
-          }
-          let isBroken = matchingMixin.isMatchBroken(sourceResource, matchedId)
-          if (query) {
-            query += ',' + id
-          } else {
-            query = '_id=' + id
-          }
-          if (isBroken) {
-            continue
-          }
+        let isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`)
+        if (isBroken) {
+          continue
         }
         if (query) {
-          fhirWrapper.getResource({
-            resource: 'Patient',
-            query
-          }, (matches) => {
-            matches.entry.concat(matches)
-            return callback(matches)
-          })
+          query += ',' + id
         } else {
-          return callback(matches)
+          query = '_id=' + id
         }
+      }
+      if (query) {
+        fhirWrapper.getResource({
+          resource: 'Patient',
+          query
+        }, (matches) => {
+          matches.entry.concat(matches)
+          return callback(matches)
+        })
       } else {
         return callback(matches)
       }
     })
+  }, () => {
+    return callback(matches)
   })
 }
 
