@@ -174,6 +174,10 @@ module.exports = () => ({
     for (let val1 of array1) {
       let matchFound = false;
       for (let val2 of array2) {
+        if (!val1 && !val2) {
+          matchFound = true
+          continue
+        }
         if (!val2 || !val1) {
           continue
         }
@@ -215,6 +219,10 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val1 && !val2) {
+          score = 0
+          continue
+        }
         if (!val2 || !val1) {
           continue
         }
@@ -253,6 +261,10 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val1 && !val2) {
+          score = 0
+          continue
+        }
         if (!val2 || !val1) {
           continue
         }
@@ -291,6 +303,10 @@ module.exports = () => ({
     for (const val1 of array1) {
       let score = false;
       for (const val2 of array2) {
+        if (!val1 && !val2) {
+          score = 1
+          continue
+        }
         if (!val2 || !val1) {
           continue
         }
@@ -329,6 +345,10 @@ module.exports = () => ({
     for (let val1 of array1) {
       let matchFound = false;
       for (let val2 of array2) {
+        if (!val1 && !val2) {
+          matchFound = true;
+          continue
+        }
         if (!val2 || !val1) {
           continue
         }
