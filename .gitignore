@@ -7,3 +7,5 @@ config_development.json
 # vscode
 .vscode
 
+# ipynb
+*.ipynb_checkpoints
