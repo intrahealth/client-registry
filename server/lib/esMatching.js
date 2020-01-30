@@ -96,7 +96,7 @@ const performMatch = ({
       let query;
       if (!body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
         logger.error(JSON.stringify(body, 0, 2));
-        return callback(matches);
+        return nxtRule();
       }
       if (body.hits.hits.length === 0) {
         return nxtRule();
@@ -122,10 +122,10 @@ const performMatch = ({
           query,
         }, matches => {
           matches.entry.concat(matches);
-          return callback(matches);
+          return nxtRule();
         });
       } else {
-        return callback(matches);
+        return nxtRule();
       }
     });
   }, () => {
