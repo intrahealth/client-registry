@@ -3,18 +3,27 @@ const async = require('async');
 const csv = require('fast-csv');
 const path = require('path');
 const request = require('request');
+const UploadResults = require('./uploadResults')
 const logger = require('../server/lib/winston');
 
 if (!process.argv[2]) {
   logger.error('Please specify path to a CSV file');
   process.exit();
 }
+if (!process.argv[3]) {
+  logger.error('Please specify path to a CSV file of true links');
+  process.exit();
+}
 const csvFile = process.argv[2];
+const csvTrueLinks = process.argv[3];
 
 try {
   if (!fs.existsSync(csvFile)) {
     logger.error(`Cant find file ${csvFile}`);
     process.exit();
+  }
+  if (!fs.existsSync(csvTrueLinks)) {
+    csvTrueLinks = ''
   }
 } catch (err) {
   logger.error(err);
@@ -22,9 +31,13 @@ try {
 }
 
 const ext = path.extname(csvFile);
+const extTrueLinks = path.extname(csvTrueLinks);
 if (ext !== '.csv') {
   logger.error('File is not a CSV');
   process.exit();
+}
+if (extTrueLinks !== '.csv') {
+  csvTrueLinks = ''
 }
 
 logger.info('Upload started ...');
@@ -75,12 +88,10 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         } else if (sex == 'm') {
           resource.gender = 'male';
         }
-        resource.identifier = [
-          {
-            system: 'http://clientregistry.org/openmrs',
-            value: row['rec_id'].trim(),
-          },
-        ];
+        resource.identifier = [{
+          system: 'http://clientregistry.org/openmrs',
+          value: row['rec_id'].trim(),
+        }, ];
         if (nationalID) {
           resource.identifier.push({
             system: 'http://system1/nationalid',
@@ -149,6 +160,12 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         request.post(options, (err, res, body) => {
           return nxt();
         });
+      }, () => {
+        if (csvTrueLinks) {
+          UploadResults.UploadResults(csvTrueLinks)
+        } else {
+          console.log('True links were not specified then upload results wont be displayed');
+        }
       });
     });
   });

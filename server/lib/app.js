@@ -148,7 +148,6 @@ function appRoutes() {
       }
 
       let query = `identifier=${validSystem.system}|${validSystem.value}`;
-      //const query = `identifier=${validSystem.value}`;
       fhirWrapper.getResource({
         resource: 'Patient',
         query,
