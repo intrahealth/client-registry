@@ -120,8 +120,8 @@ const performMatch = ({
         fhirWrapper.getResource({
           resource: 'Patient',
           query,
-        }, matches => {
-          matches.entry.concat(matches);
+        }, matchedResources => {
+          matches.entry = matches.entry.concat(matchedResources.entry);
           return nxtRule();
         });
       } else {
@@ -159,40 +159,45 @@ module.exports = {
 // };
 // let sourceResource = {
 //   "resourceType": "Patient",
-//   "id": "41ad1ed6-1cfa-42f3-a202-6dd4cbe5bc42",
+//   "id": "9b14c6c7-23e3-4130-b751-e9fbe0199509",
 //   "meta": {
-//     "versionId": "2",
-//     "lastUpdated": "2020-01-27T22:09:52.546+03:00",
-//     "source": "#upPYbqEEtCROoKcb"
+//     "versionId": "1",
+//     "lastUpdated": "2020-01-31T18:40:23.836+03:00",
+//     "source": "#PsOgFNC0XrS3r4HG"
 //   },
 //   "text": {
 //     "status": "generated",
-//     "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\"/><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>rec-3798-dup-0</td></tr></tbody></table></div>"
+//     "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">dorika <b>LAKWE </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>rec-3618-dup-0</td></tr></tbody></table></div>"
 //   },
 //   "identifier": [{
 //       "system": "http://clientregistry.org/openmrs",
-//       "value": "rec-3798-dup-0"
+//       "value": "rec-3618-dup-0"
 //     },
 //     {
 //       "system": "http://system1/nationalid",
-//       "value": "CF46874076AVLZ"
+//       "value": "CF28666389CZLT"
 //     },
 //     {
 //       "system": "http://system1/artnumber",
-//       "value": "KUL-596214"
+//       "value": "KMC-877503"
 //     }
 //   ],
 //   "name": [{
-//     "use": "official"
+//     "use": "official",
+//     "family": "lakwe",
+//     "given": [
+//       "dorika"
+//     ]
 //   }],
 //   "telecom": [{
 //     "system": "phone",
-//     "value": "774 234044"
-//   }]
+//     "value": "774 134054"
+//   }],
+//   "gender": "female"
 // }
 // performMatch({
 //     sourceResource,
-//     ignoreList: [],
+//     ignoreList: ["9b14c6c7-23e3-4130-b751-e9fbe0199509"],
 //   },
 //   matches => {
 //     logger.error(matches);

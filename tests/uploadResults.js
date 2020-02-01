@@ -415,7 +415,7 @@ const uploadResults = (csvFile) => {
           </tr>
         </table>`
         let table =
-          `<br><table border='3' border='1' cellspacing='0' cellpadding='10'>
+          `<table border='3' border='1' cellspacing='0' cellpadding='10'>
           <tr>
             <th><center> <b>Run Date ${date}</b></center></th>
           </tr>
@@ -429,11 +429,14 @@ const uploadResults = (csvFile) => {
             <td><center><b>Match Results</b><br>${resultsTable}</center></td>
           </tr>
         </table>`
-        fs.appendFile('README.md', table, 'utf8', () => {})
+        fs.readFile('README.md', (err, existingResData) => {
+          let resData = table + "<br>" + existingResData
+          fs.writeFile('README.md', resData, 'utf8', () => {})
+        })
       });
     });
 }
 module.exports = {
   uploadResults
 }
-uploadResults('./uganda_data_v21_20201501_true_links.csv')
+// uploadResults('./uganda_data_v21_20201501_true_links.csv')
