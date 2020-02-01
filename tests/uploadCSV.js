@@ -3,7 +3,7 @@ const async = require('async');
 const csv = require('fast-csv');
 const path = require('path');
 const request = require('request');
-const UploadResults = require('./uploadResults')
+const uploadResults = require('./uploadResults')
 const logger = require('../server/lib/winston');
 
 if (!process.argv[2]) {
@@ -162,7 +162,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         });
       }, () => {
         if (csvTrueLinks) {
-          UploadResults.UploadResults(csvTrueLinks)
+          uploadResults.uploadResults(csvTrueLinks)
         } else {
           console.log('True links were not specified then upload results wont be displayed');
         }

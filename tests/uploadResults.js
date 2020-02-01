@@ -20,8 +20,52 @@ const hasMatchesButNoTrue = [];
 const expectedToMatchButNoMatch = []
 const notExpectedToMatchButMatched = [];
 const notExpectedToMatchAndDidntMatch = []
-const trueLinks = [];
+let trueLinks = [];
 
+const modifyCSV = () => {
+  let copy = []
+  for (let trueLink of trueLinks) {
+    let id1 = trueLink.rec_id_1;
+    let id2 = trueLink.rec_id_2;
+    if (id1) {
+      id1 = id1.trim();
+    }
+    let id2Arr = [];
+    if (id2) {
+      id2 = id2.trim();
+      id2Arr = id2.split(',');
+      for (let index in id2Arr) {
+        id2Arr[index] = id2Arr[index].trim();
+      }
+      id2Arr.unshift(id1)
+      for (let index in id2Arr) {
+        let newId1 = id2Arr[index]
+        let subId2Arr = id2Arr.slice(parseInt(index) + 1)
+        for (let newId2 of subId2Arr) {
+          copy.push({
+            rec_id_1: newId1,
+            rec_id_2: newId2
+          })
+          copy.push({
+            rec_id_1: newId2,
+            rec_id_2: newId1
+          })
+        }
+      }
+    }
+  }
+  trueLinks = copy
+}
+const getTrueLinksById = (id1) => {
+  let ids = trueLinks.filter((trueLink) => {
+    return trueLink.rec_id_1 === id1
+  })
+  let id2 = []
+  for (let id of ids) {
+    id2.push(id.rec_id_2)
+  }
+  return id2
+}
 const decisionRules2HTML = () => {
   const decisionRules = config.get('rules');
   let table =
@@ -68,25 +112,9 @@ const arraysEqual = (array1, array2) => {
   return hasAll;
 };
 const expectedToMatch = (checkingID) => {
-  let expected = false;
-  for (let trueLink of trueLinks) {
-    let id1 = trueLink.rec_id_1;
-    let id2 = trueLink.rec_id_2;
-    if (id1) {
-      id1 = id1.trim();
-    }
-    let id2Arr = [];
-    if (id2) {
-      id2 = id2.trim();
-      id2Arr = id2.split(',');
-      for (let index in id2Arr) {
-        id2Arr[index] = id2Arr[index].trim();
-      }
-    }
-    if (id1 === checkingID || id2Arr.includes(checkingID)) {
-      expected = true;
-    }
-  }
+  let expected = trueLinks.find((trueLink) => {
+    return trueLink.rec_id_1 === checkingID
+  })
   return expected
 }
 const uploadResults = (csvFile) => {
@@ -101,6 +129,7 @@ const uploadResults = (csvFile) => {
       trueLinks.push(row);
     })
     .on('end', () => {
+      modifyCSV()
       const processed = [];
       async.parallel({
         allLinks: callback => {
@@ -123,6 +152,9 @@ const uploadResults = (csvFile) => {
                       id1: linkedid1
                     })
                   }
+                  noMatches.push({
+                    id1: linkedid1
+                  });
                   return resolve();
                 }
                 const promise1 = [];
@@ -181,20 +213,20 @@ const uploadResults = (csvFile) => {
         },
         one: callback => {
           const promises = [];
+          const processed = [];
           for (let row of trueLinks) {
+            let isProcessed = processed.find((id) => {
+              return id === row.rec_id_1
+            })
+            if (isProcessed) {
+              continue
+            } else {
+              processed.push(row.rec_id_1)
+            }
             promises.push(new Promise((resolve, reject) => {
               let trueId1 = row['rec_id_1'];
-              let trueId2 = row['rec_id_2'];
               if (trueId1) {
                 trueId1 = trueId1.trim();
-              }
-              let trueId2Arr = [];
-              if (trueId2) {
-                trueId2 = trueId2.trim();
-                trueId2Arr = trueId2.split(',');
-                for (let index in trueId2Arr) {
-                  trueId2Arr[index] = trueId2Arr[index].trim();
-                }
               }
               const query = `identifier=${trueId1}`;
               fhirWrapper.getResource({
@@ -212,18 +244,10 @@ const uploadResults = (csvFile) => {
                     (dbPatients.entry[0].resource.link &&
                       dbPatients.entry[0].resource.link.length === 0)
                   ) {
-                    let ident = dbPatients.entry[0].resource.identifier.find(identifier => {
-                      return (identifier.system === 'http://clientregistry.org/openmrs');
-                    });
                     // expected to have match but no match found
-                    noMatches.push({
-                      id1: ident.value,
-                    });
-                    if (ident.value === trueId1 || trueId2Arr.includes(ident.value)) {
-                      expectedToMatchButNoMatch.push({
-                        id1: trueId1
-                      })
-                    }
+                    expectedToMatchButNoMatch.push({
+                      id1: trueId1
+                    })
                     resolve();
                   } else {
                     let linkedIds2 = [];
@@ -249,7 +273,8 @@ const uploadResults = (csvFile) => {
                     Promise.all(promise1).then(() => {
                       let allFound = true;
                       let someFound = false;
-                      for (let trueId2 of trueId2Arr) {
+                      let allTrueId2 = getTrueLinksById(trueId1)
+                      for (let trueId2 of allTrueId2) {
                         let has = linkedIds2.includes(trueId2);
                         if (!has) {
                           allFound = false;
@@ -257,13 +282,13 @@ const uploadResults = (csvFile) => {
                           someFound = true;
                         }
                       }
-                      if (allFound && linkedIds2.length === trueId2Arr.length) {
+                      if (allFound && linkedIds2.length === allTrueId2.length) {
                         linkedToAllTrueOnly.push({
                           id1: trueId1,
                           id2: linkedIds2.join(', '),
                         });
                       }
-                      if (allFound && linkedIds2.length > trueId2Arr.length) {
+                      if (allFound && linkedIds2.length > allTrueId2.length) {
                         linkedToAllTrueAndOthers.push({
                           id1: trueId1,
                           id2: linkedIds2.join(', '),
@@ -358,7 +383,7 @@ const uploadResults = (csvFile) => {
         });
 
         let TP = linkedToAllTrueOnly.length
-        let FP = linkedToAllTrueAndOthers.length + notExpectedToMatchButMatched.length
+        let FP = linkedToAllTrueAndOthers.length + notExpectedToMatchButMatched.length + hasMatchesButNoTrue.length
         let TN = notExpectedToMatchAndDidntMatch.length
         let FN = linkedToSomeTrue.length + expectedToMatchButNoMatch.length
         let sensitivity = TP / (TP + FN)
