@@ -75,67 +75,88 @@ function appRoutes() {
       res.status(400).send('Request is not a bundle');
       return;
     }
-    const addLinks = (patients, callback) => {
+
+    const addLinks = (patients, linkReferences) => {
+      for (const patient of patients.entry) {
+        if (!patient.resource.link || !Array.isArray(patient.resource.link)) {
+          patient.resource.link = [];
+        }
+        for (const linkReference of linkReferences) {
+          const linkExist = patient.resource.link.find((link) => {
+            return link.other.reference === linkReference;
+          });
+          if (!linkExist) {
+            patient.resource.link.push({
+              other: {
+                reference: linkReference
+              },
+              type: 'seealso'
+            });
+          }
+        }
+        patient.request = {
+          method: 'PUT',
+          url: `Patient/${patient.resource.id}`,
+        };
+      }
+      return patients
+    }
+
+    const findMatches = (patient, bundle, callback) => {
       /**
        * this needs to be processed in series
        * Dont change it to parallel unless you know what you are doing
        * Parallel processing may overwrite links of the new patient if new patient is a match of another new patient in the patients array
        */
-      async.eachSeries(patients.entry, (patient, nxtPatient) => {
-        const patientEntry = {};
-        patientEntry.entry = [{
-          resource: patient.resource,
-        }];
-        let matchingTool
-        if (config.get("matching:tool") === "mediator") {
-          matchingTool = medMatching
-        } else if (config.get("matching:tool") === "elasticsearch") {
-          matchingTool = esMatching
-        }
-        matchingTool.performMatch({
-          sourceResource: patient.resource,
-          ignoreList: [patient.resource.id],
-        }, matches => {
-          async.series([
-            callback => {
-              if (matches.entry.length === 0) {
-                return callback(null)
-              }
-              // link all matches to the new patient
-              const linkReferences = [];
-              for (const match of matches.entry) {
-                linkReferences.push(`Patient/${match.resource.id}`);
-              }
-              fhirWrapper.linkPatients({
-                patients: patientEntry,
-                linkReferences,
-              }, () => {
-                return callback(null);
-              });
-            },
-            callback => {
-              // link new patient to all matches
-              if (matches.entry.length === 0) {
-                return callback(null)
-              }
-              fhirWrapper.linkPatients({
-                patients: matches,
-                linkReferences: [`Patient/${patient.resource.id}`],
-              }, () => {
-                return callback(null);
-              });
-            },
-          ], () => {
-            return nxtPatient();
-          });
+      const patientEntry = {};
+      patientEntry.entry = [{
+        resource: patient,
+      }];
+      let matchingTool
+      if (config.get("matching:tool") === "mediator") {
+        matchingTool = medMatching
+      } else if (config.get("matching:tool") === "elasticsearch") {
+        matchingTool = esMatching
+      }
+      matchingTool.performMatch({
+        sourceResource: patient,
+        ignoreList: [patient.id],
+      }, matches => {
+        async.series([
+          callback => {
+            if (matches.entry.length === 0) {
+              return callback(null)
+            }
+            // link all matches to the new patient
+            const linkReferences = [];
+            for (const match of matches.entry) {
+              linkReferences.push(`Patient/${match.resource.id}`);
+            }
+            let linkedPatients = addLinks(patientEntry, linkReferences)
+            bundle.entry = bundle.entry.concat(linkedPatients.entry)
+            return callback(null)
+          },
+          callback => {
+            // link new patient to all matches
+            if (matches.entry.length === 0) {
+              return callback(null)
+            }
+            let linkedPatients = addLinks(matches, [`Patient/${patient.id}`])
+            bundle.entry = bundle.entry.concat(linkedPatients.entry)
+            return callback(null);
+          },
+        ], () => {
+          return callback();
         });
-      }, () => {
-        return callback();
       });
     };
 
     logger.info('Searching to check if the patient exists');
     async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
+      const bundle = {};
+      bundle.type = 'batch';
+      bundle.resourceType = 'Bundle';
+      bundle.entry = []
       const existingPatients = {};
       existingPatients.entry = [];
       let validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
@@ -156,7 +177,6 @@ function appRoutes() {
         if (existingPatients.entry.length === 0) {
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} doesnt exist, adding to the database`);
           newPatient.resource.id = uuid4();
-          const bundle = {};
           bundle.entry = [{
             resource: newPatient.resource,
             request: {
@@ -164,36 +184,23 @@ function appRoutes() {
               url: `Patient/${newPatient.resource.id}`,
             },
           }];
-          bundle.type = 'batch';
-          bundle.resourceType = 'Bundle';
-          async.parallel([
-            (callback) => {
-              fhirWrapper.saveResource({
-                resourceData: bundle,
-              }, () => {
-                return callback(null)
-              })
-            }, (callback) => {
+          findMatches(newPatient.resource, bundle, () => {
+            fhirWrapper.saveResource({
+              resourceData: bundle,
+            }, () => {
               if (config.get("matching:tool") === "elasticsearch") {
                 cacheFHIR.fhir2ES({
                   "patientsBundle": bundle
                 }, (err) => {
-                  return callback(null)
+                  return nxtPatient();
                 })
               } else {
-                return callback(null)
+                return nxtPatient();
               }
-            }
-          ], () => {
-            const newPatientEntry = {};
-            newPatientEntry.entry = [{
-              resource: newPatient.resource,
-            }];
-            addLinks(newPatientEntry, () => {
-              return nxtPatient();
-            });
+            })
           });
         } else if (existingPatients.entry.length > 0) {
+          const existingPatient = existingPatients.entry[0]
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
           async.series([
             /**
@@ -201,119 +208,63 @@ function appRoutes() {
              * This will also break all links, links will be added after matching is done again due to updates
              */
             callback => {
-              const bundle = {};
-              bundle.type = 'batch';
-              bundle.resourceType = 'Bundle';
-              bundle.entry = [];
-              for (const existingPatient of existingPatients.entry) {
-                const id = existingPatient.resource.id;
-                existingPatient.resource = Object.assign({},
-                  newPatient.resource
-                );
-                existingPatient.resource.id = id;
-                bundle.entry.push({
-                  resource: existingPatient.resource,
-                  request: {
-                    method: 'PUT',
-                    url: `Patient/${existingPatient.resource.id}`,
-                  },
-                });
-              }
-              async.parallel([
-                (callback) => {
-                  logger.info('Breaking all links of the new patient to other patients');
-                  fhirWrapper.saveResource({
-                    resourceData: bundle,
-                  }, () => {
-                    callback(null);
-                  });
+              const id = existingPatient.resource.id;
+              existingPatient.resource = Object.assign({},
+                newPatient.resource
+              );
+              existingPatient.resource.id = id;
+              bundle.entry.push({
+                resource: existingPatient.resource,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${existingPatient.resource.id}`,
                 },
-                (callback) => {
-                  if (config.get("matching:tool") === "elasticsearch") {
-                    cacheFHIR.fhir2ES({
-                      "patientsBundle": bundle
-                    }, (err) => {
-                      return callback(null)
-                    })
-                  } else {
-                    return callback(null)
-                  }
-                }
-              ], () => {
-                callback(null);
-              })
+              });
+              return callback(null)
             },
             /**
              * Drop links to every CR patient who is linked to this new patient
              */
             callback => {
-              const bundle = {};
-              bundle.type = 'batch';
-              bundle.resourceType = 'Bundle';
-              bundle.entry = [];
-              const promises = [];
-              for (const existingPatient of existingPatients.entry) {
-                promises.push(new Promise(resolve => {
-                  const link = `Patient/${existingPatient.resource.id}`;
-                  const query = `link=${link}`;
-                  fhirWrapper.getResource({
-                    resource: 'Patient',
-                    query,
-                  }, dbLinkedPatients => {
-                    for (const linkedPatient of dbLinkedPatients.entry) {
-                      for (const index in linkedPatient.resource.link) {
-                        if (linkedPatient.resource.link[index].other.reference === link) {
-                          linkedPatient.resource.link.splice(index, 1);
-                          bundle.entry.push({
-                            resource: linkedPatient.resource,
-                            request: {
-                              method: 'PUT',
-                              url: `Patient/${linkedPatient.resource.id}`,
-                            },
-                          });
-                        }
-                      }
-                    }
-                    resolve();
-                  });
-                }));
-              }
-              Promise.all(promises).then(() => {
-                if (bundle.entry.length > 0) {
-                  async.parallel([
-                    (callback) => {
-                      logger.info(`Breaking ${bundle.entry.length} links of patients pointing to new patient`);
-                      fhirWrapper.saveResource({
-                        resourceData: bundle,
-                      }, () => {
-                        return callback(null);
+              const link = `Patient/${existingPatient.resource.id}`;
+              const query = `link=${link}`;
+              fhirWrapper.getResource({
+                resource: 'Patient',
+                query,
+              }, dbLinkedPatients => {
+                for (const linkedPatient of dbLinkedPatients.entry) {
+                  for (const index in linkedPatient.resource.link) {
+                    if (linkedPatient.resource.link[index].other.reference === link) {
+                      linkedPatient.resource.link.splice(index, 1);
+                      bundle.entry.push({
+                        resource: linkedPatient.resource,
+                        request: {
+                          method: 'PUT',
+                          url: `Patient/${linkedPatient.resource.id}`,
+                        },
                       });
-                    }, (callback) => {
-                      if (config.get("matching:tool") === "elasticsearch") {
-                        cacheFHIR.fhir2ES({
-                          "patientsBundle": bundle
-                        }, (err) => {
-                          return callback(null)
-                        })
-                      } else {
-                        return callback(null)
-                      }
                     }
-                  ], () => {
-                    return callback(null)
-                  })
-                } else {
-                  return callback(null);
+                  }
                 }
-              }).catch(err => {
-                callback(null);
-                throw err;
+                return callback(null)
               });
             },
           ], () => {
-            addLinks(existingPatients, () => {
-              return nxtPatient();
-            });
+            findMatches(existingPatient.resource, bundle, () => {
+              fhirWrapper.saveResource({
+                resourceData: bundle,
+              }, () => {
+                if (config.get("matching:tool") === "elasticsearch") {
+                  cacheFHIR.fhir2ES({
+                    "patientsBundle": bundle
+                  }, (err) => {
+                    return nxtPatient();
+                  })
+                } else {
+                  return nxtPatient();
+                }
+              })
+            })
           });
         }
       });

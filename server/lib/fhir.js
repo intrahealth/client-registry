@@ -162,56 +162,5 @@ module.exports = () => ({
       logger.info('Resource(s) data saved successfully');
       callback(err, body);
     });
-  },
-  /**
-   *
-   * @param {PatientsBundle} patients
-   * @param {Array} linkReference // i.e ["Patient/123"]
-   */
-  linkPatients({
-    patients,
-    linkReferences
-  }, callback) {
-    const promises = [];
-    for (const patient of patients.entry) {
-      promises.push(new Promise((resolve) => {
-        if (!patient.resource.link || !Array.isArray(patient.resource.link)) {
-          patient.resource.link = [];
-        }
-        for (const linkReference of linkReferences) {
-          const linkExist = patient.resource.link.find((link) => {
-            return link.other.reference === linkReference;
-          });
-          if (!linkExist) {
-            patient.resource.link.push({
-              other: {
-                reference: linkReference
-              },
-              type: 'seealso'
-            });
-          }
-        }
-        patient.request = {
-          method: 'PUT',
-          url: `Patient/${patient.resource.id}`,
-        };
-        resolve();
-      }));
-    }
-    Promise.all(promises).then(() => {
-      const bundle = {};
-      bundle.entry = [];
-      bundle.type = 'batch';
-      bundle.resourceType = 'Bundle';
-      bundle.entry = bundle.entry.concat(patients.entry);
-      this.saveResource({
-        resourceData: bundle
-      }, () => {
-        callback();
-      });
-    }).catch((err) => {
-      logger.error(err);
-      throw err;
-    });
   }
 });
