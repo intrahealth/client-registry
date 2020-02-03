@@ -76,7 +76,7 @@ function appRoutes() {
       return;
     }
 
-    const addLinks = (patients, linkReferences) => {
+    const addLinks_delete = (patients, linkReferences) => {
       for (const patient of patients.entry) {
         if (!patient.resource.link || !Array.isArray(patient.resource.link)) {
           patient.resource.link = [];
@@ -102,12 +102,75 @@ function appRoutes() {
       return patients
     }
 
-    const findMatches = (patient, bundle, callback) => {
-      /**
-       * this needs to be processed in series
-       * Dont change it to parallel unless you know what you are doing
-       * Parallel processing may overwrite links of the new patient if new patient is a match of another new patient in the patients array
-       */
+    const addLinks = (patient, goldenRecord) => {
+      if (!patient.link || !Array.isArray(patient.link)) {
+        patient.link = [];
+      }
+      let linkExist = patient.link.find((link) => {
+        return link.other.reference === 'Patient/' + goldenRecord.id;
+      });
+      if (!linkExist) {
+        patient.link.push({
+          other: {
+            reference: 'Patient/' + goldenRecord.id
+          },
+          type: 'refer'
+        });
+      }
+
+      if (!goldenRecord.link || !Array.isArray(goldenRecord.link)) {
+        goldenRecord.link = [];
+      }
+      linkExist = goldenRecord.link.find((link) => {
+        return link.other.reference === 'Patient/' + patient.id;
+      });
+      if (!linkExist) {
+        goldenRecord.link.push({
+          other: {
+            reference: 'Patient/' + patient.id
+          },
+          type: 'seealso'
+        });
+      }
+    }
+
+    const getLinksFromResources = (resourceBundle) => {
+      let links = []
+      for (let entry of resourceBundle.entry) {
+        if (entry.resource.link && entry.resource.link.length > 0) {
+          for (let link of entry.resource.link) {
+            let exist = links.find((pushedLink) => {
+              return pushedLink === link.other.reference
+            })
+            if (!exist) {
+              links.push(link.other.reference)
+            }
+          }
+        }
+      }
+      return links
+    }
+
+    const createGoldenRecord = () => {
+      let goldenRecord = {
+        id: uuid4(),
+        resourceType: 'Patient',
+        meta: {
+          tag: [{
+            code: config.get('codes:goldenRecord'),
+            display: 'Golden Record'
+          }]
+        }
+      }
+      return goldenRecord
+    }
+
+    const findMatches = ({
+      patient,
+      currentLinks = [],
+      newPatient = true,
+      bundle
+    }, callback) => {
       const patientEntry = {};
       patientEntry.entry = [{
         resource: patient,
@@ -122,32 +185,139 @@ function appRoutes() {
         sourceResource: patient,
         ignoreList: [patient.id],
       }, matches => {
-        async.series([
-          callback => {
-            if (matches.entry.length === 0) {
-              return callback(null)
+        if (matches.entry && matches.entry.length === 0) {
+          let goldenRecord
+          // check if this patient had a golden record and that golden record has one link which is this patient, then reuse
+          let existLinkPromise = new Promise((resolve) => {
+            if (currentLinks.length > 0) {
+              let query
+              for (let currLink of currentLinks) {
+                if (query) {
+                  query += ',' + currLink.other.reference
+                } else {
+                  query = '_id=' + currLink.other.reference
+                }
+              }
+              fhirWrapper.getResource({
+                resource: 'Patient',
+                query
+              }, (currLinkRes) => {
+                for (let entry of currLinkRes.entry) {
+                  let exist = entry.resource.link.find((link) => {
+                    return link.other.reference === 'Patient/' + patient.id
+                  })
+                  if (entry.resource.link && entry.resource.link.length === 1 && exist) {
+                    goldenRecord = entry.resource
+                  }
+                }
+                resolve()
+              })
+            } else {
+              resolve()
             }
-            // link all matches to the new patient
-            const linkReferences = [];
-            for (const match of matches.entry) {
-              linkReferences.push(`Patient/${match.resource.id}`);
+          })
+          existLinkPromise.then(() => {
+            if (!goldenRecord) {
+              goldenRecord = createGoldenRecord()
             }
-            let linkedPatients = addLinks(patientEntry, linkReferences)
-            bundle.entry = bundle.entry.concat(linkedPatients.entry)
-            return callback(null)
-          },
-          callback => {
-            // link new patient to all matches
-            if (matches.entry.length === 0) {
-              return callback(null)
+            // if both patient and golden record doesnt exist then add them to avoid error when adding links
+            let promise = new Promise((resolve, reject) => {
+              if (newPatient) {
+                let tmpBundle = {};
+                tmpBundle.type = 'batch';
+                tmpBundle.resourceType = 'Bundle';
+                tmpBundle.entry = [{
+                  resource: patient,
+                  request: {
+                    method: 'PUT',
+                    url: `Patient/${patient.id}`,
+                  },
+                }, {
+                  resource: goldenRecord,
+                  request: {
+                    method: 'PUT',
+                    url: `Patient/${goldenRecord.id}`,
+                  },
+                }]
+                fhirWrapper.saveResource({
+                  resourceData: tmpBundle
+                }, (err, body) => {
+                  if (err) {
+                    return reject()
+                  }
+                  return resolve()
+                })
+                tmpBundle = {}
+              } else {
+                resolve()
+              }
+            })
+            promise.then((res, err) => {
+              if (err) {
+                // this is an error, find a way to handle it
+                logger.error('An error occured while saving patient and golden record')
+              }
+              addLinks(patient, goldenRecord)
+              let patientResource = {
+                resource: patient,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${patient.id}`,
+                },
+              }
+              let goldenRecordResource = {
+                resource: goldenRecord,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${goldenRecord.id}`,
+                },
+              }
+              bundle.entry.push(goldenRecordResource);
+              bundle.entry.push(patientResource);
+              return callback()
+            })
+          })
+        } else if (matches.entry && matches.entry.length > 0) {
+          let links = getLinksFromResources(matches)
+          if (links.length === 0) {
+            // this is an error, find a way to handle it
+            return callback()
+          } else {
+            const promises = []
+            for (let link of links) {
+              promises.push(new Promise((resolve) => {
+                let linkArr = link.split('/')
+                let [resourceName, id] = linkArr
+                fhirWrapper.getResource({
+                  resource: resourceName,
+                  id
+                }, (goldenRecord) => {
+                  addLinks(patient, goldenRecord)
+                  bundle.entry.push({
+                    resource: patient,
+                    request: {
+                      method: 'PUT',
+                      url: `Patient/${patient.id}`,
+                    },
+                  }, {
+                    resource: goldenRecord,
+                    request: {
+                      method: 'PUT',
+                      url: `Patient/${goldenRecord.id}`,
+                    },
+                  });
+                  resolve()
+                })
+              }))
             }
-            let linkedPatients = addLinks(matches, [`Patient/${patient.id}`])
-            bundle.entry = bundle.entry.concat(linkedPatients.entry)
-            return callback(null);
-          },
-        ], () => {
-          return callback();
-        });
+            Promise.all(promises).then(() => {
+              return callback()
+            })
+          }
+        } else {
+          // this is an error, find a way to handle it
+          return callback()
+        }
       });
     };
 
@@ -157,8 +327,6 @@ function appRoutes() {
       bundle.type = 'batch';
       bundle.resourceType = 'Bundle';
       bundle.entry = []
-      const existingPatients = {};
-      existingPatients.entry = [];
       let validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
         let uri = config.get("systems:" + clientID + ":uri")
         return identifier.system === uri
@@ -172,19 +340,14 @@ function appRoutes() {
       fhirWrapper.getResource({
         resource: 'Patient',
         query,
-      }, dbPatients => {
-        existingPatients.entry = existingPatients.entry.concat(dbPatients.entry);
-        if (existingPatients.entry.length === 0) {
-          logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} doesnt exist, adding to the database`);
+      }, existingPatients => {
+        if (existingPatients.entry && existingPatients.entry.length === 0) {
           newPatient.resource.id = uuid4();
-          bundle.entry = [{
-            resource: newPatient.resource,
-            request: {
-              method: 'PUT',
-              url: `Patient/${newPatient.resource.id}`,
-            },
-          }];
-          findMatches(newPatient.resource, bundle, () => {
+          findMatches({
+            patient: newPatient.resource,
+            newPatient: true,
+            bundle
+          }, () => {
             fhirWrapper.saveResource({
               resourceData: bundle,
             }, () => {
@@ -199,7 +362,8 @@ function appRoutes() {
               }
             })
           });
-        } else if (existingPatients.entry.length > 0) {
+        } else if (existingPatients.entry && existingPatients.entry.length > 0) {
+          let existingLinks = []
           const existingPatient = existingPatients.entry[0]
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
           async.series([
@@ -209,9 +373,10 @@ function appRoutes() {
              */
             callback => {
               const id = existingPatient.resource.id;
-              existingPatient.resource = Object.assign({},
-                newPatient.resource
-              );
+              if (newPatient.resource.link) {
+                existingLinks = [...existingPatient.resource.link]
+              }
+              existingPatient.resource = Object.assign({}, newPatient.resource);
               existingPatient.resource.id = id;
               bundle.entry.push({
                 resource: existingPatient.resource,
@@ -250,7 +415,12 @@ function appRoutes() {
               });
             },
           ], () => {
-            findMatches(existingPatient.resource, bundle, () => {
+            findMatches({
+              patient: existingPatient.resource,
+              currentLinks: existingLinks,
+              newPatient: false,
+              bundle
+            }, () => {
               fhirWrapper.saveResource({
                 resourceData: bundle,
               }, () => {
