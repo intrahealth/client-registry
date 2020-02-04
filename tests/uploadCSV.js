@@ -10,12 +10,11 @@ if (!process.argv[2]) {
   logger.error('Please specify path to a CSV file');
   process.exit();
 }
-if (!process.argv[3]) {
-  logger.error('Please specify path to a CSV file of true links');
-  process.exit();
-}
 const csvFile = process.argv[2];
-const csvTrueLinks = process.argv[3];
+let csvTrueLinks = ''
+if (process.argv[3]) {
+  csvTrueLinks = process.argv[3];
+}
 
 try {
   if (!fs.existsSync(csvFile)) {

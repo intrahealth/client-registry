@@ -1,6 +1,7 @@
 const request = require('request');
 const URI = require('urijs');
 const async = require('async');
+const uuid4 = require('uuid/v4');
 const isJSON = require('is-json');
 const logger = require('./winston');
 const config = require('./config');
@@ -27,8 +28,8 @@ module.exports = () => ({
     resourceData.entry = [];
     if (!url) {
       url = URI(config.get('fhirServer:baseURL')).segment(resource);
-      for (let path of extraPath) {
-        url.segment(path)
+      for (const path of extraPath) {
+        url.segment(path);
       }
       if (id) {
         url.segment(id);
@@ -70,7 +71,7 @@ module.exports = () => ({
         url = false;
         request.get(options, (err, res, body) => {
           if (res.statusCode < 200 || res.statusCode > 299) {
-            logger.error(JSON.stringify(body, 0, 2))
+            logger.error(JSON.stringify(body, 0, 2));
           }
           if (err) {
             logger.error(err);
@@ -85,7 +86,7 @@ module.exports = () => ({
             return callback(null, false);
           }
           if (id && body) {
-            resourceData = body
+            resourceData = body;
           } else if (body.entry && body.entry.length > 0) {
             resourceData.entry = resourceData.entry.concat(body.entry);
           }
@@ -99,7 +100,7 @@ module.exports = () => ({
           if (next) {
             resourceData.next = next.url;
           } else {
-            resourceData.next = false
+            resourceData.next = false;
           }
           return callback(null, url);
         });
@@ -127,7 +128,7 @@ module.exports = () => ({
         return callback(err);
       }
       if (res.statusCode && (res.statusCode < 200 || res.statusCode > 399)) {
-        return callback(true)
+        return callback(true);
       }
       callback(err, body);
     });
@@ -152,8 +153,8 @@ module.exports = () => ({
     };
     request.post(options, (err, res, body) => {
       if (res.statusCode < 200 || res.statusCode > 299) {
-        logger.error(JSON.stringify(body, 0, 2))
-        err = true
+        logger.error(JSON.stringify(body, 0, 2));
+        err = true;
       }
       if (err) {
         logger.error(err);
@@ -162,5 +163,19 @@ module.exports = () => ({
       logger.info('Resource(s) data saved successfully');
       callback(err, body);
     });
-  }
+  },
+
+  createGoldenRecord() {
+    const goldenRecord = {
+      id: uuid4(),
+      resourceType: 'Patient',
+      meta: {
+        tag: [{
+          code: config.get('codes:goldenRecord'),
+          display: 'Golden Record'
+        }]
+      }
+    };
+    return goldenRecord;
+  },
 });
