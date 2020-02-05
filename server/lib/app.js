@@ -641,7 +641,7 @@ function appRoutes() {
                   continue;
                 }
                 for (const index in resourceData.entry) {
-                  const youBrokeMe = resourceData.entry[index].resource.extension.find((extension) => {
+                  const youBrokeMe = resourceData.entry[index].resource.extension && resourceData.entry[index].resource.extension.find((extension) => {
                     return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === 'Patient/' + linkedRecord.resource.id;
                   });
                   if (youBrokeMe) {
