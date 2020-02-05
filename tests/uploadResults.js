@@ -416,10 +416,10 @@ const uploadResults = (csvFile) => {
           let matchDiagnostics =
             `<table border='1' cellspacing='0'>
             <tr>
-              <th>Sensitivity</th><th>Specifity</th><th>F1 Score</th>
+              <th>Sensitivity</th><th>Specifity</th><th>Precision</th></th><th>F1 Score</th>
             </tr>
             <tr>
-              <td>${sensitivity}</td><td>${specifity}</td><td>${F1Score}</td>
+              <td>${sensitivity}</td><td>${specifity}</td><td>${precision}</td><td>${F1Score}</td>
             </tr>
           </table>`
           let table =
