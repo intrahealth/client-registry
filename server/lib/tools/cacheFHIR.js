@@ -24,10 +24,10 @@ const fhirToEsDataType = {
   valueQuantity: 'double',
 };
 const flattenComplex = extension => {
-  let results = {};
-  for (let ext of extension) {
+  const results = {};
+  for (const ext of extension) {
     let value = '';
-    for (let key of Object.keys(ext)) {
+    for (const key of Object.keys(ext)) {
       if (key !== 'url') {
         value = ext[key];
       }
@@ -55,7 +55,7 @@ const flattenComplex = extension => {
  */
 const getResourceFromReference = reference => {
   return new Promise(resolve => {
-    let url = URI(config.get('fhirServer:baseURL'))
+    const url = URI(config.get('fhirServer:baseURL'))
       .segment(reference)
       .toString();
     axios
@@ -91,7 +91,7 @@ const getElementValFromExtension = (extension, element) => {
       extension,
       (ext, nxtExt) => {
         let value;
-        for (let key of Object.keys(ext)) {
+        for (const key of Object.keys(ext)) {
           if (key !== 'url') {
             value = ext[key];
           }
@@ -101,7 +101,7 @@ const getElementValFromExtension = (extension, element) => {
         }
         (async () => {
           if (Array.isArray(value)) {
-            let val = await getElementValFromExtension(value, element);
+            const val = await getElementValFromExtension(value, element);
             if (val) {
               elementValue = val;
             }
@@ -124,15 +124,15 @@ const getImmediateLinks = (orderedResources, links, callback) => {
   if (orderedResources.length - 1 === links.length) {
     return callback(orderedResources);
   }
-  let promises = [];
+  const promises = [];
   for (let link of links) {
     promises.push(
       new Promise((resolve, reject) => {
         link = flattenComplex(link.extension);
-        let parentOrdered = orderedResources.find(orderedResource => {
+        const parentOrdered = orderedResources.find(orderedResource => {
           return orderedResource.name === link.linkTo;
         });
-        let exists = orderedResources.find(orderedResource => {
+        const exists = orderedResources.find(orderedResource => {
           return JSON.stringify(orderedResource) === JSON.stringify(link);
         });
         if (parentOrdered && !exists) {
@@ -154,13 +154,13 @@ const getImmediateLinks = (orderedResources, links, callback) => {
 };
 
 const getFields = (links, reportDetails) => {
-  let details =
+  const details =
     reportDetails[
       'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
     ];
-  let fields = [];
-  for (let detail of details) {
-    let label = detail.find(det => {
+  const fields = [];
+  for (const detail of details) {
+    const label = detail.find(det => {
       return det.url === 'label';
     });
     if (!label) {
@@ -170,16 +170,16 @@ const getFields = (links, reportDetails) => {
     populateField(label);
   }
 
-  for (let link of links) {
-    logger.error(link)
-    let reportElements = link.extension.filter(ln => {
+  for (const link of links) {
+    logger.error(link);
+    const reportElements = link.extension.filter(ln => {
       return (
         ln.url ===
         'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
       );
     });
-    for (let element of reportElements) {
-      let label = element.extension.find(det => {
+    for (const element of reportElements) {
+      const label = element.extension.find(det => {
         return det.url === 'label';
       });
       if (!label) {
@@ -192,8 +192,8 @@ const getFields = (links, reportDetails) => {
   return fields;
 
   function populateField(label) {
-    let keys = Object.keys(label);
-    let urlPos = keys.indexOf('url');
+    const keys = Object.keys(label);
+    const urlPos = keys.indexOf('url');
     keys.splice(urlPos, 1);
     if (keys.length !== 1) {
       logger.error(
@@ -202,7 +202,7 @@ const getFields = (links, reportDetails) => {
       );
       return;
     }
-    let fhirDataType = keys[0];
+    const fhirDataType = keys[0];
     let esDataType = fhirToEsDataType[fhirDataType];
     if (!esDataType) {
       esDataType = 'text';
@@ -216,7 +216,7 @@ const getFields = (links, reportDetails) => {
 
 const addSlashes = value => {
   if (typeof value === 'object') {
-    for (let index in value) {
+    for (const index in value) {
       if (typeof value[index] === 'object') {
         addSlashes(value[index]);
       } else {
@@ -231,11 +231,11 @@ const addSlashes = value => {
 
 const updateESCompilationsRate = callback => {
   logger.info('Setting maximum compilation rate');
-  let url = URI(config.get('elastic:server'))
+  const url = URI(config.get('elastic:server'))
     .segment('_cluster')
     .segment('settings')
     .toString();
-  let body = {
+  const body = {
     transient: {
       'script.max_compilations_rate': config.get(
         'elastic:max_compilations_rate'
@@ -243,14 +243,14 @@ const updateESCompilationsRate = callback => {
     },
   };
   axios({
-      method: 'PUT',
-      url,
-      auth: {
-        username: config.get('elastic:username'),
-        password: config.get('elastic:password'),
-      },
-      data: body,
-    })
+    method: 'PUT',
+    url,
+    auth: {
+      username: config.get('elastic:username'),
+      password: config.get('elastic:password'),
+    },
+    data: body,
+  })
     .then(response => {
       if (response.status > 199 && response.status < 299) {
         logger.info('maximum compilation rate updated successfully');
@@ -269,133 +269,133 @@ const updateESCompilationsRate = callback => {
 
 const createESIndex = (name, IDFields, reportFields, callback) => {
   async.series({
-      createAnalyzer: callback => {
-        logger.info('Creating analyzer into elasticsearch for index ' + name);
-        let url = URI(config.get('elastic:server'))
-          .segment(name)
-          .toString();
-        let settings = {
-          settings: {
-            analysis: {
-              analyzer: {
-                levenshtein_analyzer: {
-                  type: 'custom',
-                  tokenizer: 'keyword',
-                  filter: ['lowercase'],
-                },
-                phonetic_analyzer: {
-                  tokenizer: 'keyword',
-                  filter: ['lowercase', 'cr_metaphone'],
-                },
+    createAnalyzer: callback => {
+      logger.info('Creating analyzer into elasticsearch for index ' + name);
+      const url = URI(config.get('elastic:server'))
+        .segment(name)
+        .toString();
+      const settings = {
+        settings: {
+          analysis: {
+            analyzer: {
+              levenshtein_analyzer: {
+                type: 'custom',
+                tokenizer: 'keyword',
+                filter: ['lowercase'],
               },
-              filter: {
-                cr_metaphone: {
-                  type: 'phonetic',
-                  encoder: 'metaphone',
-                  replace: false,
-                },
+              phonetic_analyzer: {
+                tokenizer: 'keyword',
+                filter: ['lowercase', 'cr_metaphone'],
+              },
+            },
+            filter: {
+              cr_metaphone: {
+                type: 'phonetic',
+                encoder: 'metaphone',
+                replace: false,
               },
             },
           },
-        };
-        axios({
-            method: 'PUT',
-            url,
-            data: settings,
-            auth: {
-              username: config.get('elastic:username'),
-              password: config.get('elastic:password'),
-            },
-          })
-          .then(response => {
-            if (response.status >= 200 && response.status <= 299) {
-              logger.info('Analyzer created successfully');
-              return callback(null);
-            } else {
-              logger.error(
-                'Something went wrong while creating analyzer into elasticsearch'
-              );
-              return callback(true);
-            }
-          })
-          .catch(err => {
-            if (
-              err.response &&
+        },
+      };
+      axios({
+        method: 'PUT',
+        url,
+        data: settings,
+        auth: {
+          username: config.get('elastic:username'),
+          password: config.get('elastic:password'),
+        },
+      })
+        .then(response => {
+          if (response.status >= 200 && response.status <= 299) {
+            logger.info('Analyzer created successfully');
+            return callback(null);
+          } else {
+            logger.error(
+              'Something went wrong while creating analyzer into elasticsearch'
+            );
+            return callback(true);
+          }
+        })
+        .catch(err => {
+          if (
+            err.response &&
               err.response.status &&
               err.response.status === 400
-            ) {
-              logger.info(
-                'Analyzer already exist into elasticsearch, not creating'
-              );
-              return callback(null);
-            } else {
-              throw err;
-            }
-          });
-      },
-      createMapping: callback => {
-        logger.info('Adding mappings into elasticsearch for index ' + name);
-        let url = URI(config.get('elastic:server'))
-          .segment(name)
-          .segment('_mapping')
-          .toString();
-        let mapping = {
-          properties: {},
+          ) {
+            logger.info(
+              'Analyzer already exist into elasticsearch, not creating'
+            );
+            return callback(null);
+          } else {
+            throw err;
+          }
+        });
+    },
+    createMapping: callback => {
+      logger.info('Adding mappings into elasticsearch for index ' + name);
+      const url = URI(config.get('elastic:server'))
+        .segment(name)
+        .segment('_mapping')
+        .toString();
+      const mapping = {
+        properties: {},
+      };
+      for (const IDField of IDFields) {
+        mapping.properties[IDField] = {};
+        mapping.properties[IDField].type = 'keyword';
+      }
+      for (const field of reportFields) {
+        mapping.properties[field.name] = {
+          type: field.type,
+          analyzer: 'levenshtein_analyzer',
+          fields: {
+            phonetic: {
+              type: field.type,
+              analyzer: 'phonetic_analyzer',
+            },
+          },
         };
-        for (let IDField of IDFields) {
-          mapping.properties[IDField] = {};
-          mapping.properties[IDField].type = 'keyword';
-        }
-        for (let field of reportFields) {
-          mapping.properties[field.name] = {
-            type: field.type,
-            analyzer: 'levenshtein_analyzer',
-            fields: {
-              phonetic: {
-                type: field.type,
-                analyzer: 'phonetic_analyzer',
-              },
-            },
-          };
-        }
-        axios({
-            method: 'PUT',
-            url,
-            data: mapping,
-            auth: {
-              username: config.get('elastic:username'),
-              password: config.get('elastic:password'),
-            },
-          })
-          .then(response => {
-            if (response.status >= 200 && response.status <= 299) {
-              logger.info('Mappings added successfully into elasticsearch');
-              return callback(null);
-            } else {
-              logger.error(
-                'Something went wrong while adding mappings into elasticsearch'
-              );
-              return callback(true);
-            }
-          })
-          .catch(err => {
-            logger.error(err);
+      }
+      axios({
+        method: 'PUT',
+        url,
+        data: mapping,
+        auth: {
+          username: config.get('elastic:username'),
+          password: config.get('elastic:password'),
+        },
+      })
+        .then(response => {
+          if (response.status >= 200 && response.status <= 299) {
+            logger.info('Mappings added successfully into elasticsearch');
+            return callback(null);
+          } else {
             logger.error(
               'Something went wrong while adding mappings into elasticsearch'
             );
-            callback(err);
-            throw err;
-          });
-      },
+            return callback(true);
+          }
+        })
+        .catch(err => {
+          logger.error(err);
+          logger.error(
+            'Something went wrong while adding mappings into elasticsearch'
+          );
+          callback(err);
+          throw err;
+        });
     },
-    err => {
-      return callback(err);
-    }
+  },
+  err => {
+    return callback(err);
+  }
   );
 };
 
 const updateESDocument = (id, index, record, callback) => {
-  let url = URI(config.get('elastic:server'))
+  const url = URI(config.get('elastic:server'))
     .segment(index)
     .segment('_doc')
     .segment(id)
@@ -456,7 +456,7 @@ const fhir2ES = ({
     lastSync = moment('1970-01-01').format('Y-MM-DDTHH:mm:ss');
   }
   let newLastSyncTime;
-  let relId = config.get('structureDefinition:reportRelationship');
+  const relId = config.get('structureDefinition:reportRelationship');
   fhirWrapper.getResource({
     resource: 'Basic',
     id: relId,
@@ -466,43 +466,43 @@ const fhir2ES = ({
       return callback(true);
     }
     logger.info('processing relationship ID ' + relationship.id);
-    let sd = relationship.subject.reference.substring(
+    const sd = relationship.subject.reference.substring(
       relationship.subject.reference.lastIndexOf('/')
     );
     structureDefinition(sd, (err, subject) => {
       if (err) {
         return callback(true);
       }
-      let details = relationship.extension.find(
+      const details = relationship.extension.find(
         ext =>
-        ext.url ===
+          ext.url ===
         'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails'
       );
-      let links = relationship.extension.filter(
+      const links = relationship.extension.filter(
         ext =>
-        ext.url ===
+          ext.url ===
         'http://ihris.org/fhir/StructureDefinition/iHRISReportLink'
       );
-      let reportDetails = flattenComplex(details.extension);
-      let orderedResources = [];
-      let IDFields = [];
+      const reportDetails = flattenComplex(details.extension);
+      const orderedResources = [];
+      const IDFields = [];
       reportDetails.resource = subject._type;
       orderedResources.push(reportDetails);
       IDFields.push(reportDetails.name);
-      let reportFields = getFields(links, reportDetails);
-      for (let linkIndex1 in links) {
-        let link1 = links[linkIndex1];
-        let flattenedLink1 = flattenComplex(link1.extension);
+      const reportFields = getFields(links, reportDetails);
+      for (const linkIndex1 in links) {
+        const link1 = links[linkIndex1];
+        const flattenedLink1 = flattenComplex(link1.extension);
         IDFields.push(flattenedLink1.name);
-        for (let link2 of links) {
-          let flattenedLink2 = flattenComplex(link2.extension);
+        for (const link2 of links) {
+          const flattenedLink2 = flattenComplex(link2.extension);
           if (
             flattenedLink2.linkTo === flattenedLink1.name &&
             !flattenedLink2.linkElement.startsWith(
               flattenedLink2.resource + '.'
             )
           ) {
-            let linkElement = flattenedLink2.linkElement.split('.').pop();
+            const linkElement = flattenedLink2.linkElement.split('.').pop();
             links[linkIndex1].extension.push({
               url: 'http://ihris.org/fhir/StructureDefinition/iHRISReportElement',
               extension: [{
@@ -531,7 +531,7 @@ const fhir2ES = ({
             async.eachSeries(orderedResources, (orderedResource, nxtResource) => {
               newLastSyncTime = moment().format('Y-MM-DDTHH:mm:ss');
               let resourceData = [];
-              let promise = new Promise(resolve => {
+              const promise = new Promise(resolve => {
                 if (
                   patientsBundle &&
                   patientsBundle.entry &&
@@ -542,14 +542,14 @@ const fhir2ES = ({
                   resolve();
                 } else {
                   fhirWrapper.getResource({
-                      resource: orderedResource.resource,
-                      extraPath: ['_history'],
-                      query: '_since=' + lastSync,
-                    },
-                    data => {
-                      resourceData = resourceData.concat(data.entry);
-                      resolve();
-                    }
+                    resource: orderedResource.resource,
+                    extraPath: ['_history'],
+                    query: '_since=' + lastSync,
+                  },
+                  data => {
+                    resourceData = resourceData.concat(data.entry);
+                    resolve();
+                  }
                   );
                 }
               });
@@ -559,16 +559,22 @@ const fhir2ES = ({
                   orderedResource.resource +
                   ' into elastic search'
                 );
-                let processedRecords = [];
+                const processedRecords = [];
                 let count = 1;
                 async.eachSeries(resourceData, (data, next) => {
                   logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
                   count++;
+                  const isGoldenRec = data.resource.meta.tag && data.resource.meta.tag.find((tag) => {
+                    return tag.code === config.get('codes:goldenRecord');
+                  });
+                  if (isGoldenRec) {
+                    return next();
+                  }
                   if (!data.resource || !data.resource.resourceType) {
                     return next();
                   }
-                  let id = data.resource.resourceType + '/' + data.resource.id;
-                  let processed = processedRecords.find(record => {
+                  const id = data.resource.resourceType + '/' + data.resource.id;
+                  const processed = processedRecords.find(record => {
                     return record === id;
                   });
                   if (processed) {
@@ -581,11 +587,11 @@ const fhir2ES = ({
                   if (orderedResource.query) {
                     queries = orderedResource.query.split('&');
                   }
-                  for (let query of queries) {
-                    let limits = query.split('=');
-                    let limitParameters = limits[0];
-                    let limitValue = limits[1];
-                    let resourceValue = fhir.evaluate(
+                  for (const query of queries) {
+                    const limits = query.split('=');
+                    const limitParameters = limits[0];
+                    const limitValue = limits[1];
+                    const resourceValue = fhir.evaluate(
                       data.resource,
                       limitParameters
                     );
@@ -593,23 +599,23 @@ const fhir2ES = ({
                       return next();
                     }
                   }
-                  let record = {};
+                  const record = {};
                   (async () => {
-                    for (let element of orderedResource[
-                        'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
-                      ]) {
+                    for (const element of orderedResource[
+                      'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
+                    ]) {
                       let fieldLabel;
                       let fieldName;
                       let fieldAutogenerated = false;
-                      for (let el of element) {
+                      for (const el of element) {
                         let value = '';
-                        for (let key of Object.keys(el)) {
+                        for (const key of Object.keys(el)) {
                           if (key !== 'url') {
                             value = el[key];
                           }
                         }
                         if (el.url === 'label') {
-                          let fleldChars = value.split(' ');
+                          const fleldChars = value.split(' ');
                           //if label has space then format it
                           if (fleldChars.length > 1) {
                             fieldLabel = value.toLowerCase().split(' ').map(word => word.replace(word[0], word[0].toUpperCase())).join('');
@@ -622,7 +628,7 @@ const fhir2ES = ({
                           fieldAutogenerated = value;
                         }
                       }
-                      let displayData = fhir.evaluate(
+                      const displayData = fhir.evaluate(
                         data.resource,
                         fieldName
                       );
@@ -651,7 +657,7 @@ const fhir2ES = ({
                           value.reference &&
                           !fieldAutogenerated
                         ) {
-                          let referencedResource = await getResourceFromReference(value.reference);
+                          const referencedResource = await getResourceFromReference(value.reference);
                           if (referencedResource) {
                             value = referencedResource.name;
                           }

@@ -56,6 +56,31 @@ const modifyCSV = () => {
   }
   trueLinks = copy
 }
+const getPatientLinks = (patient, dbPatients, callback) => {
+  let patientLinksData = []
+  if (!patient.link || !Array.isArray(patient.link) || (patient.link && patient.link.length === 0)) {
+    return callback(patientLinksData)
+  }
+  if (dbPatients.entry && dbPatients.entry.length > 0) {
+    for (let link of patient.link) {
+      for (let dbPatient of dbPatients.entry) {
+        if ('Patient/' + dbPatient.resource.id === link.other.reference) {
+          for (let link2 of dbPatient.resource.link) {
+            let foundLinks = dbPatients.entry.filter((entry) => {
+              return 'Patient/' + entry.resource.id === link2.other.reference && entry.resource.id != patient.id
+            })
+            if (foundLinks) {
+              patientLinksData = patientLinksData.concat(foundLinks)
+            }
+          }
+        }
+      }
+    }
+    return callback(patientLinksData)
+  } else {
+    return callback(patientLinksData)
+  }
+}
 const getTrueLinksById = (id1) => {
   let ids = trueLinks.filter((trueLink) => {
     return trueLink.rec_id_1 === id1
@@ -131,59 +156,53 @@ const uploadResults = (csvFile) => {
     .on('end', () => {
       modifyCSV()
       const processed = [];
-      async.parallel({
-        allLinks: callback => {
-          fhirWrapper.getResource({
-            resource: 'Patient',
-          }, dbPatients => {
+      fhirWrapper.getResource({
+        resource: 'Patient',
+      }, dbPatients => {
+        async.parallel({
+          allLinks: callback => {
             const promises = [];
             for (let patient of dbPatients.entry) {
               promises.push(new Promise(resolve => {
-                let linkedid1;
-                for (let ident of patient.resource.identifier) {
-                  if (ident.system === 'http://clientregistry.org/openmrs') {
-                    linkedid1 = ident.value;
-                  }
+                const isGoldenRec = patient.resource.meta.tag && patient.resource.meta.tag.find((tag) => {
+                  return tag.code === config.get('codes:goldenRecord');
+                });
+                if (isGoldenRec) {
+                  return resolve()
                 }
-                if (!patient.resource.link || (patient.resource.link && patient.resource.link.length === 0)) {
-                  let expected = expectedToMatch(linkedid1)
-                  if (!expected) {
-                    notExpectedToMatchAndDidntMatch.push({
+                getPatientLinks(patient.resource, dbPatients, (patientLinksData) => {
+                  let linkedid1;
+                  for (let ident of patient.resource.identifier) {
+                    if (ident.system === 'http://clientregistry.org/openmrs') {
+                      linkedid1 = ident.value;
+                    }
+                  }
+                  if (patientLinksData.length === 0) {
+                    let expected = expectedToMatch(linkedid1)
+                    if (!expected) {
+                      notExpectedToMatchAndDidntMatch.push({
+                        id1: linkedid1
+                      })
+                    }
+                    noMatches.push({
                       id1: linkedid1
-                    })
-                  }
-                  noMatches.push({
-                    id1: linkedid1
-                  });
-                  return resolve();
-                }
-                const promise1 = [];
-                let linkedIds2 = [];
-                for (let link of patient.resource.link) {
-                  promise1.push(new Promise(resolve => {
-                    fhirWrapper.getResource({
-                      resource: 'Patient',
-                      id: link.other.reference.split('/').pop(),
-                    }, linkedPatient => {
-                      if (!linkedPatient.identifier) {
-                        noIdentifier.push(linkedPatient);
-                      } else {
-                        let id2;
-                        for (let ident of linkedPatient.identifier) {
-                          if (
-                            ident.system ===
-                            'http://clientregistry.org/openmrs'
-                          ) {
-                            id2 = ident.value;
-                          }
-                        }
-                        linkedIds2.push(id2);
-                      }
-                      resolve();
                     });
-                  }));
-                }
-                Promise.all(promise1).then(() => {
+                    return resolve();
+                  }
+                  let linkedIds2 = [];
+                  for (let linkedPatient of patientLinksData) {
+                    if (!linkedPatient.resource.identifier) {
+                      noIdentifier.push(linkedPatient);
+                    } else {
+                      let id2;
+                      for (let ident of linkedPatient.resource.identifier) {
+                        if (ident.system === 'http://clientregistry.org/openmrs') {
+                          id2 = ident.value;
+                        }
+                      }
+                      linkedIds2.push(id2);
+                    }
+                  }
                   let expected = expectedToMatch(linkedid1)
                   if (!expected) {
                     notExpectedToMatchButMatched.push({
@@ -203,74 +222,60 @@ const uploadResults = (csvFile) => {
                     });
                   }
                   resolve();
-                });
+                })
               }));
             }
             Promise.all(promises).then(() => {
               return callback(null);
             });
-          });
-        },
-        one: callback => {
-          const promises = [];
-          const processed = [];
-          for (let row of trueLinks) {
-            let isProcessed = processed.find((id) => {
-              return id === row.rec_id_1
-            })
-            if (isProcessed) {
-              continue
-            } else {
-              processed.push(row.rec_id_1)
-            }
-            promises.push(new Promise((resolve, reject) => {
-              let trueId1 = row['rec_id_1'];
-              if (trueId1) {
-                trueId1 = trueId1.trim();
+          },
+          one: callback => {
+            const promises = [];
+            const processed = [];
+            for (let row of trueLinks) {
+              let isProcessed = processed.find((id) => {
+                return id === row.rec_id_1
+              })
+              if (isProcessed) {
+                continue
+              } else {
+                processed.push(row.rec_id_1)
               }
-              const query = `identifier=${trueId1}`;
-              fhirWrapper.getResource({
-                resource: 'Patient',
-                query,
-              }, dbPatients => {
-                if (dbPatients.entry.length === 0) {
+              promises.push(new Promise((resolve, reject) => {
+                let trueId1 = row['rec_id_1'];
+                if (trueId1) {
+                  trueId1 = trueId1.trim();
+                }
+                let fhirRecord = dbPatients.entry.find((entry) => {
+                  return entry.resource.identifier && entry.resource.identifier.find((identifier) => {
+                    return identifier.value === trueId1
+                  })
+                })
+                if (!fhirRecord) {
                   logger.error('Missing value found');
                   missing.push(trueId1);
                   resolve();
-                } else if (dbPatients.entry.length === 1) {
-                  const promise1 = [];
-                  if (
-                    !dbPatients.entry[0].resource.link ||
-                    (dbPatients.entry[0].resource.link &&
-                      dbPatients.entry[0].resource.link.length === 0)
-                  ) {
-                    // expected to have match but no match found
-                    expectedToMatchButNoMatch.push({
-                      id1: trueId1
-                    })
-                    resolve();
-                  } else {
-                    let linkedIds2 = [];
-                    for (let link of dbPatients.entry[0].resource.link) {
-                      promise1.push(new Promise((resolve, reject) => {
-                        fhirWrapper.getResource({
-                          resource: 'Patient',
-                          id: link.other.reference.split('/').pop(),
-                        }, linkedPatient => {
-                          if (!linkedPatient.identifier) {
-                            noIdentifier.push(linkedPatient);
-                          } else {
-                            for (let ident of linkedPatient.identifier) {
-                              if (ident.system === 'http://clientregistry.org/openmrs') {
-                                linkedIds2.push(ident.value);
-                              }
+                } else {
+                  getPatientLinks(fhirRecord.resource, dbPatients, (patientLinksData) => {
+                    if (patientLinksData.length === 0) {
+                      // expected to have match but no match found
+                      expectedToMatchButNoMatch.push({
+                        id1: trueId1
+                      })
+                      resolve();
+                    } else {
+                      let linkedIds2 = [];
+                      for (let linkedPatient of patientLinksData) {
+                        if (!linkedPatient.resource.identifier) {
+                          noIdentifier.push(linkedPatient);
+                        } else {
+                          for (let ident of linkedPatient.resource.identifier) {
+                            if (ident.system === 'http://clientregistry.org/openmrs') {
+                              linkedIds2.push(ident.value);
                             }
                           }
-                          resolve();
-                        });
-                      }));
-                    }
-                    Promise.all(promise1).then(() => {
+                        }
+                      }
                       let allFound = true;
                       let someFound = false;
                       let allTrueId2 = getTrueLinksById(trueId1)
@@ -307,136 +312,140 @@ const uploadResults = (csvFile) => {
                         });
                       }
                       resolve();
-                    });
-                  }
-                } else {
-                  logger.error(JSON.stringify(dbPatients.entry, 0, 2));
-                  console.log('Multiple patients with same identifier');
-                  resolve();
+                    }
+                  })
                 }
-              });
-            }));
-          }
-          Promise.all(promises).then(() => {
-            return callback(null);
-          });
-        },
-      }, () => {
-        let fields1 = [{
-            name: 'id1',
-            label: 'ID1',
+              }));
+            }
+            Promise.all(promises).then(() => {
+              return callback(null);
+            });
           },
-          {
-            name: 'id2',
-            label: 'ID2',
-          }
-        ];
-        let date = moment().format('Y-MM-DDTHH:mm:ss')
-        jsoncsv.buffered(allLinks, {
-          fields: fields1
-        }, (err, csv) => {
-          fs.writeFile(`results/allLinks_${date}.csv`, csv, 'utf8', () => {});
-        });
+        }, () => {
+          let fields1 = [{
+              name: 'id1',
+              label: 'ID1',
+            },
+            {
+              name: 'id2',
+              label: 'ID2',
+            }
+          ];
+          let date = moment().format('Y-MM-DDTHH:mm:ss')
+          jsoncsv.buffered(allLinks, {
+            fields: fields1
+          }, (err, csv) => {
+            fs.writeFile(`results/allLinks_${date}.csv`, csv, 'utf8', () => {});
+          });
 
-        jsoncsv.buffered(linkedToAllTrueOnly, {
-          fields: fields1
-        }, (err, csv) => {
-          fs.writeFile(`results/Linked_to_all_true_matches_only_${date}.csv`, csv, 'utf8', () => {});
-        });
+          jsoncsv.buffered(linkedToAllTrueOnly, {
+            fields: fields1
+          }, (err, csv) => {
+            fs.writeFile(`results/Linked_to_all_true_matches_only_${date}.csv`, csv, 'utf8', () => {});
+          });
 
-        jsoncsv.buffered(linkedToAllTrueAndOthers, {
-          fields: fields1,
-        }, (err, csv) => {
-          fs.writeFile(`results/Linked_to_all_the_true_matches_and_other_unexpected_matches_${date}.csv`, csv, 'utf8', () => {});
-        });
-
-        jsoncsv.buffered(linkedToSomeTrue, {
-          fields: fields1,
-        }, (err, csv) => {
-          fs.writeFile(`results/Linked_to_atleast_one_true_matches_but_not_all_${date}.csv`, csv, 'utf8', () => {});
-        });
-
-        jsoncsv.buffered(
-          hasMatchesButNoTrue, {
+          jsoncsv.buffered(linkedToAllTrueAndOthers, {
             fields: fields1,
           }, (err, csv) => {
-            fs.writeFile(`results/Linked_to_some_matches_but_excluding_the_true_match_${date}.csv`, csv, 'utf8', () => {});
+            fs.writeFile(`results/Linked_to_all_the_true_matches_and_other_unexpected_matches_${date}.csv`, csv, 'utf8', () => {});
+          });
+
+          jsoncsv.buffered(linkedToSomeTrue, {
+            fields: fields1,
+          }, (err, csv) => {
+            fs.writeFile(`results/Linked_to_atleast_one_true_matches_but_not_all_${date}.csv`, csv, 'utf8', () => {});
+          });
+
+          jsoncsv.buffered(
+            hasMatchesButNoTrue, {
+              fields: fields1,
+            }, (err, csv) => {
+              fs.writeFile(`results/Linked_to_some_matches_but_excluding_the_true_match_${date}.csv`, csv, 'utf8', () => {});
+            }
+          );
+
+          jsoncsv.buffered(notExpectedToMatchButMatched, {
+            fields: fields1,
+          }, (err, csv) => {
+            fs.writeFile(`results/Didnt_expect_to_have_matches_but_match_found_${date}.csv`, csv, 'utf8', () => {});
+          });
+
+          jsoncsv.buffered(expectedToMatchButNoMatch, {
+            fields: fields1,
+          }, (err, csv) => {
+            fs.writeFile(`results/Expected_to_have_matches_but_matched_nothing_${date}.csv`, csv, 'utf8', () => {});
+          });
+
+          jsoncsv.buffered(noMatches, {
+            fields: fields1,
+          }, (err, csv) => {
+            fs.writeFile(`results/All_no_matches_${date}.csv`, csv, 'utf8', () => {});
+          });
+
+          let TP = linkedToAllTrueOnly.length
+          let FP = linkedToAllTrueAndOthers.length + notExpectedToMatchButMatched.length + hasMatchesButNoTrue.length
+          let TN = notExpectedToMatchAndDidntMatch.length
+          let FN = linkedToSomeTrue.length + expectedToMatchButNoMatch.length
+          let sensitivity = TP / (TP + FN)
+          if (TP == 0) {
+            sensitivity = 0
           }
-        );
+          let specifity = TN / (TN + FP)
+          if (TN == 0) {
+            specifity = 0
+          }
 
-        jsoncsv.buffered(notExpectedToMatchButMatched, {
-          fields: fields1,
-        }, (err, csv) => {
-          fs.writeFile(`results/Didnt_expect_to_have_matches_but_match_found_${date}.csv`, csv, 'utf8', () => {});
+          let precision = TP / (TP + FP)
+          if (TP === 0) {
+            precision = 0
+          }
+          let F1Score = (precision * sensitivity) / (precision + sensitivity)
+          if (precision * sensitivity === 0) {
+            F1Score = 0
+          }
+          let resultsTable =
+            `<table border='1' cellspacing='0'>
+            <tr>
+              <th>True Positive (TP)</th><th>False Positive (FP)</th><th>True Negative (TN)</th><th>False Negative (FN)</th>
+            </tr>
+            <tr>
+              <td>${TP}</td><td>${FP}</td><td>${TN}</td><td>${FN}</td>
+            </tr>
+          </table>`
+          let rules = decisionRules2HTML()
+          let matchDiagnostics =
+            `<table border='1' cellspacing='0'>
+            <tr>
+              <th>Sensitivity</th><th>Specifity</th><th>F1 Score</th>
+            </tr>
+            <tr>
+              <td>${sensitivity}</td><td>${specifity}</td><td>${F1Score}</td>
+            </tr>
+          </table>`
+          let table =
+            `<table border='3' border='1' cellspacing='0' cellpadding='10'>
+            <tr>
+              <th><center> <b>Run Date ${date}</b></center></th>
+            </tr>
+            <tr>
+              <td><center><b>Decision Rules</b>${rules}</center></td>
+            </tr>
+            <tr>
+              <td><center><b>Match Diagnostics</b><br>${matchDiagnostics}</center></td>
+            </tr>
+            <tr>
+              <td><center><b>Match Results</b><br>${resultsTable}</center></td>
+            </tr>
+          </table>`
+          fs.readFile('README.md', (err, existingResData) => {
+            let resData = table + "<br>" + existingResData
+            fs.writeFile('README.md', resData, 'utf8', () => {})
+          })
         });
-
-        jsoncsv.buffered(expectedToMatchButNoMatch, {
-          fields: fields1,
-        }, (err, csv) => {
-          fs.writeFile(`results/Expected_to_have_matches_but_matched_nothing_${date}.csv`, csv, 'utf8', () => {});
-        });
-
-        jsoncsv.buffered(noMatches, {
-          fields: fields1,
-        }, (err, csv) => {
-          fs.writeFile(`results/All_no_matches_${date}.csv`, csv, 'utf8', () => {});
-        });
-
-        let TP = linkedToAllTrueOnly.length
-        let FP = linkedToAllTrueAndOthers.length + notExpectedToMatchButMatched.length + hasMatchesButNoTrue.length
-        let TN = notExpectedToMatchAndDidntMatch.length
-        let FN = linkedToSomeTrue.length + expectedToMatchButNoMatch.length
-        let sensitivity = TP / (TP + FN)
-        if (TP == 0) {
-          sensitivity = 0
-        }
-        let specifity = TN / (TN + FP)
-        if (TN == 0) {
-          specifity = 0
-        }
-
-        let resultsTable =
-          `<table border='1' cellspacing='0'>
-          <tr>
-            <th>True Positive (TP)</th><th>False Positive (FP)</th><th>True Negative (TN)</th><th>False Negative (FN)</th>
-          </tr>
-          <tr>
-            <td>${TP}</td><td>${FP}</td><td>${TN}</td><td>${FN}</td>
-          </tr>
-        </table>`
-        let rules = decisionRules2HTML()
-        let matchDiagnostics =
-          `<table border='1' cellspacing='0'>
-          <tr>
-            <th>Sensitivity</th><th>Specifity</th>
-          </tr>
-          <tr>
-            <td>${sensitivity}</td><td>${specifity}</td>
-          </tr>
-        </table>`
-        let table =
-          `<table border='3' border='1' cellspacing='0' cellpadding='10'>
-          <tr>
-            <th><center> <b>Run Date ${date}</b></center></th>
-          </tr>
-          <tr>
-            <td><center><b>Decision Rules</b>${rules}</center></td>
-          </tr>
-          <tr>
-            <td><center><b>Match Diagnostics</b><br>${matchDiagnostics}</center></td>
-          </tr>
-          <tr>
-            <td><center><b>Match Results</b><br>${resultsTable}</center></td>
-          </tr>
-        </table>`
-        fs.readFile('README.md', (err, existingResData) => {
-          let resData = table + "<br>" + existingResData
-          fs.writeFile('README.md', resData, 'utf8', () => {})
-        })
-      });
+      })
     });
 }
 module.exports = {
   uploadResults
 }
-// uploadResults('./uganda_data_v21_20201501_true_links.csv')
+uploadResults('./uganda_data_v21_20201501_true_links.csv')

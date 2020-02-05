@@ -4,9 +4,7 @@ module.exports = {
     commonjs: true,
     es6: true
   },
-  extends: [
-
-  ],
+  extends: [],
   globals: {
     Atomics: 'readonly',
     SharedArrayBuffer: 'readonly'

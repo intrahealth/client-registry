@@ -77,6 +77,8 @@ module.exports = () => ({
             logger.error(err);
           }
           if (!isJSON(body)) {
+            logger.error(options);
+            logger.error(body);
             logger.error('Non JSON has been returned while getting data for resource ' + resource);
             return callback(null, false);
           }
