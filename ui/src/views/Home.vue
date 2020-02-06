@@ -78,7 +78,7 @@ export default {
         } else if ( this.options.page === this.prevPage + 1 ) {
           url = this.link.find( link => link.relation === "next" ).url
         }
-        url = url.replace( "http://localhost:8080/hapi", "" )
+        url = url.replace( process.env.VUE_APP_FHIR_ROOT, "" )
       }
       if ( url === "" ) {
 
@@ -91,7 +91,7 @@ export default {
           sort += this.options.sortBy[idx] + ","
         }
 
-        url = procee.env.VUE_APP_FHIR + "/Patient?_count="+count+"&_sort="+sort+"&_total=accurate&_tag:not=5c827da5-4858-4f3d-a50c-62ece001efea"
+        url = process.env.VUE_APP_FHIR + "/Patient?_count="+count+"&_sort="+sort+"&_total=accurate&_tag:not=5c827da5-4858-4f3d-a50c-62ece001efea"
         if ( this.search_terms.length > 0 ) {
             url += "&" + this.search_terms.join("&")
         }
@@ -181,5 +181,5 @@ export default {
   //components: {
     //HelloWorld
   //}
-};
+}
 </script>
