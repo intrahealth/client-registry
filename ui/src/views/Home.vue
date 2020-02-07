@@ -105,7 +105,7 @@ export default {
           this.link = response.data.link
           for ( let entry of response.data.entry ) {
             let name = entry.resource.name.find( name => name.use === "official" )
-            let nin = entry.resource.identifier.find( id => id.system === process.env.VUE_APP_SYSTEM_NAME_NIN )
+            let nin = entry.resource.identifier.find( id => id.system === process.env.VUE_APP_SYSTEM_NIN )
             this.patients.push( {
               id: entry.resource.id,
               family: name.family,

@@ -87,7 +87,11 @@
           ></v-data-table>
          <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="warning">Break Match(es)</v-btn>
+          <v-btn
+            class="warning"
+            v-on:click="breakMatch()"
+            :disabled="breaks.length === 0"
+          >Break Match(es)</v-btn>
          </v-card-actions>
         </v-card>
       </v-col>
@@ -107,7 +111,11 @@
           ></v-data-table>
          <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn class="accent">Revert Break</v-btn>
+          <v-btn
+            class="accent"
+            v-on:click="revertBreak()"
+            :disabled="unbreaks.length === 0"
+          >Revert Break</v-btn>
          </v-card-actions>
         </v-card>
       </v-col>
@@ -122,6 +130,21 @@
   methods: {
     selectPatient( patient ) {
       this.selected = patient.selectIdx
+    },
+    breakMatch() {
+      for( let breakIt of this.breaks ) {
+        this.$delete( this.match_items, this.match_items.indexOf( breakIt ) )
+        this.break_items.push( breakIt )
+        this.match_count--
+        // Need to add in call to CR Service to do the break.
+      }
+      this.breaks = []
+    },
+    revertBreak() {
+      for( let unBreak of this.unbreaks ) {
+        // Need to add in call to CR Service to do the unbreak.
+        this.$delete( this.break_items, this.break_items.indexOf( unBreak ) )
+      }
     }
   },
   data() {

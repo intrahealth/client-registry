@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark>
-      <v-toolbar-title class="display-1">Client Registry</v-toolbar-title>
+      <v-toolbar-title class="display-1">Open Client Registry</v-toolbar-title>
       <v-spacer></v-spacer>
     </v-app-bar>
 
