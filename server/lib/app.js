@@ -5,6 +5,7 @@ const async = require('async');
 const uuid4 = require('uuid/v4');
 const prerequisites = require('./prerequisites');
 const medUtils = require('openhim-mediator-utils');
+const _ = require('lodash');
 const fs = require('fs');
 const https = require('https');
 const fhirWrapper = require('./fhir')();
@@ -55,25 +56,58 @@ function appRoutes() {
     app.use(certificateValidity);
   }
 
-  app.post('/addPatient', (req, res) => {
-    logger.info('Received a request to add new patient');
+  app.post('/Patient', (req, res) => {
+    const patient = req.body;
+    if (!patient.resourceType ||
+      (patient.resourceType && patient.resourceType !== 'Patient') ||
+      !patient.identifier ||
+      (patient.identifier && patient.identifier.length === 0)) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Invalid patient resource submitted"
+        }]
+      });
+    }
+    const patientsBundle = {
+      entry: [{
+        resource: patient
+      }]
+    };
+    addPatient(patientsBundle, 'Patient', req, res);
+  });
+
+  app.post('/', (req, res) => {
     const patientsBundle = req.body;
+    if (!patientsBundle.resourceType ||
+      (patientsBundle.resourceType && patientsBundle.resourceType !== 'Bundle') ||
+      !patientsBundle.entry || (patientsBundle.entry && patientsBundle.entry.length === 0)) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Invalid bundle submitted"
+        }]
+      });
+    }
+    addPatient(patientsBundle, 'Bundle', req, res);
+  });
+
+  function addPatient(patientsBundle, type, req, res) {
+    const responseBundle = {
+      resourceType: 'Bundle',
+      entry: []
+    };
+    logger.info('Received a request to add new patient');
     let clientID;
     if (config.get('mediator:register')) {
       clientID = req.headers['x-openhim-clientid'];
     } else {
       const cert = req.connection.getPeerCertificate();
       clientID = cert.subject.CN;
-    }
-    if (!patientsBundle) {
-      logger.error('Received empty request');
-      res.status(400).send('Empty request body');
-      return;
-    }
-    if (patientsBundle.resourceType !== 'Bundle') {
-      logger.error('Request is not a bundle');
-      res.status(400).send('Request is not a bundle');
-      return;
     }
 
     const addLinks = (patient, goldenRecord) => {
@@ -150,28 +184,15 @@ function appRoutes() {
           // check if this patient had a golden record and that golden record has one link which is this patient, then reuse
           const existLinkPromise = new Promise((resolve) => {
             if (currentLinks.length > 0) {
-              let query;
-              for (const currLink of currentLinks) {
-                if (query) {
-                  query += ',' + currLink.other.reference;
-                } else {
-                  query = '_id=' + currLink.other.reference;
+              for (const entry of currentLinks) {
+                const exist = entry.resource.link.find((link) => {
+                  return link.other.reference === 'Patient/' + patient.id;
+                });
+                if (entry.resource.link && entry.resource.link.length === 1 && exist) {
+                  goldenRecord = entry.resource;
                 }
               }
-              fhirWrapper.getResource({
-                resource: 'Patient',
-                query
-              }, (currLinkRes) => {
-                for (const entry of currLinkRes.entry) {
-                  const exist = entry.resource.link.find((link) => {
-                    return link.other.reference === 'Patient/' + patient.id;
-                  });
-                  if (entry.resource.link && entry.resource.link.length === 1 && exist) {
-                    goldenRecord = entry.resource;
-                  }
-                }
-                resolve();
-              });
+              resolve();
             } else {
               resolve();
             }
@@ -180,6 +201,11 @@ function appRoutes() {
             if (!goldenRecord) {
               goldenRecord = fhirWrapper.createGoldenRecord();
             }
+            responseBundle.entry.push({
+              response: {
+                location: goldenRecord.resourceType + '/' + goldenRecord.id
+              }
+            });
             // if both patient and golden record doesnt exist then add them to avoid error when adding links
             const promise = new Promise((resolve, reject) => {
               if (newPatient) {
@@ -262,6 +288,11 @@ function appRoutes() {
               query
             }, (goldenRecords) => {
               for (const goldenRecord of goldenRecords.entry) {
+                responseBundle.entry.push({
+                  response: {
+                    location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
+                  }
+                });
                 addLinks(patient, goldenRecord.resource);
                 bundle.entry.push({
                   resource: patient,
@@ -345,8 +376,8 @@ function appRoutes() {
              */
             callback => {
               const id = existingPatient.resource.id;
-              if (newPatient.resource.link) {
-                existingLinks = [...existingPatient.resource.link];
+              if (goldenRecords.length > 0) {
+                existingLinks = _.cloneDeep(goldenRecords);
               }
               existingPatient.resource = Object.assign({}, newPatient.resource);
               existingPatient.resource.id = id;
@@ -406,9 +437,14 @@ function appRoutes() {
       });
     }, () => {
       logger.info('Done adding patient');
-      res.status(200).send('Done');
+      if (type != 'Bundle') {
+        res.setHeader('location', responseBundle.entry[0].response.location);
+        res.status(201).send();
+      } else {
+        res.status(201).json(responseBundle);
+      }
     });
-  });
+  };
 
   app.post('/breakMatch', (req, res) => {
     const ids = req.body;

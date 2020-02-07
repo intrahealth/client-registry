@@ -164,7 +164,7 @@ const uploadResults = (csvFile) => {
             const promises = [];
             for (let patient of dbPatients.entry) {
               promises.push(new Promise(resolve => {
-                const isGoldenRec = patient.resource.meta.tag && patient.resource.meta.tag.find((tag) => {
+                const isGoldenRec = patient.resource.meta && patient.resource.meta.tag && patient.resource.meta.tag.find((tag) => {
                   return tag.code === config.get('codes:goldenRecord');
                 });
                 if (isGoldenRec) {
@@ -400,6 +400,7 @@ const uploadResults = (csvFile) => {
             precision = 0
           }
           let F1Score = (precision * sensitivity) / (precision + sensitivity)
+          F1Score = F1Score * 2
           if (precision * sensitivity === 0) {
             F1Score = 0
           }
@@ -419,7 +420,7 @@ const uploadResults = (csvFile) => {
               <th>Sensitivity</th><th>Specifity</th><th>Precision</th></th><th>F1 Score</th>
             </tr>
             <tr>
-              <td>${sensitivity}</td><td>${specifity}</td><td>${precision}</td><td>${F1Score}</td>
+              <td>${sensitivity.toFixed(2)}</td><td>${specifity.toFixed(2)}</td><td>${precision.toFixed(2)}</td><td>${F1Score.toFixed(2)}</td>
             </tr>
           </table>`
           let table =
@@ -448,4 +449,4 @@ const uploadResults = (csvFile) => {
 module.exports = {
   uploadResults
 }
-uploadResults('./uganda_data_v21_20201501_true_links.csv')
+//uploadResults('./uganda_data_v21_20201501_true_links.csv')

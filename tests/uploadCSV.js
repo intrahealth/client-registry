@@ -3,7 +3,7 @@ const async = require('async');
 const csv = require('fast-csv');
 const path = require('path');
 const request = require('request');
-const uploadResults = require('./uploadResults')
+const uploadResults = require('./uploadResults');
 const logger = require('../server/lib/winston');
 
 if (!process.argv[2]) {
@@ -11,7 +11,7 @@ if (!process.argv[2]) {
   process.exit();
 }
 const csvFile = process.argv[2];
-let csvTrueLinks = ''
+let csvTrueLinks = '';
 if (process.argv[3]) {
   csvTrueLinks = process.argv[3];
 }
@@ -22,7 +22,7 @@ try {
     process.exit();
   }
   if (!fs.existsSync(csvTrueLinks)) {
-    csvTrueLinks = ''
+    csvTrueLinks = '';
   }
 } catch (err) {
   logger.error(err);
@@ -36,7 +36,7 @@ if (ext !== '.csv') {
   process.exit();
 }
 if (extTrueLinks !== '.csv') {
-  csvTrueLinks = ''
+  csvTrueLinks = '';
 }
 
 logger.info('Upload started ...');
@@ -87,10 +87,12 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         } else if (sex == 'm') {
           resource.gender = 'male';
         }
-        resource.identifier = [{
-          system: 'http://clientregistry.org/openmrs',
-          value: row['rec_id'].trim(),
-        }, ];
+        resource.identifier = [
+          {
+            system: 'http://clientregistry.org/openmrs',
+            value: row['rec_id'].trim(),
+          },
+        ];
         if (nationalID) {
           resource.identifier.push({
             system: 'http://system1/nationalid',
@@ -138,33 +140,48 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
       bundles.push(bundle);
     }
     Promise.all(promises).then(() => {
-      async.eachSeries(bundles, (bundle, nxt) => {
-        console.log(
-          'sending a bundle of ' + bundle.entry.length + ' resources'
-        );
-        const options = {
-          url: 'https://localhost:3000/addPatient',
-          agentOptions: {
-            cert: fs.readFileSync(
-              '../server/sampleclientcertificates/openmrs_cert.pem'
-            ),
-            key: fs.readFileSync(
-              '../server/sampleclientcertificates/openmrs_key.pem'
-            ),
-            ca: fs.readFileSync('../server/certificates/server_cert.pem'),
-            securityOptions: 'SSL_OP_NO_SSLv3',
-          },
-          json: bundle,
-        };
-        request.post(options, (err, res, body) => {
-          return nxt();
-        });
-      }, () => {
-        if (csvTrueLinks) {
-          uploadResults.uploadResults(csvTrueLinks)
-        } else {
-          console.log('True links were not specified then upload results wont be displayed');
+      async.eachSeries(
+        bundles,
+        (bundle, nxt) => {
+          async.eachSeries(
+            bundle.entry,
+            (entry, nxtEntry) => {
+              console.log(
+                'sending a bundle of ' + bundle.entry.length + ' resources'
+              );
+              const options = {
+                url: 'https://localhost:3000/Patient',
+                agentOptions: {
+                  cert: fs.readFileSync(
+                    '../server/sampleclientcertificates/openmrs_cert.pem'
+                  ),
+                  key: fs.readFileSync(
+                    '../server/sampleclientcertificates/openmrs_key.pem'
+                  ),
+                  ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+                  securityOptions: 'SSL_OP_NO_SSLv3',
+                },
+                json: entry.resource,
+              };
+              request.post(options, (err, res, body) => {
+                logger.info(res.headers);
+                return nxtEntry();
+              });
+            },
+            () => {
+              return nxt();
+            }
+          );
+        },
+        () => {
+          if (csvTrueLinks) {
+            uploadResults.uploadResults(csvTrueLinks);
+          } else {
+            console.log(
+              'True links were not specified then upload results wont be displayed'
+            );
+          }
         }
-      });
+      );
     });
   });

@@ -173,10 +173,7 @@ const getFields = (links, reportDetails) => {
   for (const link of links) {
     logger.error(link);
     const reportElements = link.extension.filter(ln => {
-      return (
-        ln.url ===
-        'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
-      );
+      return (ln.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportElement');
     });
     for (const element of reportElements) {
       const label = element.extension.find(det => {
@@ -250,30 +247,26 @@ const updateESCompilationsRate = callback => {
       password: config.get('elastic:password'),
     },
     data: body,
-  })
-    .then(response => {
-      if (response.status > 199 && response.status < 299) {
-        logger.info('maximum compilation rate updated successfully');
-        return callback(false);
-      } else {
-        logger.error('An error has occured while setting max compilation rate');
-        return callback(true);
-      }
-    })
-    .catch(err => {
+  }).then(response => {
+    if (response.status > 199 && response.status < 299) {
+      logger.info('maximum compilation rate updated successfully');
+      return callback(false);
+    } else {
       logger.error('An error has occured while setting max compilation rate');
-      callback(err);
-      throw err;
-    });
+      return callback(true);
+    }
+  }).catch(err => {
+    logger.error('An error has occured while setting max compilation rate');
+    callback(err);
+    throw err;
+  });
 };
 
 const createESIndex = (name, IDFields, reportFields, callback) => {
   async.series({
     createAnalyzer: callback => {
       logger.info('Creating analyzer into elasticsearch for index ' + name);
-      const url = URI(config.get('elastic:server'))
-        .segment(name)
-        .toString();
+      const url = URI(config.get('elastic:server')).segment(name).toString();
       const settings = {
         settings: {
           analysis: {
@@ -306,32 +299,30 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           username: config.get('elastic:username'),
           password: config.get('elastic:password'),
         },
-      })
-        .then(response => {
-          if (response.status >= 200 && response.status <= 299) {
-            logger.info('Analyzer created successfully');
-            return callback(null);
-          } else {
-            logger.error(
-              'Something went wrong while creating analyzer into elasticsearch'
-            );
-            return callback(true);
-          }
-        })
-        .catch(err => {
-          if (
-            err.response &&
-              err.response.status &&
-              err.response.status === 400
-          ) {
-            logger.info(
-              'Analyzer already exist into elasticsearch, not creating'
-            );
-            return callback(null);
-          } else {
-            throw err;
-          }
-        });
+      }).then(response => {
+        if (response.status >= 200 && response.status <= 299) {
+          logger.info('Analyzer created successfully');
+          return callback(null);
+        } else {
+          logger.error(
+            'Something went wrong while creating analyzer into elasticsearch'
+          );
+          return callback(true);
+        }
+      }).catch(err => {
+        if (
+          err.response &&
+          err.response.status &&
+          err.response.status === 400
+        ) {
+          logger.info(
+            'Analyzer already exist into elasticsearch, not creating'
+          );
+          return callback(null);
+        } else {
+          throw err;
+        }
+      });
     },
     createMapping: callback => {
       logger.info('Adding mappings into elasticsearch for index ' + name);
@@ -366,32 +357,28 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           username: config.get('elastic:username'),
           password: config.get('elastic:password'),
         },
-      })
-        .then(response => {
-          if (response.status >= 200 && response.status <= 299) {
-            logger.info('Mappings added successfully into elasticsearch');
-            return callback(null);
-          } else {
-            logger.error(
-              'Something went wrong while adding mappings into elasticsearch'
-            );
-            return callback(true);
-          }
-        })
-        .catch(err => {
-          logger.error(err);
+      }).then(response => {
+        if (response.status >= 200 && response.status <= 299) {
+          logger.info('Mappings added successfully into elasticsearch');
+          return callback(null);
+        } else {
           logger.error(
             'Something went wrong while adding mappings into elasticsearch'
           );
-          callback(err);
-          throw err;
-        });
+          return callback(true);
+        }
+      }).catch(err => {
+        logger.error(err);
+        logger.error(
+          'Something went wrong while adding mappings into elasticsearch'
+        );
+        callback(err);
+        throw err;
+      });
     },
-  },
-  err => {
+  }, err => {
     return callback(err);
-  }
-  );
+  });
 };
 
 const updateESDocument = (id, index, record, callback) => {
@@ -473,16 +460,8 @@ const fhir2ES = ({
       if (err) {
         return callback(true);
       }
-      const details = relationship.extension.find(
-        ext =>
-          ext.url ===
-        'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails'
-      );
-      const links = relationship.extension.filter(
-        ext =>
-          ext.url ===
-        'http://ihris.org/fhir/StructureDefinition/iHRISReportLink'
-      );
+      const details = relationship.extension.find(ext => ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails');
+      const links = relationship.extension.filter(ext => ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportLink');
       const reportDetails = flattenComplex(details.extension);
       const orderedResources = [];
       const IDFields = [];
@@ -545,12 +524,10 @@ const fhir2ES = ({
                     resource: orderedResource.resource,
                     extraPath: ['_history'],
                     query: '_since=' + lastSync,
-                  },
-                  data => {
+                  }, data => {
                     resourceData = resourceData.concat(data.entry);
                     resolve();
-                  }
-                  );
+                  });
                 }
               });
               promise.then(() => {
@@ -564,7 +541,7 @@ const fhir2ES = ({
                 async.eachSeries(resourceData, (data, next) => {
                   logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
                   count++;
-                  const isGoldenRec = data.resource.meta.tag && data.resource.meta.tag.find((tag) => {
+                  const isGoldenRec = data.resource.meta && data.resource.meta.tag && data.resource.meta.tag.find((tag) => {
                     return tag.code === config.get('codes:goldenRecord');
                   });
                   if (isGoldenRec) {
@@ -601,9 +578,7 @@ const fhir2ES = ({
                   }
                   const record = {};
                   (async () => {
-                    for (const element of orderedResource[
-                      'http://ihris.org/fhir/StructureDefinition/iHRISReportElement'
-                    ]) {
+                    for (const element of orderedResource['http://ihris.org/fhir/StructureDefinition/iHRISReportElement']) {
                       let fieldLabel;
                       let fieldName;
                       let fieldAutogenerated = false;
