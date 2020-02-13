@@ -235,20 +235,14 @@ export default {
       process.env.VUE_APP_SYSTEM_NAME_NIN;
     this.$http
       .get(
-        process.env.VUE_APP_FHIR +
-          "/Patient?_elements=link&_id=" +
-          this.$route.params.clientId
+        "/ocrux/fhir/Patient?_elements=link&_id=" + this.$route.params.clientId
       )
       .then(response => {
         let uid = response.data.entry[0].resource.link[0].other.reference.substring(
           8
         );
         this.$http
-          .get(
-            process.env.VUE_APP_FHIR +
-              "/Patient?_include=Patient:link&_id=" +
-              uid
-          )
+          .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
           .then(resp => {
             for (let entry of resp.data.entry) {
               let patient = entry.resource;

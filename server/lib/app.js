@@ -8,6 +8,7 @@ const medUtils = require('openhim-mediator-utils');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const URI = require('urijs');
 const https = require('https');
 const fhirWrapper = require('./fhir')();
 const medMatching = require('./medMatching')();
@@ -133,6 +134,27 @@ function appRoutes() {
     addPatient(patientsBundle, 'Patient', req, res);
   });
 
+  app.get('/ocrux/fhir/:resource?', (req, res) => {
+    const resource = req.params.resource;
+    let url = URI(config.get('fhirServer:baseURL'));
+    if (resource) {
+      url = url.segment(resource);
+    }
+    for (const param in req.query) {
+      url.addQuery(param, req.query[param]);
+    }
+    url = url.toString();
+    fhirWrapper.getResource({
+      url
+    }, (resourceData) => {
+      const baseURL = URI(config.get('fhirServer:baseURL')).toString().replace('/fhir', '');
+      for (const index in resourceData.link) {
+        resourceData.link[index].url = resourceData.link[index].url.replace(baseURL, '');
+        resourceData.link[index].url = '/ocrux' + resourceData.link[index].url;
+      }
+      res.status(200).json(resourceData);
+    });
+  });
   app.post('/', (req, res) => {
     const patientsBundle = req.body;
     if (!patientsBundle.resourceType ||

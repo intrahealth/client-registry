@@ -70,7 +70,7 @@ module.exports = () => ({
         };
         url = false;
         request.get(options, (err, res, body) => {
-          if (res.statusCode < 200 || res.statusCode > 299) {
+          if (res && (res.statusCode < 200 || res.statusCode > 299)) {
             logger.error(JSON.stringify(body, 0, 2));
           }
           if (err) {

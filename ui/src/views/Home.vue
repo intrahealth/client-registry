@@ -49,7 +49,7 @@
 //import HelloWorld from "@/components/HelloWorld.vue";
 
 export default {
-  name: "home",
+  name: "Home",
   data() {
     return {
       debug: "",
@@ -143,15 +143,17 @@ export default {
         let count = this.options.itemsPerPage || 10;
         let sort = "";
         for (let idx in this.options.sortBy) {
+          if (sort) {
+            sort += ",";
+          }
           if (this.options.sortDesc[idx]) {
             sort += "-";
           }
-          sort += this.options.sortBy[idx] + ",";
+          sort += this.options.sortBy[idx];
         }
 
         url =
-          process.env.VUE_APP_FHIR +
-          "/Patient?_count=" +
+          "/ocrux/fhir/Patient?_count=" +
           count +
           "&_sort=" +
           sort +

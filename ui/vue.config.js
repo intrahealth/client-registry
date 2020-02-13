@@ -8,10 +8,6 @@ module.exports = {
         target: "https://localhost:3000",
         secure: false,
         changeOrigin: true
-      },
-      "/fhir": {
-        target: "http://localhost:8081/clientregistry",
-        changeOrigin: true
       }
     }
   }
