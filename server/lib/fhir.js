@@ -90,7 +90,13 @@ module.exports = () => ({
           if (id && body) {
             resourceData = body;
           } else if (body.entry && body.entry.length > 0) {
-            resourceData.entry = resourceData.entry.concat(body.entry);
+            if (count) {
+              resourceData = {
+                ...body
+              };
+            } else {
+              resourceData.entry = resourceData.entry.concat(body.entry);
+            }
           }
           const next = body.link && body.link.find(link => link.relation === 'next');
 

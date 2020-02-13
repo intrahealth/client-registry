@@ -1,0 +1,27 @@
+{
+   "resourceType": "Person",
+   "id": "default-admin-user",
+   "extension": [{
+      "url": "http://openclientregistry.org/fhir/StructureDefinition/OCRUserDetails",
+      "extension": [{
+         "url": "username",
+         "valueString": "root@intrahealth.org"
+      }, {
+         "url": "password",
+         "valueString": "dcb33e43d8735f5425aca6295797ae9999ce5b8f157f1275e60acd31ad3f8517bdb00505717388fb9948cad5cdaa2d14d5d8e73e83ea2438c3495f74313f6d91"
+      }, {
+         "url": "salt",
+         "valueString": "e59c35ae8b9dc6cb66680004a1acc9ee"
+      }, {
+         "url": "created",
+         "valueString": "2020-02-13T07:34:52.335Z"
+      }]
+   }],
+   "name": [{
+      "family": "Intrahealth",
+      "given": [
+         "Intrahealth",
+         "Intrahealth"
+      ]
+   }]
+}

@@ -6,6 +6,7 @@ const uuid4 = require('uuid/v4');
 const prerequisites = require('./prerequisites');
 const medUtils = require('openhim-mediator-utils');
 const _ = require('lodash');
+const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const https = require('https');
 const fhirWrapper = require('./fhir')();
@@ -16,6 +17,8 @@ const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
+
+var userRouter = require('./user');
 
 const serverOpts = {
   key: fs.readFileSync(`${__dirname}/../certificates/server_key.pem`),
@@ -34,9 +37,59 @@ if (config.get('mediator:register')) {
  */
 function appRoutes() {
   const app = express();
+  app.use('/ocrux', userRouter);
   app.use(bodyParser.json());
+  const jwtValidator = function (req, res, next) {
+    if (!req.path.startsWith('/ocrux')) {
+      return next();
+    }
+    if (req.method == 'OPTIONS' ||
+      req.path == '/ocrux/authenticate' ||
+      req.path == '/' ||
+      req.path.startsWith('/ocrux/static/js') ||
+      req.path.startsWith('/ocrux/static/config.json') ||
+      req.path.startsWith('/ocrux/static/css') ||
+      req.path.startsWith('/ocrux/static/img') ||
+      req.path.startsWith('/ocrux/favicon.ico')
+    ) {
+      return next();
+    }
+    if (!req.headers.authorization || req.headers.authorization.split(' ').length !== 2) {
+      logger.error('Token is missing');
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('WWW-Authenticate', 'Bearer realm="Token is required"');
+      res.set('charset', 'utf - 8');
+      res.status(401).json({
+        error: 'Token is missing',
+      });
+    } else {
+      const tokenArray = req.headers.authorization.split(' ');
+      const token = req.headers.authorization = tokenArray[1];
+      jwt.verify(token, config.get('auth:secret'), (err, decoded) => {
+        if (err) {
+          logger.warn('Token expired');
+          res.set('Access-Control-Allow-Origin', '*');
+          res.set('WWW-Authenticate', 'Bearer realm="Token expired"');
+          res.set('charset', 'utf - 8');
+          res.status(401).json({
+            error: 'Token expired',
+          });
+        } else {
+          if (req.path == '/ocrux/isTokenActive/') {
+            res.set('Access-Control-Allow-Origin', '*');
+            res.status(200).send(true);
+          } else {
+            return next();
+          }
+        }
+      });
+    }
+  };
 
   function certificateValidity(req, res, next) {
+    if (req.path.startsWith('/ocrux')) {
+      return next();
+    }
     const cert = req.connection.getPeerCertificate();
     if (req.client.authorized) {
       if (!cert.subject.CN) {
@@ -55,6 +108,7 @@ function appRoutes() {
   if (!config.get('mediator:register')) {
     app.use(certificateValidity);
   }
+  app.use(jwtValidator);
 
   app.post('/Patient', (req, res) => {
     const patient = req.body;

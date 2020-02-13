@@ -11,7 +11,9 @@ const loadResources = (callback) => {
   let processingError = false;
   const folders = [
     `${__dirname}/../../resources/StructureDefinition`,
-    `${__dirname}/../../resources/Relationships`
+    `${__dirname}/../../resources/SearchParameter`,
+    `${__dirname}/../../resources/Relationships`,
+    `${__dirname}/../../resources/ResourcesData`,
   ];
   const promises = [];
   for (const folder of folders) {
@@ -43,9 +45,9 @@ const loadResources = (callback) => {
             (fhir.type === 'transaction' || fhir.type === 'batch')) {
             logger.info('Saving ' + fhir.type);
             request.post(options, (err, res, body) => {
-              resolve();
+              resolve();;;
               if (err) {
-                logger.error(err)
+                logger.error(err);
                 processingError = true;
               }
               if (res.statusCode && (res.statusCode < 200 || res.statusCode > 399)) {
@@ -57,11 +59,11 @@ const loadResources = (callback) => {
           } else {
             logger.info('Saving ' + fhir.resourceType + ' - ' + fhir.id);
             request.put(options, (err, res, body) => {
-              if (fhir.id === "patientreport")
+              if (fhir.id === "default_admin_user")
                 console.log(body);
               resolve();
               if (err) {
-                logger.error(err)
+                logger.error(err);
                 processingError = true;
               }
               if (res.statusCode && (res.statusCode < 200 || res.statusCode > 399)) {

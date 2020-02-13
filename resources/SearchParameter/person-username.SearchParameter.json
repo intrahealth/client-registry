@@ -1,0 +1,27 @@
+{
+  "resourceType": "SearchParameter",
+  "id": "person-username",
+  "url": "http://openclientregistry.org/fhir/SearchParameter/person-username",
+  "name": "Search Parameter on Person OCRUserDetails",
+  "status": "active",
+  "experimental": false,
+  "publisher": "openclientregistry.org",
+  "contact": [{
+    "telecom": [{
+      "system": "url",
+      "value": "http://openclientregistry.org/"
+    }]
+  }],
+  "description": "Search for the username of an OCRUser",
+  "code": "username",
+  "base": [
+    "Person"
+  ],
+  "type": "string",
+  "expression": "Person.extension('http://openclientregistry.org/fhir/StructureDefinition/OCRUserDetails').extension('username')",
+  "xpath": "f:Person/f:extension[@url='http://openclientregistry.org/fhir/StructureDefinition/OCRUserDetails']/f:extension[@url='username']",
+  "xpathUsage": "normal",
+  "target": [
+    "Person"
+  ]
+}

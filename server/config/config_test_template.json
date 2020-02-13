@@ -1,4 +1,8 @@
 {
+  "auth": {
+    "secret": "3084e343-71bc-4247-86e4-ea210af89c28",
+    "tokenDuration": 5400
+  },
   "app": {
     "port": 3000,
     "installed": false
