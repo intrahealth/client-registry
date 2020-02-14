@@ -117,14 +117,16 @@
             class="elevation-1 text-capitalize"
             item-key="id"
             show-select
-          ></v-data-table>
+          />
           <v-card-actions>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn
               class="warning"
-              v-on:click="breakMatch()"
               :disabled="breaks.length === 0"
-            >Break Match(es)</v-btn>
+              @click="breakMatch()"
+            >
+              Break Match(es)
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -144,14 +146,16 @@
             class="elevation-1 text-capitalize"
             item-key="id"
             show-select
-          ></v-data-table>
+          />
           <v-card-actions>
-            <v-spacer></v-spacer>
+            <v-spacer />
             <v-btn
               class="accent"
-              v-on:click="revertBreak()"
               :disabled="unbreaks.length === 0"
-            >Revert Break</v-btn>
+              @click="revertBreak()"
+            >
+              Revert Break
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-col>
@@ -162,7 +166,7 @@
 
 <script>
 export default {
-  name: "client",
+  name: "Client",
   data() {
     return {
       selected: "",
@@ -206,26 +210,6 @@ export default {
       ]
     };
   },
-  methods: {
-    selectPatient(patient) {
-      this.selected = patient.selectIdx;
-    },
-    breakMatch() {
-      for (let breakIt of this.breaks) {
-        this.$delete(this.match_items, this.match_items.indexOf(breakIt));
-        this.break_items.push(breakIt);
-        this.match_count--;
-        // Need to add in call to CR Service to do the break.
-      }
-      this.breaks = [];
-    },
-    revertBreak() {
-      for (let unBreak of this.unbreaks) {
-        // Need to add in call to CR Service to do the unbreak.
-        this.$delete(this.break_items, this.break_items.indexOf(unBreak));
-      }
-    }
-  },
   mounted() {
     this.systems[process.env.VUE_APP_SYSTEM_OPENMRS] =
       process.env.VUE_APP_SYSTEM_NAME_OPENMRS;
@@ -235,12 +219,80 @@ export default {
       process.env.VUE_APP_SYSTEM_NAME_NIN;
     this.$http
       .get(
-        "/ocrux/fhir/Patient?_elements=link&_id=" + this.$route.params.clientId
+        "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
+          this.$route.params.clientId
       )
       .then(response => {
-        let uid = response.data.entry[0].resource.link[0].other.reference.substring(
-          8
-        );
+        let uid = response.data.entry[0].resource.link[0].other.reference
+          .split("/")
+          .pop();
+        let resource = response.data.entry[0].resource;
+        let brokenList = [];
+        if (resource.extension) {
+          for (let ext of resource.extension) {
+            if (ext.url === process.env.VUE_APP_BROKEN_MATCH_URL) {
+              brokenList.push(ext.valueReference.reference.split("/").pop());
+            }
+          }
+        }
+        brokenList = brokenList.join(",");
+        this.$http.get("/ocrux/fhir/Patient?_id=" + brokenList).then(resp => {
+          for (let entry of resp.data.entry) {
+            let patient = entry.resource;
+            if (
+              patient.meta.tag &&
+              patient.meta.tag.find(
+                tag => tag.code === process.env.VUE_APP_CRUID_TAG
+              ) !== undefined
+            ) {
+              this.uid = patient.id;
+            } else {
+              if (patient.id === this.$route.params.clientId)
+                this.selected = this.match_count;
+              let recordId, systemName, nin, art, name, phone;
+              if (patient.identifier) {
+                for (let id of patient.identifier) {
+                  if (this.primary_systems.includes(id.system)) {
+                    recordId = id.value;
+                    systemName = this.systems[id.system];
+                  } else if (id.system === process.env.VUE_APP_SYSTEM_ART) {
+                    art = id.value;
+                  } else if (id.system === process.env.VUE_APP_SYSTEM_NIN) {
+                    nin = id.value;
+                  }
+                }
+              }
+              try {
+                name = patient.name.find(name => name.use === "official");
+              } catch (err) {
+                name = { family: "", given: [] };
+              }
+              try {
+                phone = patient.telecom.find(phone => (phone.system = "phone"))
+                  .value;
+              } catch (err) {
+                phone = "";
+              }
+              this.break_items.push({
+                fid: patient.id,
+                selectIdx: this.match_count,
+                system: systemName,
+                id: recordId,
+                gender: patient.gender,
+                birthdate: patient.birthDate,
+                name: patient.name,
+                telecom: patient.telecom,
+                identifier: patient.identifier,
+                family: name.family,
+                given: name.given.join(" "),
+                phone: phone,
+                art: art,
+                nin: nin
+              });
+              this.match_count++;
+            }
+          }
+        });
         this.$http
           .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
           .then(resp => {
@@ -302,6 +354,35 @@ export default {
             }
           });
       });
+  },
+  methods: {
+    selectPatient(patient) {
+      this.selected = patient.selectIdx;
+    },
+    breakMatch() {
+      if (this.breaks.length > 0) {
+        let url = "/ocrux/breakMatch";
+        let ids = [];
+        for (let breakIt of this.breaks) {
+          ids.push("Patient/" + breakIt.fid);
+        }
+        this.$http.post(url, ids).then(response => {});
+      }
+      return;
+      for (let breakIt of this.breaks) {
+        this.$delete(this.match_items, this.match_items.indexOf(breakIt));
+        this.break_items.push(breakIt);
+        this.match_count--;
+        // Need to add in call to CR Service to do the break.
+      }
+      this.breaks = [];
+    },
+    revertBreak() {
+      for (let unBreak of this.unbreaks) {
+        // Need to add in call to CR Service to do the unbreak.
+        this.$delete(this.break_items, this.break_items.indexOf(unBreak));
+      }
+    }
   }
 };
 </script>

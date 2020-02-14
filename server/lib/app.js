@@ -522,10 +522,9 @@ function appRoutes() {
     });
   };
 
-  app.post('/breakMatch', (req, res) => {
+  app.post('/ocrux/breakMatch', (req, res) => {
     const ids = req.body;
     if (!Array.isArray(ids)) {
-      logger.error('hello');
       return res.status(400).json({
         resourceType: "OperationOutcome",
         issue: [{
@@ -832,7 +831,6 @@ function appRoutes() {
                 }
                 res.status(200).send();
               });
-              res.status(200).send();
             });
           } else {
             res.status(500).json({

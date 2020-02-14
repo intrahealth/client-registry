@@ -46,7 +46,7 @@
       "uri": "http://clientregistry.org/lims"
     },
     "brokenMatch": {
-      "uri": "http://ihris.org/CR/brokenMatch"
+      "uri": "http://clientregistry.org/brokenMatch"
     }
   },
   "sync": {
