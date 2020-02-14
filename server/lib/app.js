@@ -111,29 +111,6 @@ function appRoutes() {
   }
   app.use(jwtValidator);
 
-  app.post('/Patient', (req, res) => {
-    const patient = req.body;
-    if (!patient.resourceType ||
-      (patient.resourceType && patient.resourceType !== 'Patient') ||
-      !patient.identifier ||
-      (patient.identifier && patient.identifier.length === 0)) {
-      return res.status(400).json({
-        resourceType: "OperationOutcome",
-        issue: [{
-          severity: "error",
-          code: "processing",
-          diagnostics: "Invalid patient resource submitted"
-        }]
-      });
-    }
-    const patientsBundle = {
-      entry: [{
-        resource: patient
-      }]
-    };
-    addPatient(patientsBundle, 'Patient', req, res);
-  });
-
   app.get('/ocrux/fhir/:resource?', (req, res) => {
     const resource = req.params.resource;
     let url = URI(config.get('fhirServer:baseURL'));
@@ -155,7 +132,40 @@ function appRoutes() {
       res.status(200).json(resourceData);
     });
   });
+
+  app.post('/Patient', (req, res) => {
+    logger.info('Received a request to add new patient');
+    const patient = req.body;
+    if (!patient.resourceType ||
+      (patient.resourceType && patient.resourceType !== 'Patient') ||
+      !patient.identifier ||
+      (patient.identifier && patient.identifier.length === 0)) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Invalid patient resource submitted"
+        }]
+      });
+    }
+    const patientsBundle = {
+      entry: [{
+        resource: patient
+      }]
+    };
+    let clientID;
+    if (config.get('mediator:register')) {
+      clientID = req.headers['x-openhim-clientid'];
+    } else {
+      const cert = req.connection.getPeerCertificate();
+      clientID = cert.subject.CN;
+    }
+    addPatient(clientID, patientsBundle, 'Patient', req, res);
+  });
+
   app.post('/', (req, res) => {
+    logger.info('Received a request to add new patients from a bundle');
     const patientsBundle = req.body;
     if (!patientsBundle.resourceType ||
       (patientsBundle.resourceType && patientsBundle.resourceType !== 'Bundle') ||
@@ -169,15 +179,6 @@ function appRoutes() {
         }]
       });
     }
-    addPatient(patientsBundle, 'Bundle', req, res);
-  });
-
-  function addPatient(patientsBundle, type, req, res) {
-    const responseBundle = {
-      resourceType: 'Bundle',
-      entry: []
-    };
-    logger.info('Received a request to add new patient');
     let clientID;
     if (config.get('mediator:register')) {
       clientID = req.headers['x-openhim-clientid'];
@@ -185,6 +186,14 @@ function appRoutes() {
       const cert = req.connection.getPeerCertificate();
       clientID = cert.subject.CN;
     }
+    addPatient(clientID, patientsBundle, 'Bundle', req, res);
+  });
+
+  function addPatient(clientID, patientsBundle, type, req, res) {
+    const responseBundle = {
+      resourceType: 'Bundle',
+      entry: []
+    };
 
     const addLinks = (patient, goldenRecord) => {
       if (!patient.link || !Array.isArray(patient.link)) {
@@ -521,6 +530,151 @@ function appRoutes() {
       }
     });
   };
+
+  app.post('/ocrux/unBreakMatch', (req, res) => {
+    const ids = req.body;
+    if (!Array.isArray(ids)) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Expected an array of IDs"
+        }]
+      });
+    }
+    const bundle = {};
+    bundle.type = 'batch';
+    bundle.resourceType = 'Bundle';
+    bundle.entry = [];
+    const notProcessed = [];
+    const noLink = [];
+    const dontSaveChanges = false;
+    let query;
+    const goldenIds = [];
+    for (const idPair of ids) {
+      if (!idPair.id1 || !idPair.id2) {
+        dontSaveChanges = true;
+        continue;
+      }
+      const idArr1 = idPair.id1.toString().split('/');
+      const idArr2 = idPair.id2.toString().split('/');
+      const [resourceName1, resourceId1] = idArr1;
+      const [resourceName2, resourceId2] = idArr2;
+      if (!resourceName1 || !resourceId1 || !resourceName2 || !resourceId2) {
+        notProcessed.push(idPair);
+        dontSaveChanges = true;
+        continue;
+      }
+      if (query) {
+        query += ',' + idPair.id1 + ',' + idPair.id2;
+      } else {
+        query = '_id=' + idPair.id1 + ',' + idPair.id2;
+      }
+    }
+    if (query && !dontSaveChanges) {
+      fhirWrapper.getResource({
+        resource: 'Patient',
+        query
+      }, (resourceData) => {
+        for (const idPair of ids) {
+          const id1 = idPair.id1;
+          const id2 = idPair.id2;
+          const resource1 = resourceData.entry.find((entry) => {
+            return entry.resource.id === id1.split('/').pop();
+          });
+          if (resource1 && resource1.resource.extension) {
+            for (const index in resource1.resource.extension) {
+              const ext = resource1.resource.extension[index];
+              if (ext.valueReference.reference === id2) {
+                resource1.resource.extension.splice(index, 1);
+                bundle.entry.push({
+                  resource: resource1.resource,
+                  request: {
+                    method: "PUT",
+                    url: resource1.resource.resourceType + '/' + resource1.resource.id
+                  }
+                });
+              }
+            }
+          }
+
+          const resource2 = resourceData.entry.find((entry) => {
+            return entry.resource.id === id2.split('/').pop();
+          });
+          if (resource2 && resource2.resource.extension) {
+            for (const index in resource2.resource.extension) {
+              const ext = resource2.resource.extension[index];
+              if (ext.valueReference.reference === id1) {
+                resource2.resource.extension.splice(index, 1);
+                bundle.entry.push({
+                  resource: resource2.resource,
+                  request: {
+                    method: "PUT",
+                    url: resource2.resource.resourceType + '/' + resource2.resource.id
+                  }
+                });
+              }
+            }
+          }
+        }
+        fhirWrapper.saveResource({
+          resourceData: bundle
+        }, (err) => {
+          if (err) {
+            return res.status(500).json({
+              resourceType: "OperationOutcome",
+              issue: [{
+                severity: "error",
+                code: "processing",
+                diagnostics: "Internal Error"
+              }]
+            });
+          }
+          for (const entry of bundle.entry) {
+            let clientID;
+            for (const identifier of entry.resource.identifier) {
+              clientID = getClientIDBySystem(identifier.system);
+              if (clientID) {
+                break;
+              }
+            }
+            if (clientID) {
+              const patientsBundle = {
+                entry: [{
+                  resource: entry.resource
+                }]
+              };
+              addPatient(clientID, patientsBundle, 'Patient', req, res);
+            }
+          }
+          res.status(200).send();
+        });
+      });;
+    } else {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Invalid request"
+        }]
+      });
+    }
+
+    function getClientIDBySystem(system) {
+      if (!system) {
+        return;
+      }
+      const systems = config.get("systems");
+      for (const clientID in systems) {
+        if (systems[clientID].uri === system) {
+          return clientID;
+        }
+      }
+      return;
+    }
+  });
 
   app.post('/ocrux/breakMatch', (req, res) => {
     const ids = req.body;

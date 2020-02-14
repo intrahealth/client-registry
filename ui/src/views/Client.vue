@@ -227,6 +227,7 @@ export default {
           .split("/")
           .pop();
         let resource = response.data.entry[0].resource;
+        console.log(JSON.stringify(resource.extension, 0, 2));
         let brokenList = [];
         if (resource.extension) {
           for (let ext of resource.extension) {
@@ -235,20 +236,11 @@ export default {
             }
           }
         }
-        brokenList = brokenList.join(",");
-        this.$http.get("/ocrux/fhir/Patient?_id=" + brokenList).then(resp => {
-          for (let entry of resp.data.entry) {
-            let patient = entry.resource;
-            if (
-              patient.meta.tag &&
-              patient.meta.tag.find(
-                tag => tag.code === process.env.VUE_APP_CRUID_TAG
-              ) !== undefined
-            ) {
-              this.uid = patient.id;
-            } else {
-              if (patient.id === this.$route.params.clientId)
-                this.selected = this.match_count;
+        if (brokenList.length > 0) {
+          brokenList = brokenList.join(",");
+          this.$http.get("/ocrux/fhir/Patient?_id=" + brokenList).then(resp => {
+            for (let entry of resp.data.entry) {
+              let patient = entry.resource;
               let recordId, systemName, nin, art, name, phone;
               if (patient.identifier) {
                 for (let id of patient.identifier) {
@@ -275,7 +267,6 @@ export default {
               }
               this.break_items.push({
                 fid: patient.id,
-                selectIdx: this.match_count,
                 system: systemName,
                 id: recordId,
                 gender: patient.gender,
@@ -289,10 +280,9 @@ export default {
                 art: art,
                 nin: nin
               });
-              this.match_count++;
             }
-          }
-        });
+          });
+        }
         this.$http
           .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
           .then(resp => {
@@ -366,21 +356,31 @@ export default {
         for (let breakIt of this.breaks) {
           ids.push("Patient/" + breakIt.fid);
         }
-        this.$http.post(url, ids).then(response => {});
+        this.$http.post(url, ids).then(response => {
+          for (let breakIt of this.breaks) {
+            this.$delete(this.match_items, this.match_items.indexOf(breakIt));
+            this.break_items.push(breakIt);
+            this.match_count--;
+          }
+          this.breaks = [];
+        });
       }
-      return;
-      for (let breakIt of this.breaks) {
-        this.$delete(this.match_items, this.match_items.indexOf(breakIt));
-        this.break_items.push(breakIt);
-        this.match_count--;
-        // Need to add in call to CR Service to do the break.
-      }
-      this.breaks = [];
     },
     revertBreak() {
-      for (let unBreak of this.unbreaks) {
-        // Need to add in call to CR Service to do the unbreak.
-        this.$delete(this.break_items, this.break_items.indexOf(unBreak));
+      if (this.unbreaks.length > 0) {
+        let url = "/ocrux/unBreakMatch";
+        let ids = [];
+        for (let unBreak of this.unbreaks) {
+          ids.push({
+            id1: "Patient/" + this.$route.params.clientId,
+            id2: "Patient/" + unBreak.fid
+          });
+        }
+        this.$http.post(url, ids).then(response => {
+          for (let unBreak of this.unbreaks) {
+            this.$delete(this.break_items, this.break_items.indexOf(unBreak));
+          }
+        });
       }
     }
   }
