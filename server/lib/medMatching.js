@@ -3,10 +3,12 @@ const levenshtein = require('fast-levenshtein');
 const dlevenshtein = require('damerau-levenshtein');
 const jaroWankler = require('jaro-winkler');
 const soundex = require('soundex-code');
-const async = require('async')
+const metaphone = require('metaphone');
+const doubleMetaphone = require('double-metaphone');
+const async = require('async');
 const logger = require('./winston');
 const config = require('./config');
-const matchingMixin = require('./matchingMixin')
+const matchingMixin = require('./matchingMixin');
 const fhirWrapper = require('./fhir')();
 const Fhir = require('fhir').Fhir;
 
@@ -59,9 +61,9 @@ module.exports = () => ({
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(new Promise(resolve => {
-        let isBroken = matchingMixin.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id)
+        const isBroken = matchingMixin.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id);
         if (isBroken) {
-          return resolve()
+          return resolve();
         }
         const ignore = ignoreList.find(ignoreId => {
           return ignoreId === targetResource.resource.id;
@@ -119,10 +121,21 @@ module.exports = () => ({
                   if (!isMatch) {
                     missMatchFound = true;
                   }
-                  break;
-                default:
-                  missMatchFound = true;
-                  break;
+                  case 'metaphone':
+                    isMatch = this.metaphoneMatcher(sourceValue, targetValue);
+                    if (!isMatch) {
+                      missMatchFound = true;
+                    }
+                    break;
+                  case 'double-metaphone':
+                    isMatch = this.doubleMetaphoneMatcher(sourceValue, targetValue);
+                    if (!isMatch) {
+                      missMatchFound = true;
+                    }
+                    break;
+                  default:
+                    missMatchFound = true;
+                    break;
               }
               ruleResolve();
             }));
@@ -131,15 +144,15 @@ module.exports = () => ({
             if (!missMatchFound) {
               matches.entry.push(targetResource);
             }
-            return nxtRule()
+            return nxtRule();
           }).catch(err => {
-            nxtRule()
+            nxtRule();
             logger.error(err);
             throw err;
           });
         }, () => {
-          return resolve()
-        })
+          return resolve();
+        });
       }));
     }
     Promise.all(promises).then(() => {
@@ -175,11 +188,11 @@ module.exports = () => ({
       let matchFound = false;
       for (let val2 of array2) {
         if (!val1 && !val2) {
-          matchFound = true
-          continue
+          matchFound = true;
+          continue;
         }
         if (!val2 || !val1) {
-          continue
+          continue;
         }
         val1 = val1.toLowerCase();
         val1 = cleanValue(val1);
@@ -220,11 +233,11 @@ module.exports = () => ({
       let score = false;
       for (const val2 of array2) {
         if (!val1 && !val2) {
-          score = 0
-          continue
+          score = 0;
+          continue;
         }
         if (!val2 || !val1) {
-          continue
+          continue;
         }
         const thisScore = levenshtein.get(val1, val2);
         if (score === false || thisScore < score) {
@@ -262,11 +275,11 @@ module.exports = () => ({
       let score = false;
       for (const val2 of array2) {
         if (!val1 && !val2) {
-          score = 0
-          continue
+          score = 0;
+          continue;
         }
         if (!val2 || !val1) {
-          continue
+          continue;
         }
         const thisScore = dlevenshtein(val1, val2);
         if (score === false || thisScore.steps < score) {
@@ -304,11 +317,11 @@ module.exports = () => ({
       let score = false;
       for (const val2 of array2) {
         if (!val1 && !val2) {
-          score = 1
-          continue
+          score = 1;
+          continue;
         }
         if (!val2 || !val1) {
-          continue
+          continue;
         }
         const thisScore = jaroWankler(val1, val2);
         if (score === false || thisScore > score) {
@@ -347,10 +360,10 @@ module.exports = () => ({
       for (let val2 of array2) {
         if (!val1 && !val2) {
           matchFound = true;
-          continue
+          continue;
         }
         if (!val2 || !val1) {
-          continue
+          continue;
         }
         val1 = val1.toLowerCase();
         val1 = cleanValue(val1);
@@ -358,6 +371,106 @@ module.exports = () => ({
         val2 = cleanValue(val2);
         const code1 = soundex(val1);
         const code2 = soundex(val2);
+        if (code1 == code2) {
+          matchFound = true;
+        }
+      }
+      if (!matchFound) {
+        allMatches = false;
+      }
+    }
+    if (allMatches) {
+      return true;
+    }
+    return false;
+  },
+
+  metaphoneMatcher(value1, value2) {
+    if (!Array.isArray(value1)) {
+      value1 = [value1];
+    }
+    if (!Array.isArray(value2)) {
+      value2 = [value2];
+    }
+    let array1;
+    let array2;
+    if (value1.length <= value2.length) {
+      array1 = value1;
+      array2 = value2;
+    } else {
+      array2 = value1;
+      array1 = value2;
+    }
+    let allMatches = true;
+    for (let val1 of array1) {
+      let matchFound = false;
+      for (let val2 of array2) {
+        if (!val1 && !val2) {
+          matchFound = true;
+          continue;
+        }
+        if (!val2 || !val1) {
+          continue;
+        }
+        val1 = val1.toLowerCase();
+        val1 = cleanValue(val1);
+        val2 = val2.toLowerCase();
+        val2 = cleanValue(val2);
+        const code1 = metaphone(val1);
+        const code2 = metaphone(val2);
+        if (code1 == code2) {
+          matchFound = true;
+        }
+      }
+      if (!matchFound) {
+        allMatches = false;
+      }
+    }
+    if (allMatches) {
+      return true;
+    }
+    return false;
+  },
+
+  doubleMetaphoneMatcher(value1, value2) {
+    if (!Array.isArray(value1)) {
+      value1 = [value1];
+    }
+    if (!Array.isArray(value2)) {
+      value2 = [value2];
+    }
+    let array1;
+    let array2;
+    if (value1.length <= value2.length) {
+      array1 = value1;
+      array2 = value2;
+    } else {
+      array2 = value1;
+      array1 = value2;
+    }
+    let allMatches = true;
+    for (let val1 of array1) {
+      let matchFound = false;
+      for (let val2 of array2) {
+        if (!val1 && !val2) {
+          matchFound = true;
+          continue;
+        }
+        if (!val2 || !val1) {
+          continue;
+        }
+        val1 = val1.toLowerCase();
+        val1 = cleanValue(val1);
+        val2 = val2.toLowerCase();
+        val2 = cleanValue(val2);
+        const code1 = doubleMetaphone(val1);
+        const code2 = doubleMetaphone(val2);
+        for (const code of code1) {
+          if (code2.includes(code)) {
+            matchFound = true;
+            break;
+          }
+        }
         if (code1 == code2) {
           matchFound = true;
         }
