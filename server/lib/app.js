@@ -1,6 +1,7 @@
 'use strict';
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const async = require('async');
 const uuid4 = require('uuid/v4');
 const prerequisites = require('./prerequisites');
@@ -38,6 +39,7 @@ if (config.get('mediator:register')) {
  */
 function appRoutes() {
   const app = express();
+  app.use('/crux', express.static(`${__dirname}/../gui`));
   app.use('/ocrux', userRouter);
   app.use(bodyParser.json());
   const jwtValidator = function (req, res, next) {
@@ -45,13 +47,7 @@ function appRoutes() {
       return next();
     }
     if (req.method == 'OPTIONS' ||
-      req.path == '/ocrux/authenticate' ||
-      req.path == '/' ||
-      req.path.startsWith('/ocrux/static/js') ||
-      req.path.startsWith('/ocrux/static/config.json') ||
-      req.path.startsWith('/ocrux/static/css') ||
-      req.path.startsWith('/ocrux/static/img') ||
-      req.path.startsWith('/ocrux/favicon.ico')
+      req.path == '/ocrux/authenticate'
     ) {
       return next();
     }
@@ -110,7 +106,6 @@ function appRoutes() {
     app.use(certificateValidity);
   }
   app.use(jwtValidator);
-
   app.get('/ocrux/fhir/:resource?', (req, res) => {
     const resource = req.params.resource;
     let url = URI(config.get('fhirServer:baseURL'));
@@ -491,7 +486,6 @@ function appRoutes() {
         const existingPatients = patientData.entry.filter((entry) => {
           return entry.search.mode === 'match';
         });
-        logger.error(JSON.stringify(existingPatients,0,2));
         if (existingPatients.length === 0) {
           newPatient.resource.id = uuid4();
           findMatches({

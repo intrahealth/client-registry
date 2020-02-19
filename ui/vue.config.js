@@ -1,5 +1,6 @@
 module.exports = {
   publicPath: "/crux",
+  outputDir: "../server/gui",
   transpileDependencies: ["vuetify"],
   devServer: {
     host: "localhost",
