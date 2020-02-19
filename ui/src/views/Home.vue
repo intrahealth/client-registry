@@ -176,6 +176,9 @@ export default {
             let nin = entry.resource.identifier.find(
               id => id.system === process.env.VUE_APP_SYSTEM_NIN
             );
+            if(!nin) {
+              nin = {}
+            }
             this.patients.push({
               id: entry.resource.id,
               family: name.family,
