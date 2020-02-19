@@ -48,6 +48,9 @@ module.exports = () => ({
             return callback(resourceData);
           }
           url.addQuery(qrArr[0], qrArr[1]);
+          if(qrArr[0] === '_count') {
+            count = true;
+          }
         }
       }
       url = url.toString();

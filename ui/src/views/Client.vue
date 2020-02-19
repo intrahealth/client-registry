@@ -227,7 +227,6 @@ export default {
           .split("/")
           .pop();
         let resource = response.data.entry[0].resource;
-        console.log(JSON.stringify(resource.extension, 0, 2));
         let brokenList = [];
         if (resource.extension) {
           for (let ext of resource.extension) {
@@ -371,14 +370,17 @@ export default {
         let url = "/ocrux/unBreakMatch";
         let ids = [];
         for (let unBreak of this.unbreaks) {
-          ids.push({
-            id1: "Patient/" + this.$route.params.clientId,
-            id2: "Patient/" + unBreak.fid
-          });
+          for(let match of this.match_items) {
+            ids.push({
+              id2: "Patient/" + match.fid,
+              id1: "Patient/" + unBreak.fid
+            });
+          }
         }
         this.$http.post(url, ids).then(response => {
           for (let unBreak of this.unbreaks) {
             this.$delete(this.break_items, this.break_items.indexOf(unBreak));
+            this.match_items.push(unBreak)
           }
         });
       }
