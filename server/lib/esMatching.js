@@ -13,17 +13,17 @@ const performMatch = ({
   sourceResource,
   ignoreList
 }, callback) => {
-  let matches = {};
+  const matches = {};
   matches.entry = [];
   const decisionRules = config.get('rules');
   async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
-    let esquery = {};
+    const esquery = {};
     esquery.query = {};
     esquery.query.bool = {};
     esquery.query.bool.must = [];
     for (const ruleField in decisionRule) {
       const rule = decisionRule[ruleField];
-      let match = {};
+      const match = {};
       let path = rule.espath;
       if (rule.algorithm === 'phonetic') {
         path += '.phonetic';
@@ -38,7 +38,7 @@ const performMatch = ({
             match: match,
           });
         }
-        for (let value of pathValue) {
+        for (const value of pathValue) {
           match[path] = {
             query: value,
           };
@@ -50,7 +50,7 @@ const performMatch = ({
               match[path].fuzzy_transpositions = false;
             }
           }
-          let tmpMatch = {
+          const tmpMatch = {
             ...match,
           };
           esquery.query.bool.must.push({
@@ -80,7 +80,7 @@ const performMatch = ({
         });
       }
     }
-    let url = URI(config.get('elastic:server'))
+    const url = URI(config.get('elastic:server'))
       .segment(config.get('elastic:index'))
       .segment('_search')
       .toString();
@@ -101,26 +101,33 @@ const performMatch = ({
       if (body.hits.hits.length === 0) {
         return nxtRule();
       }
-      for (let hit of body.hits.hits) {
-        let id = hit['_id'];
+      let maxScore;
+      let resourceID;
+      for (const hit of body.hits.hits) {
+        const id = hit['_id'];
         if (ignoreList.includes(id)) {
           continue;
         }
-        let isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`);
+        const isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`);
         if (isBroken) {
+          logger.error(isBroken + ' ' + id);
           continue;
         }
-        if (query) {
-          query += ',' + id;
-        } else {
-          query = '_id=' + id;
+        const score = parseFloat(hit['_score']);
+        if(score > parseFloat(maxScore) || !maxScore) {
+          resourceID = id;
+          maxScore = score;
         }
       }
-      if (query) {
+      if (resourceID) {
+        query = '_id=' + resourceID;
         fhirWrapper.getResource({
           resource: 'Patient',
           query,
         }, matchedResources => {
+          if(matchedResources.entry.length === 0) {
+            logger.error('An error has occured, a resource with id ' + resourceID + ' is available in elasticsearch but missing in fhir server');
+          }
           matches.entry = matches.entry.concat(matchedResources.entry);
           return nxtRule();
         });

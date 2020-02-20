@@ -297,6 +297,7 @@ function appRoutes() {
                 location: goldenRecord.resourceType + '/' + goldenRecord.id
               }
             });
+
             // if both patient and golden record doesnt exist then add them to avoid error when adding links
             const promise = new Promise((resolve, reject) => {
               if (newPatient) {
@@ -516,7 +517,7 @@ function appRoutes() {
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
           async.series([
             /**
-             * overwrite with this new Patient all existing CR patients who has same identifier as the new patient
+             * overwrite with this new Patient to existing CR patient who has same identifier as the new patient
              * This will also break all links, links will be added after matching is done again due to updates
              */
             callback => {
@@ -524,6 +525,7 @@ function appRoutes() {
               if (goldenRecords.length > 0) {
                 existingLinks = _.cloneDeep(goldenRecords);
               }
+              delete newPatient.resource.link;
               existingPatient.resource = Object.assign({}, newPatient.resource);
               existingPatient.resource.id = id;
               bundle.entry.push({

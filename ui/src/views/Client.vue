@@ -122,7 +122,7 @@
             <v-spacer />
             <v-btn
               class="warning"
-              :disabled="breaks.length === 0"
+              :disabled="breaks.length === 0 || match_items.length < 2"
               @click="breakMatch()"
             >
               Break Match(es)
@@ -382,6 +382,7 @@ export default {
             this.$delete(this.break_items, this.break_items.indexOf(unBreak));
             this.match_items.push(unBreak)
           }
+          this.unbreaks = []
         });
       }
     }
