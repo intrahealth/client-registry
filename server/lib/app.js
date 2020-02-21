@@ -804,19 +804,6 @@ function appRoutes() {
         }]
       });
     }
-
-    function getClientIDBySystem(system) {
-      if (!system) {
-        return;
-      }
-      const systems = config.get("systems");
-      for (const clientID in systems) {
-        if (systems[clientID].uri === system) {
-          return clientID;
-        }
-      }
-      return;
-    }
   });
 
   app.post('/ocrux/breakMatch', (req, res) => {

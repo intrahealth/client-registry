@@ -213,7 +213,15 @@ export default {
     };
   },
   mounted() {
-    this.$http
+    this.getPatient();
+  },
+  methods: {
+    getPatient() {
+      this.breaks = [];
+      this.match_items = [];
+      this.break_items = [];
+      this.match_count = 0;
+      this.$http
       .get(
         "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
           this.$route.params.clientId
@@ -369,8 +377,7 @@ export default {
             }
           });
       });
-  },
-  methods: {
+    },
     selectPatient(patient) {
       this.selected = patient.selectIdx;
     },
@@ -382,12 +389,7 @@ export default {
           ids.push("Patient/" + breakIt.fid);
         }
         this.$http.post(url, ids).then(response => {
-          for (let breakIt of this.breaks) {
-            this.$delete(this.match_items, this.match_items.indexOf(breakIt));
-            this.break_items.push(breakIt);
-            this.match_count--;
-          }
-          this.breaks = [];
+          this.getPatient();
         });
       }
     },
@@ -404,11 +406,7 @@ export default {
           }
         }
         this.$http.post(url, ids).then(response => {
-          for (let unBreak of this.unbreaks) {
-            this.$delete(this.break_items, this.break_items.indexOf(unBreak));
-            this.match_items.push(unBreak)
-          }
-          this.unbreaks = []
+          this.getPatient();
         });
       }
     }

@@ -1,7 +1,7 @@
 {
   "resourceType": "SearchParameter",
-  "id": "person-username",
-  "url": "http://openclientregistry.org/fhir/SearchParameter/person-username",
+  "id": "ocr-person-username",
+  "url": "http://openclientregistry.org/fhir/SearchParameter/ocr-person-username",
   "name": "Search Parameter on Person OCRUserDetails",
   "status": "active",
   "experimental": false,
