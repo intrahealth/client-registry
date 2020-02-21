@@ -6,7 +6,7 @@ module.exports = {
     host: "localhost",
     proxy: {
       "/ocrux": {
-        target: "https://localhost:3000",
+        target: "http://scratchpad.ihris.org",
         secure: false,
         changeOrigin: true
       }

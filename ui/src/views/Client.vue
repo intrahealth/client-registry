@@ -326,6 +326,7 @@ export default {
                   }
                 }
                 systemName = this.getClientDisplayName(clientUserId)
+                console.log(systemName);
                 let identifiers = [];
                 if (patient.identifier) {
                   for (let id of patient.identifier) {

@@ -119,10 +119,11 @@ function appRoutes() {
     fhirWrapper.getResource({
       url
     }, (resourceData) => {
-      const baseURL = URI(config.get('fhirServer:baseURL')).toString().replace('/fhir', '');
       for (const index in resourceData.link) {
-        resourceData.link[index].url = resourceData.link[index].url.replace(baseURL, '');
-        resourceData.link[index].url = '/ocrux' + resourceData.link[index].url;
+        const urlArr = resourceData.link[index].url.split('fhir', '');
+        if(urlArr.length === 2) {
+          resourceData.link[index].url = '/ocrux/fhir/' + urlArr[1];
+        }
       }
       res.status(200).json(resourceData);
     });
@@ -204,11 +205,15 @@ function appRoutes() {
   });
 
   function addPatient(clientID, patientsBundle, callback) {
-    logger.info('Running match for system ' + clientID)
     const responseBundle = {
       resourceType: 'Bundle',
       entry: []
     };
+    if(!clientID) {
+      logger.error('No client ID found, cant add patient');
+      return callback(true, responseBundle);
+    }
+    logger.info('Running match for system ' + clientID);
 
     const addLinks = (patient, goldenRecord) => {
       if (!patient.link || !Array.isArray(patient.link)) {

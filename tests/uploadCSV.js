@@ -165,7 +165,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               };
               request.post(options, (err, res, body) => {
                 logger.info(res.headers);
-                return nxtEntry();
+                //return nxtEntry();
               });
             },
             () => {
