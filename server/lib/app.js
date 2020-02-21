@@ -128,6 +128,14 @@ function appRoutes() {
     });
   });
 
+  app.get('/ocrux/getURI', (req, res) => {
+    return res.status(200).json(config.get('systems'));
+  });
+
+  app.get('/ocrux/getClients', (req, res) => {
+    return res.status(200).json(config.get('clients'));
+  });
+
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patient = req.body;
@@ -196,6 +204,7 @@ function appRoutes() {
   });
 
   function addPatient(clientID, patientsBundle, callback) {
+    logger.info('Running match for system ' + clientID)
     const responseBundle = {
       resourceType: 'Bundle',
       entry: []
@@ -467,12 +476,37 @@ function appRoutes() {
       bundle.type = 'batch';
       bundle.resourceType = 'Bundle';
       bundle.entry = [];
+
+      // Tag this patient with an ID of the system that submitted
+      const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
+      const tagExist = newPatient.resource.meta && newPatient.resource.meta.tag && newPatient.resource.meta.tag.find((tag) => {
+        return tag.code === 'clientid';
+      });
+      if(!tagExist) {
+        if(!newPatient.resource.meta) {
+          newPatient.resource.meta = {
+            tag: []
+          };
+        }
+        if(!newPatient.resource.meta.tag) {
+          newPatient.resource.meta.tag = [];
+        }
+        newPatient.resource.meta.tag.push({
+          code: 'clientid',
+          display: clientID
+        });
+      }
+      const internalIdURI = config.get("systems:internalid:uri");
+      if(!internalIdURI || internalIdURI.length === 0) {
+        logger.error('URI for internal id is not defined on configuration files, stop processing patient');
+        return callback(true, responseBundle);
+      }
+
       const validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
-        const uri = config.get("systems:" + clientID + ":uri");
-        return identifier.system === uri;
+        return internalIdURI.includes(identifier.system) && identifier.value;
       });
       if (!validSystem) {
-        logger.error('Patient resource has no identifiers registered by client registry, stop processing');
+        logger.error('Patient resource has no identifier for internalid registered by client registry, stop processing');
         return nxtPatient();
       }
 
@@ -586,6 +620,10 @@ function appRoutes() {
         }
       });
     }, () => {
+      if(responseBundle.entry.length === 0) {
+        logger.error('An error has occured while adding patient');
+        return callback(true, responseBundle)
+      }
       logger.info('Done adding patient');
       return callback(false, responseBundle);
     });
@@ -609,9 +647,10 @@ function appRoutes() {
     bundle.entry = [];
     const notProcessed = [];
     const noLink = [];
-    const dontSaveChanges = false;
+    let dontSaveChanges = false;
     let query;
     const goldenIds = [];
+    const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
     for (const idPair of ids) {
       if (!idPair.id1 || !idPair.id2) {
         dontSaveChanges = true;
@@ -643,6 +682,13 @@ function appRoutes() {
           const resource1 = resourceData.entry.find((entry) => {
             return entry.resource.id === id1.split('/').pop();
           });
+          const clientIdTag1 = resource1.resource.meta && resource1.resource.meta.tag && resource1.resource.meta.tag.find((tag) => {
+            return tag.code === 'clientid';
+          });
+          if(!clientIdTag1) {
+            logger.error('Client ID tag is missing, unbreak match failed');
+            dontSaveChanges = true;
+          }
           if (resource1 && resource1.resource.extension) {
             for (const index in resource1.resource.extension) {
               const ext = resource1.resource.extension[index];
@@ -662,6 +708,13 @@ function appRoutes() {
           const resource2 = resourceData.entry.find((entry) => {
             return entry.resource.id === id2.split('/').pop();
           });
+          const clientIdTag2 = resource2.resource.meta && resource2.resource.meta.tag && resource2.resource.meta.tag.find((tag) => {
+            return tag.code === 'clientid';
+          });
+          if(!clientIdTag2) {
+            logger.error('Client ID tag is missing, unbreak match failed');
+            dontSaveChanges = true;
+          }
           if (resource2 && resource2.resource.extension) {
             for (const index in resource2.resource.extension) {
               const ext = resource2.resource.extension[index];
@@ -678,50 +731,68 @@ function appRoutes() {
             }
           }
         }
-        fhirWrapper.saveResource({
-          resourceData: bundle
-        }, (err) => {
-          if (err) {
-            return res.status(500).json({
-              resourceType: "OperationOutcome",
-              issue: [{
-                severity: "error",
-                code: "processing",
-                diagnostics: "Internal Error"
-              }]
-            });
-          }
-          const responseBundle = {};
-          let errFound = false;
-          async.eachSeries(bundle.entry, (entry, nxtEntry) => {
-            let clientID;
-            for (const identifier of entry.resource.identifier) {
-              clientID = getClientIDBySystem(identifier.system);
-              if (clientID) {
-                break;
-              }
-            }
-            if (clientID) {
-              const patientsBundle = {
-                entry: [{
-                  resource: entry.resource
+        logger.info('Saving the unbroken matches');
+        if(!dontSaveChanges) {
+          fhirWrapper.saveResource({
+            resourceData: bundle
+          }, (err) => {
+            if (err) {
+              logger.error('An error has occured while saving unbroken matches');
+              return res.status(500).json({
+                resourceType: "OperationOutcome",
+                issue: [{
+                  severity: "error",
+                  code: "processing",
+                  diagnostics: "Internal Error"
                 }]
-              };
-              addPatient(clientID, patientsBundle, (err, response) => {
-                if(err) {
-                  errFound = true;
-                }
-                Object.assign(responseBundle, response);
-                return nxtEntry();
               });
             }
-          }, () => {
-            if(errFound) {
-              return res.status(500).json(responseBundle);
-            }
-            res.status(201).json(responseBundle);
+            logger.info('Rerunning matches');
+            const responseBundle = {};
+            let errFound = false;
+            async.eachSeries(bundle.entry, (entry, nxtEntry) => {
+              logger.info('Rematching ' + entry.resource.id);
+              let clientID;
+              const clientIdTag = entry.resource.meta && entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
+                return tag.code === 'clientid';
+              });
+              if(clientIdTag) {
+                clientID = clientIdTag.display;
+              }
+              if (clientID) {
+                const patientsBundle = {
+                  entry: [{
+                    resource: entry.resource
+                  }]
+                };
+                addPatient(clientID, patientsBundle, (err, response) => {
+                  logger.info('Done rematching ' + entry.resource.id);
+                  if(err) {
+                    errFound = true;
+                  }
+                  Object.assign(responseBundle, response);
+                  return nxtEntry();
+                });
+              } else {
+                errFound = true;
+              }
+            }, () => {
+              if(errFound) {
+                return res.status(500).json(responseBundle);
+              }
+              res.status(201).json(responseBundle);
+            });
           });
-        });
+        } else {
+          return res.status(400).json({
+            resourceType: "OperationOutcome",
+            issue: [{
+              severity: "error",
+              code: "processing",
+              diagnostics: "Invalid request"
+            }]
+          });
+        }
       });;
     } else {
       return res.status(400).json({
@@ -949,14 +1020,14 @@ function appRoutes() {
           // check if there is any unused golden record and remove it from the bundle
           for (const entryIndex in bundle.entry) {
             const entry = bundle.entry[entryIndex];
-            const fromDB = entry.resource.meta.tag.find((tag) => {
+            const fromDB = entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
               return tag.code === config.get('codes:goldenRecord') && entry.resource.fromDB;
             });
             if (fromDB) {
               delete bundle.entry[entryIndex].resource.fromDB;
               continue;
             }
-            const isGoldenRec = entry.resource.meta.tag.find((tag) => {
+            const isGoldenRec = entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
               return tag.code === config.get('codes:goldenRecord');
             });
             if (!isGoldenRec) {

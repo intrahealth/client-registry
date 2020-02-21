@@ -110,7 +110,6 @@ const performMatch = ({
         }
         const isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`);
         if (isBroken) {
-          logger.error(isBroken + ' ' + id);
           continue;
         }
         const score = parseFloat(hit['_score']);

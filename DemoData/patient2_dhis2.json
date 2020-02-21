@@ -25,6 +25,10 @@
           "Emanuel"
         ]
       }],
+      "telecom": [{
+        "system": "phone",
+        "value": "774 232423"
+      }],
       "gender": "male",
       "birthDate": "1974-12-25"
     }

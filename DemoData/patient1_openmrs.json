@@ -5,7 +5,7 @@
       "resourceType": "Patient",
       "identifier": [{
         "system": "http://clientregistry.org/openmrs",
-        "value": "431287"
+        "value": "431211"
       }, {
         "system": "http://system1.org",
         "value": "12349",
@@ -24,6 +24,10 @@
           "Namaalwa",
           "Emmanuel"
         ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "774 232423"
       }],
       "gender": "male",
       "birthDate": "1974-12-25"

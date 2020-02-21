@@ -42,7 +42,7 @@
           :dismissible="$store.state.alert.dismisible"
           :transition="$store.state.alert.transition"
         >
-          {{$store.state.alert.msg}}
+          {{ $store.state.alert.msg }}
         </v-alert>
       </center>
       <router-view />
@@ -67,6 +67,16 @@ export default {
       this.$store.state.auth.username = VueCookies.get("username");
       axios.get("/ocrux/isTokenActive/").then(response => {
         this.$store.state.denyAccess = false;
+        axios.get("/ocrux/getURI").then((response) => {
+          this.$store.state.systemURI = response.data
+        }).catch((err) => {
+          console.log(err);
+        })
+        axios.get("/ocrux/getClients").then((response) => {
+          this.$store.state.clients = response.data
+        }).catch((err) => {
+          console.log(err);
+        })
       });
     }
   }

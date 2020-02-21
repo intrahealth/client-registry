@@ -72,7 +72,7 @@
                     v-for="(id, l) in patient.identifier"
                     :key="`${l}-${id.system}`"
                   >
-                    <v-list-item-content>{{ systems[id.system] || id.system }}:</v-list-item-content>
+                    <v-list-item-content>{{ id.name }}:</v-list-item-content>
                     <v-list-item-content class="align-end">
                       {{ id.value }}
                     </v-list-item-content>
@@ -165,7 +165,9 @@
 
 
 <script>
+import { generalMixin } from '../mixins/generalMixin'
 export default {
+  mixins: [generalMixin],
   name: "Client",
   data() {
     return {
@@ -211,12 +213,6 @@ export default {
     };
   },
   mounted() {
-    this.systems[process.env.VUE_APP_SYSTEM_OPENMRS] =
-      process.env.VUE_APP_SYSTEM_NAME_OPENMRS;
-    this.systems[process.env.VUE_APP_SYSTEM_ART] =
-      process.env.VUE_APP_SYSTEM_NAME_ART;
-    this.systems[process.env.VUE_APP_SYSTEM_NIN] =
-      process.env.VUE_APP_SYSTEM_NAME_NIN;
     this.$http
       .get(
         "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
@@ -241,15 +237,32 @@ export default {
             for (let entry of resp.data.entry) {
               let patient = entry.resource;
               let recordId, systemName, nin, art, name, phone;
+              let clientUserId
+              if(patient.meta && patient.meta.tag) {
+                for(let tag of patient.meta.tag) {
+                  if(tag.code === 'clientid') {
+                    clientUserId = tag.display
+                  }
+                }
+              }
+              systemName = this.getClientDisplayName(clientUserId)
+              let identifiers = [];
               if (patient.identifier) {
                 for (let id of patient.identifier) {
-                  if (this.primary_systems.includes(id.system)) {
-                    recordId = id.value;
-                    systemName = this.systems[id.system];
-                  } else if (id.system === process.env.VUE_APP_SYSTEM_ART) {
-                    art = id.value;
-                  } else if (id.system === process.env.VUE_APP_SYSTEM_NIN) {
-                    nin = id.value;
+                  let displName = this.getSystemURIDisplayName(id.system)
+                  if(displName) {
+                    if(displName.id === 'internalid') {
+                      recordId = id.value;
+                    }
+                    identifiers.push({
+                      name: displName.name,
+                      value: id.value
+                    })
+                  } else {
+                    identifiers.push({
+                      name: id.system,
+                      value: id.value
+                    })
                   }
                 }
               }
@@ -272,12 +285,10 @@ export default {
                 birthdate: patient.birthDate,
                 name: patient.name,
                 telecom: patient.telecom,
-                identifier: patient.identifier,
+                identifier: identifiers,
                 family: name.family,
                 given: name.given.join(" "),
                 phone: phone,
-                art: art,
-                nin: nin
               });
             }
           });
@@ -298,15 +309,32 @@ export default {
                 if (patient.id === this.$route.params.clientId)
                   this.selected = this.match_count;
                 let recordId, systemName, nin, art, name, phone;
+                let clientUserId
+                if(patient.meta && patient.meta.tag) {
+                  for(let tag of patient.meta.tag) {
+                    if(tag.code === 'clientid') {
+                      clientUserId = tag.display
+                    }
+                  }
+                }
+                systemName = this.getClientDisplayName(clientUserId)
+                let identifiers = [];
                 if (patient.identifier) {
                   for (let id of patient.identifier) {
-                    if (this.primary_systems.includes(id.system)) {
-                      recordId = id.value;
-                      systemName = this.systems[id.system];
-                    } else if (id.system === process.env.VUE_APP_SYSTEM_ART) {
-                      art = id.value;
-                    } else if (id.system === process.env.VUE_APP_SYSTEM_NIN) {
-                      nin = id.value;
+                    let displName = this.getSystemURIDisplayName(id.system)
+                    if(displName && displName.name) {
+                      if(displName.id === 'internalid') {
+                        recordId = id.value;
+                      }
+                      identifiers.push({
+                        name: displName.name,
+                        value: id.value
+                      })
+                    } else {
+                      identifiers.push({
+                        name: id.system,
+                        value: id.value
+                      })
                     }
                   }
                 }
@@ -331,12 +359,10 @@ export default {
                   birthdate: patient.birthDate,
                   name: patient.name,
                   telecom: patient.telecom,
-                  identifier: patient.identifier,
+                  identifier: identifiers,
                   family: name.family,
                   given: name.given.join(" "),
                   phone: phone,
-                  art: art,
-                  nin: nin
                 });
                 this.match_count++;
               }
