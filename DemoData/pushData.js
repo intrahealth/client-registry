@@ -18,24 +18,29 @@ bundle.entry = bundle.entry.concat(patient4.entry)
 
 async.eachSeries(bundle.entry, (entry, nxtEntry) => {
   logger.info('sending patient id ' + JSON.stringify(entry.resource.identifier,0,2));
+  let agentOptions = {
+    cert: fs.readFileSync(
+      '../server/sampleclientcertificates/openmrs_cert.pem'
+    ),
+    key: fs.readFileSync(
+      '../server/sampleclientcertificates/openmrs_key.pem'
+    ),
+    ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+    securityOptions: 'SSL_OP_NO_SSLv3',
+  }
+  let auth = {
+    username: 'openmrs',
+    password: 'openmrs'
+  }
   const options = {
-    url: 'https://localhost:3000/Patient',
-    agentOptions: {
-      cert: fs.readFileSync(
-        '../server/sampleclientcertificates/openmrs_cert.pem'
-      ),
-      key: fs.readFileSync(
-        '../server/sampleclientcertificates/openmrs_key.pem'
-      ),
-      ca: fs.readFileSync('../server/certificates/server_cert.pem'),
-      securityOptions: 'SSL_OP_NO_SSLv3',
-    },
+    url: 'http://scratchpad.ihris.org/ocr/fhir/Patient',
+    auth,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
     logger.info(res.headers);
-    // return nxtEntry();
+    return nxtEntry();
   });
 }, () => {
-  return nxt();
+  logger.info('Done')
 });

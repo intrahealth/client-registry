@@ -41,7 +41,7 @@ function appRoutes() {
   const app = express();
   app.use('/crux', express.static(`${__dirname}/../gui`));
   app.use('/ocrux', userRouter);
-  app.use(bodyParser.json());
+  app.use(bodyParser.json({limit: '10Mb', type: ['application/fhir+json', 'application/json+fhir', 'application/json']}))
   const jwtValidator = function (req, res, next) {
     if (!req.path.startsWith('/ocrux')) {
       return next();
@@ -140,6 +140,7 @@ function appRoutes() {
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patient = req.body;
+    logger.error(JSON.stringify(patient));
     if (!patient.resourceType ||
       (patient.resourceType && patient.resourceType !== 'Patient') ||
       !patient.identifier ||
@@ -483,7 +484,6 @@ function appRoutes() {
       bundle.entry = [];
 
       // Tag this patient with an ID of the system that submitted
-      const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
       const tagExist = newPatient.resource.meta && newPatient.resource.meta.tag && newPatient.resource.meta.tag.find((tag) => {
         return tag.code === 'clientid';
       });

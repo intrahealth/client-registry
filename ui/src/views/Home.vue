@@ -179,6 +179,7 @@ export default {
             if(!nin) {
               nin = {}
             }
+            console.log(JSON.stringify(entry.resource,0,2));
             this.patients.push({
               id: entry.resource.id,
               family: name.family,

@@ -149,23 +149,28 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               console.log(
                 'sending a bundle of ' + bundle.entry.length + ' resources'
               );
+              let agentOptions = {
+                cert: fs.readFileSync(
+                  '../server/sampleclientcertificates/openmrs_cert.pem'
+                ),
+                key: fs.readFileSync(
+                  '../server/sampleclientcertificates/openmrs_key.pem'
+                ),
+                ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+                securityOptions: 'SSL_OP_NO_SSLv3',
+              }
+              let auth = {
+                username: 'openmrs',
+                password: 'openmrs'
+              }
               const options = {
-                url: 'https://localhost:3000/Patient',
-                agentOptions: {
-                  cert: fs.readFileSync(
-                    '../server/sampleclientcertificates/openmrs_cert.pem'
-                  ),
-                  key: fs.readFileSync(
-                    '../server/sampleclientcertificates/openmrs_key.pem'
-                  ),
-                  ca: fs.readFileSync('../server/certificates/server_cert.pem'),
-                  securityOptions: 'SSL_OP_NO_SSLv3',
-                },
+                url: 'http://scratchpad.ihris.org/ocr/fhir/Patient',
+                auth,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
                 logger.info(res.headers);
-                //return nxtEntry();
+                return nxtEntry();
               });
             },
             () => {
