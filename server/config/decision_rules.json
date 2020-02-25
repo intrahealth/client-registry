@@ -12,9 +12,15 @@
         "damerau-levenshtein",
         "jaro-winkler",
         "soundex",
+        "metaphone",
+        "double-metaphone",
         "exact"
       ],
-      "elasticsearch": ["levenshtein", "damerau-levenshtein", "phonetic"]
+      "elasticsearch": [
+        "levenshtein",
+        "damerau-levenshtein",
+        "phonetic"
+      ]
     }
   },
   "rules": [{

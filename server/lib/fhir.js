@@ -19,6 +19,7 @@ module.exports = () => ({
   getResource({
     resource,
     extraPath = [],
+    noCaching = false,
     url,
     id,
     query,
@@ -58,6 +59,12 @@ module.exports = () => ({
       count = true;
     }
     logger.info(`Getting ${url} from server`);
+    let headers = {};
+    if(noCaching) {
+      headers = {
+        'Cache-Control': 'no-cache',
+      };
+    }
     async.whilst(
       callback1 => {
         return callback1(null, url !== false);
@@ -70,6 +77,7 @@ module.exports = () => ({
             username: config.get('fhirServer:username'),
             password: config.get('fhirServer:password'),
           },
+          headers
         };
         url = false;
         request.get(options, (err, res, body) => {

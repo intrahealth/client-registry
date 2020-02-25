@@ -41,7 +41,7 @@ function appRoutes() {
   const app = express();
   app.use('/crux', express.static(`${__dirname}/../gui`));
   app.use('/ocrux', userRouter);
-  app.use(bodyParser.json({limit: '10Mb', type: ['application/fhir+json', 'application/json+fhir', 'application/json']}))
+  app.use(bodyParser.json({limit: '10Mb', type: ['application/fhir+json', 'application/json+fhir', 'application/json']}));
   const jwtValidator = function (req, res, next) {
     if (!req.path.startsWith('/ocrux')) {
       return next();
@@ -107,22 +107,22 @@ function appRoutes() {
   }
   app.use(jwtValidator);
   app.get('/ocrux/fhir/:resource?', (req, res) => {
-    const resource = req.params.resource;
-    let url = URI(config.get('fhirServer:baseURL'));
-    if (resource) {
-      url = url.segment(resource);
-    }
-    for (const param in req.query) {
-      url.addQuery(param, req.query[param]);
-    }
-    url = url.toString();
-    fhirWrapper.getResource({
-      url
-    }, (resourceData) => {
+    getPatient(req, true, (resourceData) => {
       for (const index in resourceData.link) {
-        const urlArr = resourceData.link[index].url.split('fhir', '');
+        const urlArr = resourceData.link[index].url.split('fhir');
         if(urlArr.length === 2) {
-          resourceData.link[index].url = '/ocrux/fhir/' + urlArr[1];
+          resourceData.link[index].url = '/ocrux/fhir' + urlArr[1];
+        }
+      }
+      res.status(200).json(resourceData);
+    });
+  });
+  app.get('/fhir/:resource?', (req, res) => {
+    getPatient(req, true, (resourceData) => {
+      for (const index in resourceData.link) {
+        const urlArr = resourceData.link[index].url.split('fhir');
+        if(urlArr.length === 2) {
+          resourceData.link[index].url = '/fhir' + urlArr[1];
         }
       }
       res.status(200).json(resourceData);
@@ -140,7 +140,6 @@ function appRoutes() {
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patient = req.body;
-    logger.error(JSON.stringify(patient));
     if (!patient.resourceType ||
       (patient.resourceType && patient.resourceType !== 'Patient') ||
       !patient.identifier ||
@@ -204,6 +203,24 @@ function appRoutes() {
       res.status(201).json(response);
     });
   });
+
+  function getPatient(req, noCaching, callback) {
+    const resource = req.params.resource;
+    let url = URI(config.get('fhirServer:baseURL'));
+    if (resource) {
+      url = url.segment(resource);
+    }
+    for (const param in req.query) {
+      url.addQuery(param, req.query[param]);
+    }
+    url = url.toString();
+    fhirWrapper.getResource({
+      url,
+      noCaching
+    }, (resourceData) => {
+      return callback(resourceData);
+    });
+  }
 
   function addPatient(clientID, patientsBundle, callback) {
     const responseBundle = {
@@ -394,7 +411,8 @@ function appRoutes() {
             }
             fhirWrapper.getResource({
               resource: 'Patient',
-              query
+              query,
+              noCaching: true
             }, (goldenRecords) => {
               if(!goldenRecords || !goldenRecords.entry || goldenRecords.entry.length === 0) {
                 return callback(true);
@@ -519,6 +537,7 @@ function appRoutes() {
       fhirWrapper.getResource({
         resource: 'Patient',
         query,
+        noCaching: true,
       }, patientData => {
         const goldenRecords = patientData.entry.filter((entry) => {
           return entry.search.mode === 'include';
@@ -679,7 +698,8 @@ function appRoutes() {
     if (query && !dontSaveChanges) {
       fhirWrapper.getResource({
         resource: 'Patient',
-        query
+        query,
+        noCaching: true
       }, (resourceData) => {
         for (const idPair of ids) {
           const id1 = idPair.id1;
@@ -848,7 +868,8 @@ function appRoutes() {
     if (query) {
       fhirWrapper.getResource({
         resource: 'Patient',
-        query
+        query,
+        noCaching: true
       }, (resourceData) => {
         const goldenRec2RecoLink = {};
         for (const entry of resourceData.entry) {
@@ -906,7 +927,8 @@ function appRoutes() {
         }
         fhirWrapper.getResource({
           resource: 'Patient',
-          query: goldenQuery
+          query: goldenQuery,
+          noCaching: true
         }, (goldenRecords) => {
           let linkedRecordsQuery;
           for (const index in resourceData.entry) {
@@ -1039,7 +1061,8 @@ function appRoutes() {
           if (linkedRecordsQuery) {
             fhirWrapper.getResource({
               resource: 'Patient',
-              query: linkedRecordsQuery
+              query: linkedRecordsQuery,
+              noCaching: true
             }, (linkedRecordsData) => {
               for (const linkedRecord of linkedRecordsData.entry) {
                 const partOfRequest = resourceData.entry.find((entry) => {
