@@ -546,6 +546,7 @@ function appRoutes() {
           return entry.search.mode === 'match';
         });
         if (existingPatients.length === 0) {
+          delete newPatient.resource.link;
           newPatient.resource.id = uuid4();
           findMatches({
             patient: newPatient.resource,
