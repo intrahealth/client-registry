@@ -74,9 +74,9 @@ module.exports = () => ({
         let missMatchFound = false;
         const rulePromises = [];
         async.each(decisionRules, (decisionRule, nxtRule) => {
-          for (const ruleField in decisionRule) {
+          for (const ruleField in decisionRule.fields) {
             rulePromises.push(new Promise(ruleResolve => {
-              const rule = decisionRule[ruleField];
+              const rule = decisionRule.fields[ruleField];
               const sourceValue = fhir.evaluate(sourceResource, rule.fhirpath);
               const targetValue = fhir.evaluate(targetResource.resource, rule.fhirpath);
               if (!sourceValue || !targetValue || (typeof sourceValue === 'object' && !Array.isArray(sourceValue)) || (typeof targetValue === 'object' && !Array.isArray(targetValue))) {

@@ -23,33 +23,42 @@
       ]
     }
   },
+  "blocking": {
+
+  },
   "rules": [{
-    "familyName": {
-      "algorithm": "damerau-levenshtein",
-      "threshold": 2,
-      "fhirpath": "name.where(use='official').family",
-      "espath": "family",
-      "type": "String"
+    "fields": {
+      "familyName": {
+        "algorithm": "damerau-levenshtein",
+        "threshold": 2,
+        "weight": 0.5,
+        "fhirpath": "name.where(use='official').family",
+        "espath": "family",
+        "type": "String"
+      },
+      "givenName": {
+        "algorithm": "damerau-levenshtein",
+        "threshold": 2,
+        "weight": 0.5,
+        "fhirpath": "name.where(use='official').given",
+        "espath": "given",
+        "type": "string",
+        "systems": ["system1", "system2", "system3"]
+      }
     },
-    "givenName": {
-      "algorithm": "damerau-levenshtein",
-      "threshold": 2,
-      "fhirpath": "name.where(use='official').given",
-      "espath": "given",
-      "type": "string",
-      "systems": ["system1", "system2", "system3"]
-    },
-    "gender": {
-      "algorithm": "exact",
-      "fhirpath": "gender",
-      "espath": "gender",
-      "type": "String"
-    },
-    "phone": {
-      "algorithm": "exact",
-      "fhirpath": "telecom.where(system='phone').value",
-      "espath": "phone",
-      "type": "String"
+    "filters": {
+      "gender": {
+        "algorithm": "exact",
+        "fhirpath": "gender",
+        "espath": "gender",
+        "type": "String"
+      },
+      "phone": {
+        "algorithm": "exact",
+        "fhirpath": "telecom.where(system='phone').value",
+        "espath": "phone",
+        "type": "String"
+      }
     }
   }]
 }

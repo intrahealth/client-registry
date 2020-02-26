@@ -21,8 +21,8 @@ const performMatch = ({
     esquery.query = {};
     esquery.query.bool = {};
     esquery.query.bool.must = [];
-    for (const ruleField in decisionRule) {
-      const rule = decisionRule[ruleField];
+    for (const ruleField in decisionRule.fields) {
+      const rule = decisionRule.fields[ruleField];
       const match = {};
       let path = rule.espath;
       if (rule.algorithm === 'phonetic') {
@@ -80,6 +80,43 @@ const performMatch = ({
         });
       }
     }
+    if (Object.keys(decisionRule.filters).length > 0) {
+      esquery.query.bool.filter = [];
+      for (const filterField in decisionRule.filters) {
+        const block = decisionRule.filters[filterField];
+        const term = {};
+        const path = block.espath;
+        let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
+        if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+          if (pathValue.length === 0) {
+            term[path] = '';
+            esquery.query.bool.filter.push({
+              term
+            });
+          }
+          for (const value of pathValue) {
+            term[path] = value;
+            const tmpTerm = {
+              ...term,
+            };
+            esquery.query.bool.filter.push({
+              term: tmpTerm,
+            });
+          }
+        } else {
+          if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+            pathValue = '';
+          }
+          if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+            pathValue == '';
+          }
+          term[path] = pathValue;
+          esquery.query.bool.filter.push({
+            term,
+          });
+        }
+      }
+    }
     const url = URI(config.get('elastic:server'))
       .segment(config.get('elastic:index'))
       .segment('_search')
@@ -113,7 +150,7 @@ const performMatch = ({
           continue;
         }
         const score = parseFloat(hit['_score']);
-        if(score > parseFloat(maxScore) || !maxScore) {
+        if (score > parseFloat(maxScore) || !maxScore) {
           resourceID = id;
           maxScore = score;
         }
@@ -124,7 +161,7 @@ const performMatch = ({
           resource: 'Patient',
           query,
         }, matchedResources => {
-          if(matchedResources.entry.length === 0) {
+          if (matchedResources.entry.length === 0) {
             logger.error('An error has occured, a resource with id ' + resourceID + ' is available in elasticsearch but missing in fhir server');
           }
           matches.entry = matches.entry.concat(matchedResources.entry);
