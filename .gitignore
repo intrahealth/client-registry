@@ -9,3 +9,6 @@ config_development.json
 
 # ipynb
 *.ipynb_checkpoints
+
+# macos
+*.DS_Store
