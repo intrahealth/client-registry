@@ -136,7 +136,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               }
               let auth = {
                 username: 'lims',
-                password: '4dpCe5MCve'
+                password: 'lims'
               }
               const options = {
                 url: 'http://216.104.201.68/ocr/fhir/Patient',
