@@ -99,7 +99,7 @@
         "responseBody": true,
         "name": "Add Patients",
         "description": "Post a new patient into the client registry",
-        "urlPattern": "/Patient",
+        "urlPattern": "^/Patient$",
         "matchContentRegex": null,
         "matchContentXpath": null,
         "matchContentValue": null,
@@ -119,27 +119,90 @@
         "txViewAcl": [],
         "properties": [],
         "matchContentTypes": [],
-        "routes": [{
-          "name": "Add Patient",
-          "secured": false,
-          "host": "localhost",
-          "port": 3000,
-          "path": "/Patient",
-          "pathTransform": "",
-          "primary": true,
-          "username": "",
-          "password": "",
-          "forwardAuthHeader": false,
-          "status": "enabled",
-          "type": "http"
-        }],
-        "authType": "public",
+        "routes": [
+          {
+            "type": "http",
+            "status": "enabled",
+            "forwardAuthHeader": false,
+            "name": "Add Patient",
+            "secured": false,
+            "host": "localhost",
+            "port": 3000,
+            "path": "/Patient",
+            "pathTransform": "",
+            "primary": true,
+            "username": "",
+            "password": ""
+          }
+        ],
+        "authType": "private",
         "whitelist": [],
-        "allow": [],
+        "allow": [
+          "openmrs"
+        ],
         "type": "http",
         "methods": [
           "POST"
-        ]
+        ],
+        "updatedBy": {
+          "id": "5d5d94607329d74724442f67",
+          "name": "Super User"
+        }
+      },
+      {
+        "methods": [
+          "GET"
+        ],
+        "type": "http",
+        "allow": [
+          "openmrs"
+        ],
+        "whitelist": [],
+        "authType": "private",
+        "matchContentTypes": [],
+        "properties": [],
+        "txViewAcl": [],
+        "txViewFullAcl": [],
+        "txRerunAcl": [],
+        "status": "enabled",
+        "rewriteUrls": false,
+        "addAutoRewriteRules": true,
+        "autoRetryEnabled": false,
+        "autoRetryPeriodMinutes": 60,
+        "updatedBy": {
+          "id": "5d5d94607329d74724442f67",
+          "name": "Super User"
+        },
+        "requestBody": true,
+        "responseBody": true,
+        "description": "Get patient from the client registry",
+        "urlPattern": "^/fhir/",
+        "matchContentRegex": null,
+        "matchContentXpath": null,
+        "matchContentValue": null,
+        "matchContentJson": null,
+        "pollingSchedule": null,
+        "tcpHost": null,
+        "tcpPort": null,
+        "rewriteUrlsConfig": [],
+        "alerts": [],
+        "routes": [
+          {
+            "type": "http",
+            "status": "enabled",
+            "forwardAuthHeader": false,
+            "name": "Get Patients",
+            "secured": false,
+            "host": "localhost",
+            "port": 3000,
+            "path": "",
+            "pathTransform": "",
+            "primary": true,
+            "username": "",
+            "password": ""
+          }
+        ],
+        "name": "Get Patients"
       }],
       "endpoints": [{
         "name": "Activate Client Registry",

@@ -28,37 +28,28 @@
   },
   "rules": [{
     "fields": {
-      "familyName": {
-        "algorithm": "damerau-levenshtein",
+      "birthDate": {
+        "algorithm": "exact",
         "threshold": 2,
-        "weight": 0.5,
-        "fhirpath": "name.where(use='official').family",
-        "espath": "family",
+        "fhirpath": "birthDate",
+        "espath": "birthDate",
         "type": "String"
       },
-      "givenName": {
-        "algorithm": "damerau-levenshtein",
+      "gender": {
+        "algorithm": "exact",
         "threshold": 2,
-        "weight": 0.5,
-        "fhirpath": "name.where(use='official').given",
-        "espath": "given",
-        "type": "string",
+        "fhirpath": "gender",
+        "espath": "gender",
+        "systems": ["system1", "system2", "system3"]
+      },
+      "artNumber": {
+        "algorithm": "exact",
+        "threshold": 2,
+        "fhirpath": "identifier.where(system='http://health.go.ug/cr/artnumber').value",
+        "espath": "artNumber",
         "systems": ["system1", "system2", "system3"]
       }
     },
-    "filters": {
-      "gender": {
-        "algorithm": "exact",
-        "fhirpath": "gender",
-        "espath": "gender",
-        "type": "String"
-      },
-      "phone": {
-        "algorithm": "exact",
-        "fhirpath": "telecom.where(system='phone').value",
-        "espath": "phone",
-        "type": "String"
-      }
-    }
+    "filters": {}
   }]
 }

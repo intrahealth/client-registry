@@ -34,6 +34,9 @@ const performMatch = ({
           match[path] = {
             query: '',
           };
+          if(rule.weight > 0) {
+            match[path].boost = rule.weight;
+          }
           esquery.query.bool.must.push({
             match: match,
           });
@@ -42,6 +45,9 @@ const performMatch = ({
           match[path] = {
             query: value,
           };
+          if(rule.weight > 0) {
+            match[path].boost = rule.weight;
+          }
           if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
             match[path].fuzziness = rule.threshold;
             if (rule.algorithm === 'damerau-levenshtein') {
@@ -67,6 +73,9 @@ const performMatch = ({
         match[path] = {
           query: pathValue,
         };
+        if(rule.weight > 0) {
+          match[path].boost = rule.weight;
+        }
         if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
           match[path].fuzziness = rule.threshold;
           if (rule.algorithm === 'damerau-levenshtein') {
