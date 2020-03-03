@@ -155,8 +155,6 @@ export default {
         url =
           "/ocrux/fhir/Patient?_count=" +
           count +
-          "&_sort=" +
-          sort +
           "&_total=accurate&_tag:not=5c827da5-4858-4f3d-a50c-62ece001efea";
         if (this.search_terms.length > 0) {
           url += "&" + this.search_terms.join("&");
@@ -170,9 +168,12 @@ export default {
         if (response.data.total > 0) {
           this.link = response.data.link;
           for (let entry of response.data.entry) {
-            let name = entry.resource.name.find(
+            let name = entry.resource.name && entry.resource.name.find(
               name => name.use === "official"
             );
+            if(!name) {
+              name = {}
+            }
             let nin = entry.resource.identifier.find(
               id => id.system === process.env.VUE_APP_SYSTEM_NIN
             );

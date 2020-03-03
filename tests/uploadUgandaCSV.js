@@ -47,6 +47,7 @@ bundle.type = 'batch';
 bundle.resourceType = 'Bundle';
 bundle.entry = [];
 const promises = [];
+let counter = 1000;
 fs.createReadStream(path.resolve(__dirname, '', csvFile))
   .pipe(
     csv.parse({
@@ -61,6 +62,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         let dob = row['Date of Birth'];
         let uniqueID = row['Unique ID'];
         let ARTNumb = row['Art Number'];
+        let dhis2FacId = row['DHIS2 Facility Code'];
         if (sex && sex.trim() === 'M') {
           sex = 'male'
         } else if (sex && sex.trim() === 'F') {
@@ -78,19 +80,35 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (ARTNumb) {
           ARTNumb = ARTNumb.trim();
         }
+        if (dhis2FacId) {
+          dhis2FacId = dhis2FacId.trim();
+        }
+        counter++
         let resource = {};
         resource.resourceType = 'Patient';
         resource.gender = sex;
         resource.identifier = [
           {
             system: 'http://health.go.ug/cr/internalid',
-            value: uniqueID,
+            value: counter,
           },
         ];
+        if (uniqueID) {
+          resource.identifier.push({
+            system: 'http://health.go.ug/cr/uniqueid',
+            value: uniqueID,
+          });
+        }
         if (ARTNumb) {
           resource.identifier.push({
             system: 'http://health.go.ug/cr/artnumber',
             value: ARTNumb,
+          });
+        }
+        if (dhis2FacId) {
+          resource.identifier.push({
+            system: 'http://health.go.ug/cr/dhis2facid',
+            value: dhis2FacId,
           });
         }
         if (dob) {

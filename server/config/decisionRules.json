@@ -39,17 +39,20 @@
         "algorithm": "exact",
         "threshold": 2,
         "fhirpath": "gender",
-        "espath": "gender",
-        "systems": ["system1", "system2", "system3"]
+        "espath": "gender"
       },
       "artNumber": {
         "algorithm": "exact",
         "threshold": 2,
-        "fhirpath": "identifier.where(system='http://health.go.ug/cr/artnumber').value",
-        "espath": "artNumber",
-        "systems": ["system1", "system2", "system3"]
+        "fhirpath": "identifier.where(system='http://health.go.ug/cr/uniqueid').value",
+        "espath": "uniqueid"
       }
     },
-    "filters": {}
+    "filters": {
+      "facilityId": {
+        "fhirpath": "identifier.where(system='http://health.go.ug/cr/dhis2facid').value",
+        "espath": "dhis2facid"
+      }
+    }
   }]
 }
