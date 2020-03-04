@@ -1,0 +1,54 @@
+version: '3'
+
+services:
+
+  opencr:
+    image: intrahealth/opencr
+    ports:
+      - "3000:3000"
+    depends_on:
+      - fhir
+      - es
+    restart: on-failure
+    environment:
+      - node_env=docker
+    networks: 
+      - opencr
+
+  fhir:
+    container_name: hapi-fhir
+    image: hapiproject/hapi:4.1
+    ports:
+      - "8080:8080"
+    networks:
+      - opencr
+
+  es:
+    build:
+      dockerfile: Dockerfile-es
+      context: ./
+    container_name: es
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - opencr
+
+
+volumes:
+  data01:
+    driver: local
+
+networks:
+  opencr:
+    driver: bridge
