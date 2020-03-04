@@ -2,18 +2,18 @@ version: '3'
 
 services:
 
-  opencr:
-    image: intrahealth/opencr
-    ports:
-      - "3000:3000"
-    depends_on:
-      - fhir
-      - es
-    restart: on-failure
-    environment:
-      - node_env=docker
-    networks: 
-      - opencr
+  # opencr:
+  #   image: intrahealth/opencr
+  #   ports:
+  #     - "3000:3000"
+  #   depends_on:
+  #     - fhir
+  #     - es
+  #   restart: on-failure
+  #   environment:
+  #     - node_env=docker
+  #   networks: 
+  #     - opencr
 
   fhir:
     container_name: hapi-fhir
