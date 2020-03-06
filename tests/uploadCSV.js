@@ -164,7 +164,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 password: 'openmrs'
               }
               const options = {
-                url: 'http://scratchpad.ihris.org/ocr/fhir/Patient',
+                url: 'http://localhost:5001/Patient',
                 auth,
                 json: entry.resource,
               };

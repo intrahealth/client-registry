@@ -168,6 +168,11 @@ export default {
         if (response.data.total > 0) {
           this.link = response.data.link;
           for (let entry of response.data.entry) {
+            if(!entry.resource.link ||
+            (entry.resource.link && Array.isArray(entry.resource.link) && entry.resource.link.length === 0) ||
+            entry.resource.link && !Array.isArray(entry.resource.link)) {
+              continue;
+            }
             let name = entry.resource.name && entry.resource.name.find(
               name => name.use === "official"
             );

@@ -17,7 +17,8 @@
           "index": "patients"
         },
         "matching": {
-          "tool": "elasticsearch"
+          "tool": "elasticsearch",
+          "type": "deterministic"
         }
       },
       "configDefs": [{
@@ -91,6 +92,12 @@
           "description": "Tool to Use for Matching",
           "displayName": "Tool to Use for Matching",
           "param": "tool"
+        },{
+          "type": "option",
+          "values": ["deterministic", "probabilistic"],
+          "description": "Matching Type",
+          "displayName": "Matching Type",
+          "param": "type"
         }],
         "values": []
       }],

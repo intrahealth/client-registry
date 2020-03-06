@@ -28,30 +28,43 @@
   },
   "rules": [{
     "fields": {
-      "birthDate": {
-        "algorithm": "exact",
+      "given": {
+        "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "fhirpath": "birthDate",
-        "espath": "birthDate",
+        "weight": 2,
+        "uValue": 20,
+        "mValue": -2,
+        "fhirpath": "name.where(use='official').given",
+        "espath": "given",
         "type": "String"
       },
+      "family": {
+        "algorithm": "damerau-levenshtein",
+        "threshold": 2,
+        "weight": 3,
+        "uValue": 10,
+        "mValue": -4,
+        "fhirpath": "name.where(use='official').family",
+        "espath": "family",
+        "type": "String"
+      },
+      "phone": {
+        "algorithm": "exact",
+        "threshold": 2,
+        "weight": 3,
+        "uValue": 5,
+        "mValue": -8,
+        "fhirpath": "telecom.where(system='phone').value",
+        "espath": "phone"
+      }
+    },
+    "threshold": 0,
+    "filters": {
       "gender": {
         "algorithm": "exact",
         "threshold": 2,
         "fhirpath": "gender",
         "espath": "gender"
-      },
-      "artNumber": {
-        "algorithm": "exact",
-        "threshold": 2,
-        "fhirpath": "identifier.where(system='http://health.go.ug/cr/uniqueid').value",
-        "espath": "uniqueid"
-      }
-    },
-    "filters": {
-      "facilityId": {
-        "fhirpath": "identifier.where(system='http://health.go.ug/cr/dhis2facid').value",
-        "espath": "dhis2facid"
       }
     }
   }]

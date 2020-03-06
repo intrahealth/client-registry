@@ -2,6 +2,7 @@
 const request = require('request');
 const URI = require('urijs');
 const async = require('async');
+const _ = require('lodash');
 const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('./fhir')();
 const logger = require('./winston');
@@ -9,69 +10,34 @@ const config = require('./config');
 const matchingMixin = require('./matchingMixin');
 const fhir = new Fhir();
 
-const performMatch = ({
-  sourceResource,
-  ignoreList
-}, callback) => {
-  const matches = {};
-  matches.entry = [];
-  const decisionRules = config.get('rules');
-  async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
-    const esquery = {};
-    esquery.query = {};
-    esquery.query.bool = {};
-    esquery.query.bool.must = [];
-    for (const ruleField in decisionRule.fields) {
-      const rule = decisionRule.fields[ruleField];
-      const match = {};
-      let path = rule.espath;
-      if (rule.algorithm === 'phonetic') {
-        path += '.phonetic';
-      }
-      let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
-      if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
-        if (pathValue.length === 0) {
-          match[path] = {
-            query: '',
-          };
-          if(rule.weight > 0) {
-            match[path].boost = rule.weight;
-          }
-          esquery.query.bool.must.push({
-            match: match,
-          });
-        }
-        for (const value of pathValue) {
-          match[path] = {
-            query: value,
-          };
-          if(rule.weight > 0) {
-            match[path].boost = rule.weight;
-          }
-          if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
-            match[path].fuzziness = rule.threshold;
-            if (rule.algorithm === 'damerau-levenshtein') {
-              match[path].fuzzy_transpositions = true;
-            } else {
-              match[path].fuzzy_transpositions = false;
-            }
-          }
-          const tmpMatch = {
-            ...match,
-          };
-          esquery.query.bool.must.push({
-            match: tmpMatch,
-          });
-        }
-      } else {
-        if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
-          pathValue = '';
-        }
-        if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
-          pathValue == '';
-        }
+const buildDeterministicQuery = (sourceResource, decisionRule) => {
+  const esquery = {};
+  esquery.query = {};
+  esquery.query.bool = {};
+  esquery.query.bool.must = [];
+  for (const ruleField in decisionRule.fields) {
+    const rule = decisionRule.fields[ruleField];
+    const match = {};
+    let path = rule.espath;
+    if (rule.algorithm === 'phonetic') {
+      path += '.phonetic';
+    }
+    let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
+    if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+      if (pathValue.length === 0) {
         match[path] = {
-          query: pathValue,
+          query: '',
+        };
+        if(rule.weight > 0) {
+          match[path].boost = rule.weight;
+        }
+        esquery.query.bool.must.push({
+          match: match,
+        });
+      }
+      for (const value of pathValue) {
+        match[path] = {
+          query: value,
         };
         if(rule.weight > 0) {
           match[path].boost = rule.weight;
@@ -84,47 +50,224 @@ const performMatch = ({
             match[path].fuzzy_transpositions = false;
           }
         }
+        const tmpMatch = _.cloneDeep(match);
         esquery.query.bool.must.push({
-          match,
+          match: tmpMatch,
+        });
+      }
+    } else {
+      if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+        pathValue = '';
+      }
+      if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+        pathValue == '';
+      }
+      match[path] = {
+        query: pathValue,
+      };
+      if(rule.weight > 0) {
+        match[path].boost = rule.weight;
+      }
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          match[path].fuzzy_transpositions = true;
+        } else {
+          match[path].fuzzy_transpositions = false;
+        }
+      }
+      esquery.query.bool.must.push({
+        match,
+      });
+    }
+  }
+  if (Object.keys(decisionRule.filters).length > 0) {
+    esquery.query.bool.filter = [];
+    for (const filterField in decisionRule.filters) {
+      const block = decisionRule.filters[filterField];
+      const term = {};
+      const path = block.espath;
+      let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
+      if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+        if (pathValue.length === 0) {
+          term[path] = '';
+          esquery.query.bool.filter.push({
+            term
+          });
+        }
+        for (const value of pathValue) {
+          term[path] = value;
+          const tmpTerm = _.cloneDeep(term);
+          esquery.query.bool.filter.push({
+            term: tmpTerm,
+          });
+        }
+      } else {
+        if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+          pathValue = '';
+        }
+        if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+          pathValue == '';
+        }
+        term[path] = pathValue;
+        esquery.query.bool.filter.push({
+          term,
         });
       }
     }
-    if (Object.keys(decisionRule.filters).length > 0) {
-      esquery.query.bool.filter = [];
-      for (const filterField in decisionRule.filters) {
-        const block = decisionRule.filters[filterField];
-        const term = {};
-        const path = block.espath;
-        let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
-        if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
-          if (pathValue.length === 0) {
-            term[path] = '';
-            esquery.query.bool.filter.push({
-              term
-            });
-          }
-          for (const value of pathValue) {
-            term[path] = value;
-            const tmpTerm = {
-              ...term,
-            };
-            esquery.query.bool.filter.push({
-              term: tmpTerm,
-            });
-          }
-        } else {
-          if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
-            pathValue = '';
-          }
-          if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
-            pathValue == '';
-          }
-          term[path] = pathValue;
-          esquery.query.bool.filter.push({
-            term,
-          });
+  }
+  return esquery;
+};
+
+const buildProbabilisticQuery = (sourceResource, decisionRule) => {
+  const esquery = {};
+  esquery.query = {};
+  esquery.query = {
+    script_score: {
+      query: {
+        function_score: {
+          query: {},
+          functions: []
         }
       }
+    }
+  };
+  for (const ruleField in decisionRule.fields) {
+    const rule = decisionRule.fields[ruleField];
+    const esfunction = {
+      filter: {}
+    };
+    if(rule.weight > 0) {
+      esfunction.weight = rule.weight;
+    }
+    let path = rule.espath;
+    if (rule.algorithm === 'phonetic') {
+      path += '.phonetic';
+    }
+    esfunction.filter.match = {};
+    let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
+    if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+      if (pathValue.length === 0) {
+        esfunction.filter.match[path] = {
+          query: ''
+        };
+        esquery.query.script_score.query.function_score.functions.push(esfunction);
+      }
+      for (const value of pathValue) {
+        esfunction.filter.match[path] = {
+          query: value
+        };
+        if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+          esfunction.filter.match[path].fuzziness = rule.threshold;
+          if (rule.algorithm === 'damerau-levenshtein') {
+            esfunction.filter.match[path].fuzzy_transpositions = true;
+          } else {
+            esfunction.filter.match[path].fuzzy_transpositions = false;
+          }
+        }
+        const tmpESFunction = _.cloneDeep(esfunction);
+        esquery.query.script_score.query.function_score.functions.push(tmpESFunction);
+      }
+    } else {
+      if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+        pathValue = '';
+      }
+      if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+        pathValue == '';
+      }
+      esfunction.filter.match[path] = {
+        query: pathValue
+      };
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        esfunction.filter.match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          esfunction.filter.match[path].fuzzy_transpositions = true;
+        } else {
+          esfunction.filter.match[path].fuzzy_transpositions = false;
+        }
+      }
+      esquery.query.script_score.query.function_score.functions.push(esfunction);
+    }
+  }
+
+  if (Object.keys(decisionRule.filters).length === 0) {
+    esquery.query.script_score.query.function_score.query = {
+      match_all: {}
+    };
+  }
+
+  if (Object.keys(decisionRule.filters).length > 0) {
+    esquery.query.script_score.query.function_score.query.bool = {
+      filter: []
+    };
+    for (const filterField in decisionRule.filters) {
+      const block = decisionRule.filters[filterField];
+      const term = {};
+      const path = block.espath;
+      let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
+      if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+        if (pathValue.length === 0) {
+          term[path] = {
+            value: ''
+          };
+          esquery.query.script_score.query.function_score.query.bool.filter.push({
+            term
+          });
+        }
+        for (const value of pathValue) {
+          term[path] = {value};
+          const tmpTerm = _.cloneDeep(term);
+          esquery.query.script_score.query.function_score.query.bool.filter.push({
+            term: tmpTerm,
+          });
+        }
+      } else {
+        if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+          pathValue = '';
+        }
+        if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+          pathValue == '';
+        }
+        term[path] = {value: pathValue};
+        esquery.query.script_score.query.function_score.query.bool.filter.push({
+          term
+        });
+      }
+    }
+  }
+  esquery.query.script_score.query.function_score.score_mode = 'multiply';
+  esquery.query.script_score.query.function_score.boost_mode = 'replace';
+  esquery.query.script_score.query.function_score.min_score = 2;
+  const params = {fields: []};
+  for (const ruleField in decisionRule.fields) {
+    const rule = decisionRule.fields[ruleField];
+    params.fields.push({
+      prime: rule.weight,
+      match: rule.uValue,
+      unmatch: rule.mValue
+    });
+  }
+  esquery.query.script_score.script = {
+    "source": "double result = 0.0;for( item in params.fields ) {result += ( _score % item.prime == 0 ?item.match : item.unmatch );}return result;",
+    params
+  };
+  esquery.query.script_score.min_score = decisionRule.threshold;
+  return esquery;
+};
+
+const performMatch = ({
+  sourceResource,
+  ignoreList
+}, callback) => {
+  const matches = {};
+  matches.entry = [];
+  const decisionRules = config.get('rules');
+  async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
+    let esquery = {};
+    if(config.get('matching:type') === 'probabilistic') {
+      esquery = buildProbabilisticQuery(sourceResource, decisionRule);
+    } else if(config.get('matching:type') === 'deterministic') {
+      esquery = buildDeterministicQuery(sourceResource, decisionRule);
     }
     const url = URI(config.get('elastic:server'))
       .segment(config.get('elastic:index'))
