@@ -10,6 +10,38 @@ const config = require('./config');
 const matchingMixin = require('./matchingMixin');
 const fhir = new Fhir();
 
+const generatePrimes = (total) => {
+  const primeArray=[];
+  let count = 0;
+  let currentNum = 2;
+  while (count < total) {
+    if (_isPrime(currentNum)) {
+      primeArray.push(currentNum);
+      count++;
+    }
+    currentNum++;
+  }
+  return primeArray;
+
+  function _isPrime(num) {
+    if (num <= 1) {
+      throw new Error("Number cannot be smaller than 2");
+    }
+    var status = true;
+    if (num !== 2 && num % 2 === 0) {
+      status = false;
+    } else {
+      for (var i = 2; i < num; ++i) {
+        if (num % i == 0) {
+          status = false;
+          break;
+        }
+      }
+    }
+    return status;
+  }
+};
+
 const buildDeterministicQuery = (sourceResource, decisionRule) => {
   const esquery = {};
   esquery.query = {};
@@ -132,14 +164,15 @@ const buildProbabilisticQuery = (sourceResource, decisionRule) => {
       }
     }
   };
+  const primes = generatePrimes(Object.keys(decisionRule.fields).length);
+  let index = 0;
   for (const ruleField in decisionRule.fields) {
     const rule = decisionRule.fields[ruleField];
     const esfunction = {
       filter: {}
     };
-    if(rule.weight > 0) {
-      esfunction.weight = rule.weight;
-    }
+    esfunction.weight = primes[index];
+    index++;
     let path = rule.espath;
     if (rule.algorithm === 'phonetic') {
       path += '.phonetic';
@@ -238,14 +271,18 @@ const buildProbabilisticQuery = (sourceResource, decisionRule) => {
   esquery.query.script_score.query.function_score.score_mode = 'multiply';
   esquery.query.script_score.query.function_score.boost_mode = 'replace';
   esquery.query.script_score.query.function_score.min_score = 2;
+  index = 0;
   const params = {fields: []};
   for (const ruleField in decisionRule.fields) {
     const rule = decisionRule.fields[ruleField];
+    const match = Math.log(parseFloat(rule.mValue)/parseFloat(rule.uValue));
+    const unmatch = Math.log((1-parseFloat(rule.mValue))/(1-parseFloat(rule.uValue)));
     params.fields.push({
-      prime: rule.weight,
-      match: rule.uValue,
-      unmatch: rule.mValue
+      prime: primes[index],
+      match,
+      unmatch
     });
+    index++;
   }
   esquery.query.script_score.script = {
     "source": "double result = 0.0;for( item in params.fields ) {result += ( _score % item.prime == 0 ?item.match : item.unmatch );}return result;",

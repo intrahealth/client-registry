@@ -562,6 +562,11 @@ const fhir2ES = ({
                 async.eachSeries(resourceData, (data, next) => {
                   logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
                   count++;
+                  if(!data.resource.link ||
+                    (data.resource.link && Array.isArray(data.resource.link) && data.resource.link.length === 0) ||
+                    data.resource.link && !Array.isArray(data.resource.link)) {
+                    return next();
+                  }
                   const isGoldenRec = data.resource && data.resource.meta && data.resource.meta.tag && data.resource.meta.tag.find((tag) => {
                     return tag.code === config.get('codes:goldenRecord');
                   });

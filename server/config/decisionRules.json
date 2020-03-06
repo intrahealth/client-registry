@@ -31,9 +31,8 @@
       "given": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "weight": 2,
-        "uValue": 20,
-        "mValue": -2,
+        "mValue": 0.7695942,
+        "uValue": 0.02268,
         "fhirpath": "name.where(use='official').given",
         "espath": "given",
         "type": "String"
@@ -41,9 +40,8 @@
       "family": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "weight": 3,
-        "uValue": 10,
-        "mValue": -4,
+        "mValue": 0.9995993,
+        "uValue": 0.00115,
         "fhirpath": "name.where(use='official').family",
         "espath": "family",
         "type": "String"
@@ -51,9 +49,8 @@
       "phone": {
         "algorithm": "exact",
         "threshold": 2,
-        "weight": 3,
-        "uValue": 5,
-        "mValue": -8,
+        "mValue": 0.8796964,
+        "uValue": 0.00056,
         "fhirpath": "telecom.where(system='phone').value",
         "espath": "phone"
       }
