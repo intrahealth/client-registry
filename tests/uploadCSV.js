@@ -3,6 +3,7 @@ const async = require('async');
 const csv = require('fast-csv');
 const path = require('path');
 const request = require('request');
+const moment = require('moment');
 const uploadResults = require('./uploadResults');
 const logger = require('../server/lib/winston');
 
@@ -62,6 +63,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         let phone = row['phone_number'];
         let nationalID = row['uganda_nin'];
         let ARTNumb = row['art_number'];
+        let birthDate = row['date_of_birth'];
         if (sex) {
           sex = sex.trim();
         }
@@ -80,12 +82,21 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (ARTNumb) {
           ARTNumb = ARTNumb.trim();
         }
+        if (birthDate) {
+          birthDate = birthDate.trim();
+        }
         let resource = {};
         resource.resourceType = 'Patient';
         if (sex == 'f') {
           resource.gender = 'female';
         } else if (sex == 'm') {
           resource.gender = 'male';
+        }
+        if ( birthDate.match( /\d{8,8}/ ) ) {
+          let birthMoment = moment( birthDate );
+          if ( birthMoment.isValid() ) {
+            resource.birthDate = birthMoment.format("YYYY-MM-DD")
+          }
         }
         resource.identifier = [
           {
