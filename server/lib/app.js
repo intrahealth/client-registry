@@ -1,7 +1,7 @@
 'use strict';
 const express = require('express');
 const bodyParser = require('body-parser');
-const path = require('path');
+const moment = require('moment');
 const async = require('async');
 const uuid4 = require('uuid/v4');
 const prerequisites = require('./prerequisites');
@@ -39,6 +39,7 @@ if (config.get('mediator:register')) {
  */
 function appRoutes() {
   const app = express();
+  app.set('trust proxy', true);
   app.use('/crux', express.static(`${__dirname}/../gui`));
   app.use('/ocrux', userRouter);
   app.use(bodyParser.json({limit: '10Mb', type: ['application/fhir+json', 'application/json+fhir', 'application/json']}));
@@ -165,12 +166,111 @@ function appRoutes() {
       const cert = req.connection.getPeerCertificate();
       clientID = cert.subject.CN;
     }
-    addPatient(clientID, patientsBundle, (err, response) => {
+    addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
       if(err) {
-        return res.status(500).send();
+        res.status(500).send();
+      } else {
+        res.setHeader('location', response.entry[0].response.location);
+        res.status(201).send();
       }
-      res.setHeader('location', response.entry[0].response.location);
-      res.status(201).send();
+      const auditBundle = {};
+      auditBundle.type = 'batch';
+      auditBundle.resourceType = 'Bundle';
+      auditBundle.entry = [];
+      for(const operSummary of operationSummary) {
+        let action;
+        if(operSummary.action === 'create') {
+          action = 'C';
+        } else if (operSummary.action === 'update') {
+          action = 'U';
+        }
+        const ipAddress = req.ip.split(':').pop();
+        const auditEvent = {
+          id: uuid4(),
+          resourceType: 'AuditEvent',
+          type: {
+            system: 'http://dicom.nema.org/resources/ontology/DCM',
+            code: '110110'
+          },
+          subtype: {
+            system: 'http://hl7.org/fhir/restful-interaction',
+            code: operSummary.action,
+          },
+          action,
+          recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+          agent: [{
+            requestor: true,
+            network: {
+              address: ipAddress,
+              type: '2'
+            }
+          }],
+          source: {
+            type: {
+              system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
+              code: '4'
+            }
+          }
+        };
+        if (operSummary.outcome) {
+          auditEvent.outcome = operSummary.outcome;
+          auditEvent.outcomeDesc = operSummary.outcomeDesc;
+        } else {
+          auditEvent.outcome = '0';
+          auditEvent.outcomeDesc = 'Success';
+        }
+        auditEvent.entity = []
+        if(operSummary.cruid && operSummary.cruid.length > 0) {
+          for(const cruid of operSummary.cruid) {
+            auditEvent.entity.push({
+              name: 'CRUID',
+              what: {reference: cruid}
+            });
+          }
+        }
+        if(operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
+          for(const match of operSummary.FHIRMatches) {
+            auditEvent.entity.push({
+              name: 'match',
+              what: {reference: match.resource.resourceType + '/' + match.resource.id}
+            });
+          }
+        }
+
+        if(operSummary.submittedResource) {
+          const submRes = {
+            name: 'submittedResource',
+            what: {reference: operSummary.submittedResource.resourceType + '/' + operSummary.submittedResource.id},
+            detail: [{
+              type: 'resource',
+              valueString: JSON.stringify(operSummary.submittedResource)
+            }]
+          };
+          for(const esmatch of operSummary.ESMatches) {
+            let match = {
+              rule: esmatch.rule,
+              match: esmatch.results,
+              query: esmatch.query
+            };
+            match = JSON.stringify(match);
+            submRes.detail.push({
+              type: 'match',
+              valueBase64Binary: Buffer.from(match).toString('base64')
+            });
+          }
+          auditEvent.entity.push(submRes);
+        }
+        auditBundle.entry.push({
+          resource: auditEvent,
+          request: {
+            method: 'PUT',
+            url: `AuditEvent/${auditEvent.id}`,
+          }
+        });
+      }
+      fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+        logger.info('Audit saved successfully');
+      });
     });
   });
 
@@ -196,7 +296,7 @@ function appRoutes() {
       const cert = req.connection.getPeerCertificate();
       clientID = cert.subject.CN;
     }
-    addPatient(clientID, patientsBundle, (err, response) => {
+    addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
       if(err) {
         return res.status(500).send();
       }
@@ -227,9 +327,13 @@ function appRoutes() {
       resourceType: 'Bundle',
       entry: []
     };
+    const operationSummary = [];
     if(!clientID) {
+      operSummary.outcome = '4';
+      operSummary.outcomeDesc ='Request didnt include POS/client ID';
+      operationSummary.push(operSummary);
       logger.error('No client ID found, cant add patient');
-      return callback(true, responseBundle);
+      return callback(true, responseBundle, operationSummary);
     }
     logger.info('Running match for system ' + clientID);
 
@@ -286,7 +390,8 @@ function appRoutes() {
       patient,
       currentLinks = [],
       newPatient = true,
-      bundle
+      bundle,
+      operSummary
     }, callback) => {
       const patientEntry = {};
       patientEntry.entry = [{
@@ -301,7 +406,13 @@ function appRoutes() {
       matchingTool.performMatch({
         sourceResource: patient,
         ignoreList: [patient.id],
-      }, matches => {
+      }, (err, matches, ESMatches) => {
+        if(err) {
+          operSummary.outcome = '8';
+          operSummary.outcomeDesc = 'An error occured while finding matches';
+          return callback(err);
+        }
+        operSummary.ESMatches = ESMatches;
         if (matches.entry && matches.entry.length === 0) {
           let goldenRecord;
           // check if this patient had a golden record and that golden record has one link which is this patient, then reuse
@@ -353,6 +464,8 @@ function appRoutes() {
                   resourceData: tmpBundle
                 }, (err, body) => {
                   if (err) {
+                    operSummary.outcome = '8';
+                    operSummary.outcomeDesc = 'An error occured while saving patient and golden record';
                     return reject('Error saving patient');
                   }
                   return resolve();
@@ -384,14 +497,21 @@ function appRoutes() {
               };
               bundle.entry.push(goldenRecordResource);
               bundle.entry.push(patientResource);
+              operSummary.cruid.push(goldenRecord.resourceType + '/' + goldenRecord.id);
               return callback();
             }).catch((err) => {
+              if(!operSummary.outcome) {
+                operSummary.outcome = '8';
+                operSummary.outcomeDesc = 'Unknown Error Occured';
+              }
               return callback(err);
             });
           });
         } else if (matches.entry && matches.entry.length > 0) {
           const links = getLinksFromResources(matches);
           if (links.length === 0) {
+            operSummary.outcome = '8';
+            operSummary.outcomeDesc = 'Matched resource(s) dont have CRUID';
             logger.error('No links from resource');
             return callback(true);
           } else {
@@ -406,6 +526,8 @@ function appRoutes() {
               }
             }
             if (!query) {
+              operSummary.outcome = '8';
+              operSummary.outcomeDesc = 'Wasnt able to build queries for fetching CRUID in the database';
               logger.error('Cant build query from resource id');
               return callback(true);
             }
@@ -415,6 +537,8 @@ function appRoutes() {
               noCaching: true
             }, (goldenRecords) => {
               if(!goldenRecords || !goldenRecords.entry || goldenRecords.entry.length === 0) {
+                operSummary.outcome = '8';
+                operSummary.outcomeDesc = 'Querying for CRUID details from FHIR Server returned nothing';
                 return callback(true);
               }
               if(currentLinks.length > 0) {
@@ -465,6 +589,7 @@ function appRoutes() {
               }
               // adding new links now to the patient
               for (const goldenRecord of goldenRecords.entry) {
+                operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
                 responseBundle.entry.push({
                   response: {
                     location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
@@ -485,10 +610,15 @@ function appRoutes() {
                   },
                 });
               }
+              operSummary.FHIRMatches = matches.entry;
+              operSummary.ESMatches = ESMatches;
               return callback();
             });
           }
         } else {
+          operSummary.outcome = '8';
+          operSummary.outcomeDesc = 'Invalid response returned when attempted to get matches';
+          logger.error('Invalid response returned when attempted to get matches');
           return callback(true);
         }
       });
@@ -496,6 +626,8 @@ function appRoutes() {
 
     logger.info('Searching to check if the patient exists');
     async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
+      const operSummary = {};
+      operSummary.cruid = [];
       const bundle = {};
       bundle.type = 'batch';
       bundle.resourceType = 'Bundle';
@@ -521,14 +653,20 @@ function appRoutes() {
       }
       const internalIdURI = config.get("systems:internalid:uri");
       if(!internalIdURI || internalIdURI.length === 0) {
+        operSummary.outcome = '8';
+        operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
         logger.error('URI for internal id is not defined on configuration files, stop processing patient');
-        return callback(true, responseBundle);
+        operationSummary.push(operSummary);
+        return nxtPatient();
       }
 
       const validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
         return internalIdURI.includes(identifier.system) && identifier.value;
       });
       if (!validSystem) {
+        operSummary.outcome = '4';
+        operSummary.outcomeDesc = 'Patient resource has no identifier for internalid registered by client registry';
+        operationSummary.push(operSummary);
         logger.error('Patient resource has no identifier for internalid registered by client registry, stop processing');
         return nxtPatient();
       }
@@ -546,33 +684,53 @@ function appRoutes() {
           return entry.search.mode === 'match';
         });
         if (existingPatients.length === 0) {
+          operSummary.action = 'create';
           delete newPatient.resource.link;
           newPatient.resource.id = uuid4();
+          operSummary.submittedResource = newPatient.resource;
           findMatches({
             patient: newPatient.resource,
             newPatient: true,
-            bundle
+            bundle,
+            operSummary
           }, (err) => {
             if(err) {
-              return callback(true, responseBundle);
+              operationSummary.push(operSummary);
+              return nxtPatient();
             }
             fhirWrapper.saveResource({
               resourceData: bundle,
-            }, () => {
+            }, (err) => {
+              if(err) {
+                operSummary.outcome = '8';
+                operSummary.outcomeDesc = 'An error occured while saving a bundle that contians matches of a submitted resource and the submitted resource itself';
+                operationSummary.push(operSummary);
+                return nxtPatient();
+              }
+              operSummary.what = newPatient.resource.resourceType + '/' + newPatient.resource.id;
               if (config.get("matching:tool") === "elasticsearch") {
                 cacheFHIR.fhir2ES({
                   "patientsBundle": bundle
                 }, (err) => {
+                  if(err) {
+                    operSummary.outcome = '8';
+                    operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
+                  }
+                  operationSummary.push(operSummary);
                   return nxtPatient();
                 });
               } else {
+                operationSummary.push(operSummary);
                 return nxtPatient();
               }
             });
           });
         } else if (existingPatients.length > 0) {
+          operSummary.action = 'update';
           let existingLinks = [];
           const existingPatient = existingPatients[0];
+          operSummary.submittedResource = existingPatient.resource;
+          operSummary.what = existingPatient.resource.resourceType + '/' + existingPatient.resource.id;
           logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
           async.series([
             /**
@@ -622,10 +780,12 @@ function appRoutes() {
               patient: existingPatient.resource,
               currentLinks: existingLinks,
               newPatient: false,
-              bundle
+              bundle,
+              operSummary
             }, (err) => {
               if(err) {
-                return callback(true, responseBundle);
+                operationSummary.push(operSummary);
+                return nxtPatient();
               }
               fhirWrapper.saveResource({
                 resourceData: bundle,
@@ -634,9 +794,16 @@ function appRoutes() {
                   cacheFHIR.fhir2ES({
                     "patientsBundle": bundle
                   }, (err) => {
+                    if(err) {
+                      logger.error('An error has occured while caching patient changes into elasticsearch');
+                      operSummary.outcome = '8';
+                      operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
+                    }
+                    operationSummary.push(operSummary);
                     return nxtPatient();
                   });
                 } else {
+                  operationSummary.push(operSummary);
                   return nxtPatient();
                 }
               });
@@ -647,10 +814,10 @@ function appRoutes() {
     }, () => {
       if(responseBundle.entry.length === 0) {
         logger.error('An error has occured while adding patient');
-        return callback(true, responseBundle)
+        return callback(true, responseBundle, operationSummary);
       }
       logger.info('Done adding patient');
-      return callback(false, responseBundle);
+      return callback(false, responseBundle, operationSummary);
     });
   };
 
@@ -791,7 +958,7 @@ function appRoutes() {
                     resource: entry.resource
                   }]
                 };
-                addPatient(clientID, patientsBundle, (err, response) => {
+                addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
                   logger.info('Done rematching ' + entry.resource.id);
                   if(err) {
                     errFound = true;
@@ -833,6 +1000,7 @@ function appRoutes() {
   });
 
   app.post('/ocrux/breakMatch', (req, res) => {
+    const operationSummary = [];
     const ids = req.body;
     if (!Array.isArray(ids)) {
       return res.status(400).json({
@@ -874,12 +1042,17 @@ function appRoutes() {
       }, (resourceData) => {
         const goldenRec2RecoLink = {};
         for (const entry of resourceData.entry) {
+          const operSummary = {brokenResources: []};
+          operSummary.editingResource = entry.resource.resourceType + '/' + entry.resource.id;
           if (!entry.resource.link || (entry.resource.link && entry.resource.link.length === 0)) {
+            operSummary.outcome = '8';
+            operSummary.outcomeDesc = 'Submitted resource has no CRUID';
             noLink.push(entry.resource.id);
             continue;
           }
+          operSummary.oldCRUID = entry.resource.link[0].other.reference;
           for (const link of entry.resource.link) {
-            // group together records that shares the same golden id, these will later on be assigned to the same new golden olden
+            // group together records that shares the same golden id, these will later on be assigned to the same new golden id
             if (!goldenRec2RecoLink.hasOwnProperty(link.other.reference)) {
               const newGoldenRecord = fhirWrapper.createGoldenRecord();
               newGoldenRecord.link = [];
@@ -915,6 +1088,7 @@ function appRoutes() {
               goldenIds.push(link.other.reference);
             }
           }
+          operationSummary.push(operSummary);
         }
         let goldenQuery;
         for (const goldenId of goldenIds) {
@@ -931,6 +1105,17 @@ function appRoutes() {
           query: goldenQuery,
           noCaching: true
         }, (goldenRecords) => {
+          // get broken links for auditing
+          for (const goldenRecord of goldenRecords.entry) {
+            for (const linkIndex in goldenRecord.resource.link) {
+              if(!ids.includes(goldenRecord.resource.link[linkIndex].other.reference)) {
+                for(const index in operationSummary) {
+                  operationSummary[index].brokenResources.push(goldenRecord.resource.link[linkIndex].other.reference);
+                }
+              }
+            }
+          }
+
           let linkedRecordsQuery;
           for (const index in resourceData.entry) {
             resourceData.entry[index].request = {
@@ -962,6 +1147,12 @@ function appRoutes() {
                 return 'Patient/' + entry.resource.id === linkToGoldId;
               });
               if (!goldenRecord) {
+                for(const index in operationSummary) {
+                  if(operationSummary[index].editingResource === resourceData.entry[index].resource.resourceType + '/' + resourceData.entry[index].resource.id) {
+                    operationSummary[index].outcome = '8';
+                    operationSummary[index].outcomeDesc = 'Golden record was not found on the database';
+                  }
+                }
                 dontSaveChanges = true;
                 continue;
               }
@@ -1121,6 +1312,7 @@ function appRoutes() {
                     diagnostics: "Invalid ID format submitted for " + notProcessed.join(', ') + " but no link found"
                   });
                 };
+                saveAuditEvent();
                 return res.status(400).json(respObj);
               }
               if (dontSaveChanges) {
@@ -1129,12 +1321,18 @@ function appRoutes() {
                   code: "processing",
                   diagnostics: "Internal Error"
                 });
+                saveAuditEvent();
                 return res.status(500).json(respObj);
               }
               fhirWrapper.saveResource({
                 resourceData: bundle
               }, (err) => {
                 if (err) {
+                  for(const index in operationSummary) {
+                    operationSummary[index].outcome = '8';
+                    operationSummary[index].outcomeDesc = 'Error occured while saving changes';
+                  }
+                  saveAuditEvent();
                   return res.status(500).json({
                     resourceType: "OperationOutcome",
                     issue: [{
@@ -1144,10 +1342,15 @@ function appRoutes() {
                     }]
                   });
                 }
+                saveAuditEvent();
                 res.status(200).send();
               });
             });
           } else {
+            for(const index in operationSummary) {
+              operationSummary[index].outcome = '8';
+              operationSummary[index].outcomeDesc = 'Links to records were not found';
+            }
             res.status(500).json({
               resourceType: "OperationOutcome",
               issue: [{
@@ -1156,6 +1359,7 @@ function appRoutes() {
                 diagnostics: "Links to records were not found"
               }]
             });
+            saveAuditEvent();
           }
         });
       });
@@ -1168,7 +1372,91 @@ function appRoutes() {
           diagnostics: "Invalid ID Format. example valid ID is Patient/1"
         }]
       });
+      saveAuditEvent();
     }
+
+    const saveAuditEvent = () => {
+      logger.info('saving audit event');
+      const ipAddress = req.ip.split(':').pop();
+      const username = req.query.username;
+      const auditBundle = {};
+      auditBundle.type = 'batch';
+      auditBundle.resourceType = 'Bundle';
+      auditBundle.entry = [];
+      for(const operSummary of operationSummary) {
+        const entity = [];
+        if(operSummary.editingResource) {
+          entity.push({
+            name: 'break',
+            what: {reference: operSummary.editingResource}
+          });
+        }
+        if(operSummary.oldCRUID) {
+          entity.push({
+            name: 'oldCRUID',
+            what: {reference: operSummary.oldCRUID}
+          });
+        }
+        for(const broken of operSummary.brokenResources) {
+          entity.push({
+            name: 'breakFrom',
+            what: {reference: broken}
+          });
+        }
+        let outcome;
+        let outcomeDesc;
+        if (operSummary.outcome) {
+          outcome = operSummary.outcome;
+          outcomeDesc = operSummary.outcomeDesc;
+        } else {
+          outcome = '0';
+          outcomeDesc = 'Success';
+        }
+        const id = uuid4();
+        auditBundle.entry.push({
+          resource: {
+            id,
+            resourceType: 'AuditEvent',
+            type: {
+              system: 'http://dicom.nema.org/resources/ontology/DCM',
+              code: '110110'
+            },
+            subtype: {
+              system: 'http://hl7.org/fhir/restful-interaction',
+              code: 'update',
+            },
+            action: 'U',
+            recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+            agent: [{
+              altId: username,
+              requestor: true,
+              network: {
+                address: ipAddress,
+                type: '2'
+              }
+            }],
+            source: {
+              type: {
+                system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
+                code: '4'
+              }
+            },
+            entity,
+            outcome,
+            outcomeDesc
+          },
+          request: {
+            method: 'PUT',
+            url: 'AuditEvent/' + id
+          }
+        });
+      }
+      if(auditBundle.entry.length > 0) {
+        fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+          logger.info('Audit event saved successfully');
+        });
+      }
+    };
   });
   return app;
 }

@@ -12,6 +12,7 @@ import {
 Vue.config.productionTip = false;
 Vue.use(VueAxios, axios)
 Vue.use(Vuelidate)
+Vue.use(require('vue-moment'));
 new Vue({
   router,
   store,

@@ -45,6 +45,7 @@ module.exports = () => ({
         for (const qr of queries) {
           const qrArr = qr.split('=');
           if (qrArr.length !== 2) {
+            logger.error(qrArr);
             logger.error('Invalid query supplied, stop getting resources');
             return callback(resourceData);
           }

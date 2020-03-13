@@ -23,16 +23,13 @@
       ]
     }
   },
-  "blocking": {
-
-  },
   "rules": [{
     "fields": {
       "given": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "mValue": 0.7695942,
-        "uValue": 0.02268,
+        "mValue": 0.99999,
+        "uValue": 0.004117988390380518,
         "fhirpath": "name.where(use='official').given",
         "espath": "given",
         "type": "String"
@@ -40,26 +37,24 @@
       "family": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "mValue": 0.9995993,
-        "uValue": 0.00115,
+        "mValue": 0.99999,
+        "uValue": 0.0018393126085277747,
         "fhirpath": "name.where(use='official').family",
         "espath": "family",
         "type": "String"
       },
       "phone": {
         "algorithm": "exact",
-        "threshold": 2,
-        "mValue": 0.8796964,
-        "uValue": 0.00056,
+        "mValue": 0.99999,
+        "uValue": 0.0024534430787441675,
         "fhirpath": "telecom.where(system='phone').value",
         "espath": "phone"
       }
     },
-    "threshold": 0,
+    "threshold": 100,
     "filters": {
       "gender": {
         "algorithm": "exact",
-        "threshold": 2,
         "fhirpath": "gender",
         "espath": "gender"
       }

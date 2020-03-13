@@ -31,7 +31,7 @@ module.exports = () => ({
         sourceResource,
         targetResources,
         ignoreList,
-      }, matched => {
+      }, (err, matched) => {
         matches.entry = matches.entry.concat(matched.entry);
         if (targetResources.next) {
           const next = targetResources.next;
@@ -40,12 +40,12 @@ module.exports = () => ({
             sourceResource,
             ignoreList,
             url: next,
-          }, matched => {
+          }, (err, matched) => {
             matches.entry = matches.entry.concat(matched.entry);
-            return callback(matches);
+            return callback(err, matches);
           });
         } else {
-          return callback(matches);
+          return callback(err, matches);
         }
       });
     });
@@ -156,7 +156,7 @@ module.exports = () => ({
       }));
     }
     Promise.all(promises).then(() => {
-      return callback(matches);
+      return callback(false, matches);
     }).catch(err => {
       logger.error(err);
       throw err;

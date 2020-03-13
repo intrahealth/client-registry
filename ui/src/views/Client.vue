@@ -159,6 +159,110 @@
           </v-card-actions>
         </v-card>
       </v-col>
+      <v-col cols="12">
+        <v-card class="mx-auto">
+          <v-toolbar
+            color="secondary"
+            dark
+          >
+            <v-toolbar-title>History</v-toolbar-title>
+          </v-toolbar>
+          <v-expansion-panels popout>
+            <v-expansion-panel
+              v-for="(event,i) in matchEvents"
+              :key="i"
+            >
+              <v-expansion-panel-header>Event {{event.recorded | moment('Do MMM YYYY h:mm:ss a')}}</v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <v-row v-if="event.type === 'breakMatch'">
+                  <v-col cols="4">
+                    <v-card elevation='12' color="green" hover>
+                      <v-card-text class="white--text">
+                        Break <br><b>{{event.break}}</b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-card elevation='12' color="red" hover>
+                      <v-card-text class="white--text">
+                        Old CRUID <br><b>{{event.CRUID}}</b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-card elevation='12' color="red" hover>
+                      <v-card-text class="white--text">
+                        Broken From <br>
+                        <b>
+                        <template v-for="breakFrom in event.breakFrom">
+                          {{breakFrom}}
+                        </template>
+                        </b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row v-for="(detail,j) in event.matchData" :key="j" v-else>
+                  <v-col cols="6">
+                    <v-card elevation='12' hover>
+                      <v-card-text>
+                        <v-data-table
+                          :headers="matchRuleHeaders"
+                          :items="detail.decisionRule"
+                          :items-per-page="20"
+                          item-key="id"
+                        >
+                          <template v-slot:item.details="{ item }">
+                            <template v-if="item.details.algorithm">
+                              Algorithm - {{ item.details.algorithm }}<br>
+                            </template>
+                            <template v-if="item.details.threshold">
+                              Threshold <v-chip color='red' dark>{{ item.details.threshold }}</v-chip><br>
+                            </template>
+                            <template v-if="item.details.mValue">
+                              <b>mValue</b> <v-chip color='green' dark>{{ item.details.mValue }}</v-chip> <b>- uValue</b> <v-chip color='blue' dark>{{ item.details.uValue }}</v-chip><br>
+                            </template>
+                            <template v-if="item.details.fhirpath">
+                              FHIR Path - {{ item.details.fhirpath }}
+                            </template>
+                            <br><br>
+                          </template>
+                        </v-data-table>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="6">
+                    <v-card>
+                      <v-card-text>
+                        <v-textarea
+                          filled
+                          color="deep-purple"
+                          label="Elasticsearch Query"
+                          rows="10"
+                          :value="detail.query"
+                        >
+                        </v-textarea>
+                      </v-card-text>
+                    </v-card>
+                    <v-card>
+                      <v-card-text>
+                        <v-textarea
+                          filled
+                          color="deep-purple"
+                          label="Elasticsearch Results"
+                          rows="10"
+                          :value="detail.match"
+                        >
+                        </v-textarea>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </v-card>
+      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -166,18 +270,30 @@
 
 <script>
 import { generalMixin } from '../mixins/generalMixin'
+import VueMoment from 'vue-moment'
 export default {
   mixins: [generalMixin],
   name: "Client",
   data() {
     return {
       selected: "",
+      matchEvents: [],
+      matchRule: [],
+      auditEvent: [],
+      rule: {"rule":{"fields":{"given":{"algorithm":"damerau-levenshtein","threshold":2,"mValue":0.7695942,"uValue":0.02268,"fhirpath":"name.where(use='official').given","espath":"given","type":"String"},"family":{"algorithm":"damerau-levenshtein","threshold":2,"mValue":0.9995993,"uValue":0.00115,"fhirpath":"name.where(use='official').family","espath":"family","type":"String"},"phone":{"algorithm":"exact","threshold":2,"mValue":0.8796964,"uValue":0.00056,"fhirpath":"telecom.where(system='phone').value","espath":"phone"}},"threshold":0,"filters":{"gender":{"algorithm":"exact","threshold":2,"fhirpath":"gender","espath":"gender"}}},"match":{"_index":"patients","_type":"_doc","_id":"d750d2a5-2e7b-44d6-bcf3-1a0116918cd3","_score":0.72928625,"_source":{"gender":"male","birthDate":"2020-01-02","given":["Emmanuel","Jakob"],"family":["Namaalwa"],"fullname":"","phone":["774 232423"],"patients":"Patient/d750d2a5-2e7b-44d6-bcf3-1a0116918cd3"}}},
       systems: {},
       primary_systems: [process.env.VUE_APP_SYSTEM_OPENMRS],
       match_count: 0,
       uid: "",
       breaks: [],
       unbreaks: [],
+      matchRuleHeaders: [{
+        text: 'Field',
+        value: 'name'
+      }, {
+        text: 'Field Details',
+        value: 'details'
+      }],
       match_headers: [
         {
           text: "Submitting System",
@@ -213,7 +329,8 @@ export default {
     };
   },
   mounted() {
-    this.getPatient();
+    this.getPatient()
+    this.getAuditEvents()
   },
   methods: {
     getPatient() {
@@ -409,6 +526,65 @@ export default {
           this.getPatient();
         });
       }
+    },
+    getAuditEvents() {
+      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom&_sort=-_lastUpdated`
+      this.$http.get(url).then(response => {
+        this.auditEvent = response.data
+        for(let event of response.data.entry) {
+          let modifiedEvent = {matchData: []}
+          modifiedEvent.recorded = event.resource.recorded
+          let isBreakEvent = event.resource.entity.find((entity) => {
+            return entity.name === 'breakFrom' || entity.name === 'breakTo'
+          })
+          if(isBreakEvent) {
+            modifiedEvent.breakFrom = []
+            modifiedEvent.type = 'breakMatch'
+            for(let entity of event.resource.entity) {
+              if(entity.name === 'break') {
+                modifiedEvent.break = entity.what.reference
+              }
+              if(entity.name === 'oldCRUID') {
+                modifiedEvent.CRUID = entity.what.reference
+              }
+              if(entity.name === 'breakFrom') {
+                modifiedEvent.breakFrom.push(entity.what.reference);
+              }
+            }
+            this.matchEvents.push(modifiedEvent)
+            continue;
+          }
+          for(let entity of event.resource.entity) {
+            if(entity.name === 'submittedResource') {
+              modifiedEvent.type = 'submittedResource'
+              modifiedEvent.submittedResource = entity.what.reference
+              for(let detail of entity.detail) {
+                if(detail.type === 'resource') {
+                  modifiedEvent.submittedResourceData = detail.valueString
+                } else if(detail.type === 'match') {
+                  let matches = new Buffer.from(detail.valueBase64Binary, 'base64').toString('ascii')
+                  matches = JSON.parse(matches)
+                  let decRule = [];
+                  for(let field in matches.rule.fields) {
+                    let fieldDet = matches.rule.fields[field]
+                    decRule.push({
+                      name: field,
+                      id: field,
+                      details: fieldDet
+                    })
+                  }
+                  modifiedEvent.matchData.push({
+                    decisionRule: decRule,
+                    match: JSON.stringify(matches.match,0,2),
+                    query: JSON.stringify(matches.query,0,2)
+                  })
+                }
+              }
+            }
+          }
+          this.matchEvents.push(modifiedEvent)
+        }
+      });
     }
   }
 };

@@ -59,8 +59,6 @@ const loadResources = (callback) => {
           } else {
             logger.info('Saving ' + fhir.resourceType + ' - ' + fhir.id);
             request.put(options, (err, res, body) => {
-              if (fhir.id === "default_admin_user")
-                console.log(body);
               resolve();
               if (err) {
                 logger.error(err);

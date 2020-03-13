@@ -32,6 +32,7 @@
       />
     </v-card-title>
     <v-data-table
+      style="cursor: pointer"
       :headers="headers"
       :items="patients"
       :options.sync="options"
