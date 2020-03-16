@@ -175,11 +175,20 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 password: 'openmrs'
               }
               const options = {
-                url: 'http://localhost:5001/Patient',
-                auth,
+                url: 'https://localhost:3000/Patient',
+                agentOptions,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
+                if(err) {
+                  logger.error('An error has occured');
+                  logger.error(err);
+                  return nxtEntry();
+                }
+                if(!res.headers) {
+                  logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details');
+                  return nxtEntry()
+                }
                 logger.info(res.headers);
                 return nxtEntry();
               });
