@@ -172,31 +172,111 @@
               v-for="(event,i) in matchEvents"
               :key="i"
             >
-              <v-expansion-panel-header>Event {{event.recorded | moment('Do MMM YYYY h:mm:ss a')}}</v-expansion-panel-header>
+              <v-expansion-panel-header>
+                <template v-if="event.type === 'submittedResource'">
+                  Submitted Resource
+                </template>
+                <template v-if="event.type === 'breakMatch'">
+                  Break Match
+                </template>
+                <template v-if="event.type === 'unBreak'">
+                  Revert Break
+                </template>
+                Event {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
               <v-expansion-panel-content>
+                <template v-if="event.type !== 'submittedResource'">
+                  User: {{ event.username }} <br>
+                </template>
+                Status:
+                <template v-if="event.outcomeCode === '0'">
+                  <v-chip
+                    color="green"
+                    dark
+                  >
+                    {{ event.outcome }}
+                  </v-chip>
+                </template>
+                <template v-else>
+                  <v-chip
+                    color="red"
+                    dark
+                  >
+                    {{ event.outcome }}
+                  </v-chip>
+                </template>
+                <br>
+                IP Address: {{ event.ipaddress }}
                 <v-row v-if="event.type === 'breakMatch'">
                   <v-col cols="4">
-                    <v-card elevation='12' color="green" hover>
+                    <v-card
+                      elevation="12"
+                      color="green"
+                      hover
+                    >
                       <v-card-text class="white--text">
-                        Break <br><b>{{event.break}}</b>
+                        Break <br><b>{{ event.break }}</b>
                       </v-card-text>
                     </v-card>
                   </v-col>
                   <v-col cols="4">
-                    <v-card elevation='12' color="red" hover>
+                    <v-card
+                      elevation="12"
+                      color="red"
+                      hover
+                    >
                       <v-card-text class="white--text">
-                        Old CRUID <br><b>{{event.CRUID}}</b>
+                        Old CRUID <br><b>{{ event.CRUID }}</b>
                       </v-card-text>
                     </v-card>
                   </v-col>
                   <v-col cols="4">
-                    <v-card elevation='12' color="red" hover>
+                    <v-card
+                      elevation="12"
+                      color="red"
+                      hover
+                    >
                       <v-card-text class="white--text">
                         Broken From <br>
                         <b>
-                        <template v-for="breakFrom in event.breakFrom">
-                          {{breakFrom}}
-                        </template>
+                          <template v-for="breakFrom in event.breakFrom">
+                            => {{ breakFrom }}
+                          </template>
+                        </b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                </v-row>
+                <v-row v-if="event.type === 'unBreak'">
+                  <v-col cols="4">
+                    <v-card
+                      elevation="12"
+                      color="green"
+                      hover
+                    >
+                      <v-card-text class="white--text">
+                        Break <br><b>{{ event.unBreak }}</b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-card
+                      elevation="12"
+                      color="red"
+                      hover
+                    >
+                      <v-card-text class="white--text">
+                        Old CRUID <br><b>{{ event.unBreakFromCRUID }}</b>
+                      </v-card-text>
+                    </v-card>
+                  </v-col>
+                  <v-col cols="4">
+                    <v-card elevation="12" color="red" hover>
+                      <v-card-text class="white--text">
+                        Broken From <br>
+                        <b>
+                          <template v-for="unBreakFrom in event.unBreakFrom">
+                            => {{ unBreakFrom }}
+                          </template>
                         </b>
                       </v-card-text>
                     </v-card>
@@ -204,7 +284,10 @@
                 </v-row>
                 <v-row v-for="(detail,j) in event.matchData" :key="j" v-else>
                   <v-col cols="6">
-                    <v-card elevation='12' hover>
+                    <v-card
+                      elevation="12"
+                      hover
+                    >
                       <v-card-text>
                         <v-data-table
                           :headers="matchRuleHeaders"
@@ -217,10 +300,28 @@
                               Algorithm - {{ item.details.algorithm }}<br>
                             </template>
                             <template v-if="item.details.threshold">
-                              Threshold <v-chip color='red' dark>{{ item.details.threshold }}</v-chip><br>
+                              Threshold
+                              <v-chip
+                                color="red"
+                                dark
+                              >
+                                {{ item.details.threshold }}
+                              </v-chip><br>
                             </template>
                             <template v-if="item.details.mValue">
-                              <b>mValue</b> <v-chip color='green' dark>{{ item.details.mValue }}</v-chip> <b>- uValue</b> <v-chip color='blue' dark>{{ item.details.uValue }}</v-chip><br>
+                              <b>mValue</b>
+                              <v-chip
+                                color="green"
+                                dark
+                              >
+                                {{ item.details.mValue }}
+                              </v-chip> <b>- uValue</b>
+                              <v-chip
+                                color="blue"
+                                dark
+                              >
+                                {{ item.details.uValue }}
+                              </v-chip><br>
                             </template>
                             <template v-if="item.details.fhirpath">
                               FHIR Path - {{ item.details.fhirpath }}
@@ -240,8 +341,7 @@
                           label="Elasticsearch Query"
                           rows="10"
                           :value="detail.query"
-                        >
-                        </v-textarea>
+                        />
                       </v-card-text>
                     </v-card>
                     <v-card>
@@ -252,8 +352,7 @@
                           label="Elasticsearch Results"
                           rows="10"
                           :value="detail.match"
-                        >
-                        </v-textarea>
+                        />
                       </v-card-text>
                     </v-card>
                   </v-col>
@@ -276,11 +375,16 @@ export default {
   name: "Client",
   data() {
     return {
+      outcomes: {
+        0: 'Success',
+        4: 'Minor Failure - Client Error',
+        8: 'Serious Failure - Server Error',
+        12: 'Major Failure - Server Crashed'
+      },
       selected: "",
       matchEvents: [],
       matchRule: [],
       auditEvent: [],
-      rule: {"rule":{"fields":{"given":{"algorithm":"damerau-levenshtein","threshold":2,"mValue":0.7695942,"uValue":0.02268,"fhirpath":"name.where(use='official').given","espath":"given","type":"String"},"family":{"algorithm":"damerau-levenshtein","threshold":2,"mValue":0.9995993,"uValue":0.00115,"fhirpath":"name.where(use='official').family","espath":"family","type":"String"},"phone":{"algorithm":"exact","threshold":2,"mValue":0.8796964,"uValue":0.00056,"fhirpath":"telecom.where(system='phone').value","espath":"phone"}},"threshold":0,"filters":{"gender":{"algorithm":"exact","threshold":2,"fhirpath":"gender","espath":"gender"}}},"match":{"_index":"patients","_type":"_doc","_id":"d750d2a5-2e7b-44d6-bcf3-1a0116918cd3","_score":0.72928625,"_source":{"gender":"male","birthDate":"2020-01-02","given":["Emmanuel","Jakob"],"family":["Namaalwa"],"fullname":"","phone":["774 232423"],"patients":"Patient/d750d2a5-2e7b-44d6-bcf3-1a0116918cd3"}}},
       systems: {},
       primary_systems: [process.env.VUE_APP_SYSTEM_OPENMRS],
       match_count: 0,
@@ -500,19 +604,22 @@ export default {
     },
     breakMatch() {
       if (this.breaks.length > 0) {
-        let url = "/ocrux/breakMatch";
+        let username = this.$store.state.auth.username
+        let url = `/ocrux/breakMatch?username=${username}`;
         let ids = [];
         for (let breakIt of this.breaks) {
           ids.push("Patient/" + breakIt.fid);
         }
         this.$http.post(url, ids).then(response => {
           this.getPatient();
+          this.getAuditEvents();
         });
       }
     },
     revertBreak() {
       if (this.unbreaks.length > 0) {
-        let url = "/ocrux/unBreakMatch";
+        let username = this.$store.state.auth.username
+        let url = `/ocrux/unBreakMatch?username=${username}`;
         let ids = [];
         for (let unBreak of this.unbreaks) {
           for(let match of this.match_items) {
@@ -524,19 +631,37 @@ export default {
         }
         this.$http.post(url, ids).then(response => {
           this.getPatient();
+          this.getAuditEvents();
         });
       }
     },
     getAuditEvents() {
-      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom&_sort=-_lastUpdated`
+      this.matchEvents = []
+      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`
       this.$http.get(url).then(response => {
         this.auditEvent = response.data
         for(let event of response.data.entry) {
           let modifiedEvent = {matchData: []}
           modifiedEvent.recorded = event.resource.recorded
           let isBreakEvent = event.resource.entity.find((entity) => {
-            return entity.name === 'breakFrom' || entity.name === 'breakTo'
+            return entity.name === 'break' || entity.name === 'breakFrom'
           })
+          let isUnBreakEvent = event.resource.entity.find((entity) => {
+            return entity.name === 'unBreak' || entity.name === 'unBreakFromResource'
+          })
+          modifiedEvent.outcomeCode = event.resource.outcome
+          modifiedEvent.outcome = this.outcomes[event.resource.outcome]
+          modifiedEvent.outcomeDesc = event.resource.outcomeDesc
+          if(event.resource.agent && Array.isArray(event.resource.agent)) {
+            for(let agent of event.resource.agent) {
+              if(agent.altId) {
+                modifiedEvent.username = agent.altId
+              }
+              if(agent.network) {
+                modifiedEvent.ipaddress = agent.network.address
+              }
+            }
+          }
           if(isBreakEvent) {
             modifiedEvent.breakFrom = []
             modifiedEvent.type = 'breakMatch'
@@ -549,6 +674,23 @@ export default {
               }
               if(entity.name === 'breakFrom') {
                 modifiedEvent.breakFrom.push(entity.what.reference);
+              }
+            }
+            this.matchEvents.push(modifiedEvent)
+            continue;
+          }
+          if(isUnBreakEvent) {
+            modifiedEvent.unBreakFrom = []
+            modifiedEvent.type = 'unBreak'
+            for(let entity of event.resource.entity) {
+              if(entity.name === 'unBreak') {
+                modifiedEvent.unBreak = entity.what.reference
+              }
+              if(entity.name === 'unBreakFromCRUID') {
+                modifiedEvent.unBreakFromCRUID = entity.what.reference
+              }
+              if(entity.name === 'unBreakFromResource') {
+                modifiedEvent.unBreakFrom.push(entity.what.reference);
               }
             }
             this.matchEvents.push(modifiedEvent)

@@ -167,109 +167,15 @@ function appRoutes() {
       clientID = cert.subject.CN;
     }
     addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
-      if(err) {
-        res.status(500).send();
-      } else {
-        res.setHeader('location', response.entry[0].response.location);
-        res.status(201).send();
-      }
-      const auditBundle = {};
-      auditBundle.type = 'batch';
-      auditBundle.resourceType = 'Bundle';
-      auditBundle.entry = [];
-      for(const operSummary of operationSummary) {
-        let action;
-        if(operSummary.action === 'create') {
-          action = 'C';
-        } else if (operSummary.action === 'update') {
-          action = 'U';
-        }
-        const ipAddress = req.ip.split(':').pop();
-        const auditEvent = {
-          id: uuid4(),
-          resourceType: 'AuditEvent',
-          type: {
-            system: 'http://dicom.nema.org/resources/ontology/DCM',
-            code: '110110'
-          },
-          subtype: {
-            system: 'http://hl7.org/fhir/restful-interaction',
-            code: operSummary.action,
-          },
-          action,
-          recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
-          agent: [{
-            requestor: true,
-            network: {
-              address: ipAddress,
-              type: '2'
-            }
-          }],
-          source: {
-            type: {
-              system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
-              code: '4'
-            }
-          }
-        };
-        if (operSummary.outcome) {
-          auditEvent.outcome = operSummary.outcome;
-          auditEvent.outcomeDesc = operSummary.outcomeDesc;
-        } else {
-          auditEvent.outcome = '0';
-          auditEvent.outcomeDesc = 'Success';
-        }
-        auditEvent.entity = []
-        if(operSummary.cruid && operSummary.cruid.length > 0) {
-          for(const cruid of operSummary.cruid) {
-            auditEvent.entity.push({
-              name: 'CRUID',
-              what: {reference: cruid}
-            });
-          }
-        }
-        if(operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
-          for(const match of operSummary.FHIRMatches) {
-            auditEvent.entity.push({
-              name: 'match',
-              what: {reference: match.resource.resourceType + '/' + match.resource.id}
-            });
-          }
-        }
-
-        if(operSummary.submittedResource) {
-          const submRes = {
-            name: 'submittedResource',
-            what: {reference: operSummary.submittedResource.resourceType + '/' + operSummary.submittedResource.id},
-            detail: [{
-              type: 'resource',
-              valueString: JSON.stringify(operSummary.submittedResource)
-            }]
-          };
-          for(const esmatch of operSummary.ESMatches) {
-            let match = {
-              rule: esmatch.rule,
-              match: esmatch.results,
-              query: esmatch.query
-            };
-            match = JSON.stringify(match);
-            submRes.detail.push({
-              type: 'match',
-              valueBase64Binary: Buffer.from(match).toString('base64')
-            });
-          }
-          auditEvent.entity.push(submRes);
-        }
-        auditBundle.entry.push({
-          resource: auditEvent,
-          request: {
-            method: 'PUT',
-            url: `AuditEvent/${auditEvent.id}`,
-          }
-        });
-      }
+      const auditBundle = createAddPatientAudEvent(operationSummary, req);
       fhirWrapper.saveResource({resourceData: auditBundle}, () => {
         logger.info('Audit saved successfully');
+        if(err) {
+          res.status(500).send();
+        } else {
+          res.setHeader('location', response.entry[0].response.location);
+          res.status(201).send();
+        }
       });
     });
   });
@@ -303,6 +209,105 @@ function appRoutes() {
       res.status(201).json(response);
     });
   });
+
+  function createAddPatientAudEvent(operationSummary, req) {
+    const auditBundle = {};
+    auditBundle.type = 'batch';
+    auditBundle.resourceType = 'Bundle';
+    auditBundle.entry = [];
+    for(const operSummary of operationSummary) {
+      let action;
+      if(operSummary.action === 'create') {
+        action = 'C';
+      } else if (operSummary.action === 'update') {
+        action = 'U';
+      }
+      const ipAddress = req.ip.split(':').pop();
+      const auditEvent = {
+        id: uuid4(),
+        resourceType: 'AuditEvent',
+        type: {
+          system: 'http://dicom.nema.org/resources/ontology/DCM',
+          code: '110110'
+        },
+        subtype: {
+          system: 'http://hl7.org/fhir/restful-interaction',
+          code: operSummary.action,
+        },
+        action,
+        recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+        agent: [{
+          requestor: true,
+          network: {
+            address: ipAddress,
+            type: '2'
+          }
+        }],
+        source: {
+          type: {
+            system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
+            code: '4'
+          }
+        }
+      };
+      if (operSummary.outcome) {
+        auditEvent.outcome = operSummary.outcome;
+        auditEvent.outcomeDesc = operSummary.outcomeDesc;
+      } else {
+        auditEvent.outcome = '0';
+        auditEvent.outcomeDesc = 'Success';
+      }
+      auditEvent.entity = [];
+      if(operSummary.cruid && operSummary.cruid.length > 0) {
+        for(const cruid of operSummary.cruid) {
+          auditEvent.entity.push({
+            name: 'CRUID',
+            what: {reference: cruid}
+          });
+        }
+      }
+      if(operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
+        for(const match of operSummary.FHIRMatches) {
+          auditEvent.entity.push({
+            name: 'match',
+            what: {reference: match.resource.resourceType + '/' + match.resource.id}
+          });
+        }
+      }
+
+      if(operSummary.submittedResource) {
+        const submRes = {
+          name: 'submittedResource',
+          what: {reference: operSummary.submittedResource.resourceType + '/' + operSummary.submittedResource.id},
+          detail: [{
+            type: 'resource',
+            valueString: JSON.stringify(operSummary.submittedResource)
+          }]
+        };
+        for(const esmatch of operSummary.ESMatches) {
+          let match = {
+            rule: esmatch.rule,
+            match: esmatch.results,
+            query: esmatch.query
+          };
+          match = JSON.stringify(match);
+          submRes.detail.push({
+            type: 'match',
+            valueBase64Binary: Buffer.from(match).toString('base64')
+          });
+        }
+        auditEvent.entity.push(submRes);
+      }
+      auditBundle.entry.push({
+        resource: auditEvent,
+        request: {
+          method: 'PUT',
+          url: `AuditEvent/${auditEvent.id}`,
+        }
+      });
+    }
+    return auditBundle;
+  }
 
   function getPatient(req, noCaching, callback) {
     const resource = req.params.resource;
@@ -822,6 +827,7 @@ function appRoutes() {
   };
 
   app.post('/ocrux/unBreakMatch', (req, res) => {
+    const operationSummary = [];
     const ids = req.body;
     if (!Array.isArray(ids)) {
       return res.status(400).json({
@@ -833,6 +839,11 @@ function appRoutes() {
         }]
       });
     }
+    const auditBundle = {};
+    auditBundle.type = 'batch';
+    auditBundle.resourceType = 'Bundle';
+    auditBundle.entry = [];
+
     const bundle = {};
     bundle.type = 'batch';
     bundle.resourceType = 'Bundle';
@@ -845,6 +856,34 @@ function appRoutes() {
     const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
     for (const idPair of ids) {
       if (!idPair.id1 || !idPair.id2) {
+        const operSummary = {unBreakResources: []};
+        if(idPair.id1) {
+          const idArr1 = idPair.id1.toString().split('/');
+          const [resourceName1, resourceId1] = idArr1;
+          if(resourceName1 && resourceId1) {
+            operSummary.editingResource = resourceName1 + '/' + resourceId1;
+            operSummary.outcome = '4';
+            operSummary.outcomeDesc = 'Missing ID2';
+          } else {
+            operSummary.editingResource = idPair.id1.toString();
+            operSummary.outcome = '4';
+            operSummary.outcomeDesc = 'Wrong ID Format';
+          }
+        }
+        if(idPair.id2) {
+          const idArr2 = idPair.id2.toString().split('/');
+          const [resourceName2, resourceId2] = idArr2;
+          if(resourceName2 && resourceId2) {
+            operSummary.unBreakResources.push(resourceName2 + '/' + resourceId2);
+            operSummary.outcome = '4';
+            operSummary.outcomeDesc = 'Missing ID1';
+          } else {
+            operSummary.unBreakResources.push(idPair.id2.toString());
+            operSummary.outcome = '4';
+            operSummary.outcomeDesc = 'Wrong ID Format';
+          }
+        }
+        operationSummary.push(operSummary);
         dontSaveChanges = true;
         continue;
       }
@@ -863,12 +902,26 @@ function appRoutes() {
         query = '_id=' + idPair.id1 + ',' + idPair.id2;
       }
     }
+    if(dontSaveChanges) {
+      createAuditEvent();
+      fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+        return res.status(400).json({
+          resourceType: "OperationOutcome",
+          issue: [{
+            severity: "error",
+            code: "processing",
+            diagnostics: "Invalid request"
+          }]
+        });
+      });
+    }
     if (query && !dontSaveChanges) {
       fhirWrapper.getResource({
         resource: 'Patient',
         query,
         noCaching: true
       }, (resourceData) => {
+        const auditedId = [];
         for (const idPair of ids) {
           const id1 = idPair.id1;
           const id2 = idPair.id2;
@@ -876,6 +929,12 @@ function appRoutes() {
             return entry.resource.id === id1.split('/').pop();
           });
           const clientIdTag1 = resource1.resource.meta && resource1.resource.meta.tag && resource1.resource.meta.tag.find((tag) => {
+            return tag.code === 'clientid';
+          });
+          const resource2 = resourceData.entry.find((entry) => {
+            return entry.resource.id === id2.split('/').pop();
+          });
+          const clientIdTag2 = resource2.resource.meta && resource2.resource.meta.tag && resource2.resource.meta.tag.find((tag) => {
             return tag.code === 'clientid';
           });
           if(!clientIdTag1) {
@@ -898,12 +957,6 @@ function appRoutes() {
             }
           }
 
-          const resource2 = resourceData.entry.find((entry) => {
-            return entry.resource.id === id2.split('/').pop();
-          });
-          const clientIdTag2 = resource2.resource.meta && resource2.resource.meta.tag && resource2.resource.meta.tag.find((tag) => {
-            return tag.code === 'clientid';
-          });
           if(!clientIdTag2) {
             logger.error('Client ID tag is missing, unbreak match failed');
             dontSaveChanges = true;
@@ -923,6 +976,24 @@ function appRoutes() {
               }
             }
           }
+          if(!auditedId.includes(id1)) {
+            const operSummary = {unBreakResources: []};
+            operSummary.editingResource = resource1.resource.resourceType + '/' + resource1.resource.id;
+            operSummary.CRUID = resource2.resource.link[0].other.reference;
+            if(dontSaveChanges) {
+              operSummary.outcome = '8';
+            }
+            operSummary.unBreakResources.push(resource2.resource.resourceType + '/' + resource2.resource.id);
+            operationSummary.push(operSummary);
+          } else {
+            for(const index in operationSummary) {
+              const oper = operationSummary[index];
+              if(oper.editingResource === resource1.resource.resourceType + '/' + resource1.resource.id) {
+                operationSummary[index].unBreakResources.push(resource2.resource.resourceType + '/' + resource2.resource.id);
+              }
+            }
+          }
+          auditedId.push(id1);
         }
         logger.info('Saving the unbroken matches');
         if(!dontSaveChanges) {
@@ -959,6 +1030,8 @@ function appRoutes() {
                   }]
                 };
                 addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+                  const tmpAuditBundle = createAddPatientAudEvent(operationSummary, req);
+                  auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
                   logger.info('Done rematching ' + entry.resource.id);
                   if(err) {
                     errFound = true;
@@ -970,23 +1043,29 @@ function appRoutes() {
                 errFound = true;
               }
             }, () => {
-              if(errFound) {
-                return res.status(500).json(responseBundle);
-              }
-              res.status(201).json(responseBundle);
+              createAuditEvent();
+              fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+                if(errFound) {
+                  return res.status(500).json(responseBundle);
+                }
+                res.status(201).json(responseBundle);
+              });
             });
           });
         } else {
-          return res.status(400).json({
-            resourceType: "OperationOutcome",
-            issue: [{
-              severity: "error",
-              code: "processing",
-              diagnostics: "Invalid request"
-            }]
+          createAuditEvent();
+          fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+            return res.status(400).json({
+              resourceType: "OperationOutcome",
+              issue: [{
+                severity: "error",
+                code: "processing",
+                diagnostics: "Invalid request"
+              }]
+            });
           });
         }
-      });;
+      });
     } else {
       return res.status(400).json({
         resourceType: "OperationOutcome",
@@ -996,6 +1075,81 @@ function appRoutes() {
           diagnostics: "Invalid request"
         }]
       });
+    }
+
+    function createAuditEvent() {
+      const ipAddress = req.ip.split(':').pop();
+      const username = req.query.username;
+      for(const operSummary of operationSummary) {
+        const entity = [];
+        if(operSummary.editingResource) {
+          entity.push({
+            name: 'unBreak',
+            what: {reference: operSummary.editingResource}
+          });
+        }
+        if(operSummary.CRUID) {
+          entity.push({
+            name: 'unBreakFromCRUID',
+            what: {reference: operSummary.CRUID}
+          });
+        }
+        for(const unbreak of operSummary.unBreakResources) {
+          entity.push({
+            name: 'unBreakFromResource',
+            what: {reference: unbreak}
+          });
+        }
+        let outcome;
+        let outcomeDesc;
+        if (operSummary.outcome) {
+          outcome = operSummary.outcome;
+          outcomeDesc = operSummary.outcomeDesc;
+        } else {
+          outcome = '0';
+          outcomeDesc = 'Success';
+        }
+
+        const id = uuid4();
+        auditBundle.entry.push({
+          resource: {
+            id,
+            resourceType: 'AuditEvent',
+            type: {
+              system: 'http://dicom.nema.org/resources/ontology/DCM',
+              code: '110110'
+            },
+            subtype: {
+              system: 'http://hl7.org/fhir/restful-interaction',
+              code: 'update',
+            },
+            action: 'U',
+            recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+            agent: [{
+              altId: username,
+              requestor: true,
+              network: {
+                address: ipAddress,
+                type: '2'
+              }
+            }],
+            source: {
+              type: {
+                system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
+                code: '4'
+              }
+            },
+            entity,
+            outcome,
+            outcomeDesc
+          },
+          request: {
+            method: 'PUT',
+            url: 'AuditEvent/' + id
+          }
+        });
+      }
+      return;
     }
   });
 
@@ -1312,8 +1466,9 @@ function appRoutes() {
                     diagnostics: "Invalid ID format submitted for " + notProcessed.join(', ') + " but no link found"
                   });
                 };
-                saveAuditEvent();
-                return res.status(400).json(respObj);
+                saveAuditEvent(() => {
+                  return res.status(400).json(respObj);
+                });
               }
               if (dontSaveChanges) {
                 respObj.issue.push({
@@ -1321,8 +1476,9 @@ function appRoutes() {
                   code: "processing",
                   diagnostics: "Internal Error"
                 });
-                saveAuditEvent();
-                return res.status(500).json(respObj);
+                saveAuditEvent(() => {
+                  return res.status(500).json(respObj);
+                });
               }
               fhirWrapper.saveResource({
                 resourceData: bundle
@@ -1332,18 +1488,20 @@ function appRoutes() {
                     operationSummary[index].outcome = '8';
                     operationSummary[index].outcomeDesc = 'Error occured while saving changes';
                   }
-                  saveAuditEvent();
-                  return res.status(500).json({
-                    resourceType: "OperationOutcome",
-                    issue: [{
-                      severity: "error",
-                      code: "processing",
-                      diagnostics: "Internal Error"
-                    }]
+                  saveAuditEvent(() => {
+                    return res.status(500).json({
+                      resourceType: "OperationOutcome",
+                      issue: [{
+                        severity: "error",
+                        code: "processing",
+                        diagnostics: "Internal Error"
+                      }]
+                    });
                   });
                 }
-                saveAuditEvent();
-                res.status(200).send();
+                saveAuditEvent(() => {
+                  res.status(200).send();
+                });
               });
             });
           } else {
@@ -1351,31 +1509,33 @@ function appRoutes() {
               operationSummary[index].outcome = '8';
               operationSummary[index].outcomeDesc = 'Links to records were not found';
             }
-            res.status(500).json({
-              resourceType: "OperationOutcome",
-              issue: [{
-                severity: "error",
-                code: "processing",
-                diagnostics: "Links to records were not found"
-              }]
+            saveAuditEvent(() => {
+              return res.status(500).json({
+                resourceType: "OperationOutcome",
+                issue: [{
+                  severity: "error",
+                  code: "processing",
+                  diagnostics: "Links to records were not found"
+                }]
+              });
             });
-            saveAuditEvent();
           }
         });
       });
     } else {
-      res.status(400).json({
-        resourceType: "OperationOutcome",
-        issue: [{
-          severity: "error",
-          code: "processing",
-          diagnostics: "Invalid ID Format. example valid ID is Patient/1"
-        }]
+      saveAuditEvent(() => {
+        return res.status(400).json({
+          resourceType: "OperationOutcome",
+          issue: [{
+            severity: "error",
+            code: "processing",
+            diagnostics: "Invalid ID Format. example valid ID is Patient/1"
+          }]
+        });
       });
-      saveAuditEvent();
     }
 
-    const saveAuditEvent = () => {
+    const saveAuditEvent = (callback) => {
       logger.info('saving audit event');
       const ipAddress = req.ip.split(':').pop();
       const username = req.query.username;
@@ -1454,7 +1614,10 @@ function appRoutes() {
       if(auditBundle.entry.length > 0) {
         fhirWrapper.saveResource({resourceData: auditBundle}, () => {
           logger.info('Audit event saved successfully');
+          return callback();
         });
+      } else {
+        return callback();
       }
     };
   });
