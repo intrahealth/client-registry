@@ -254,7 +254,7 @@
                       hover
                     >
                       <v-card-text class="white--text">
-                        Break <br><b>{{ event.unBreak }}</b>
+                        Reverting <br><b>{{ event.unBreak }}</b>
                       </v-card-text>
                     </v-card>
                   </v-col>
@@ -265,14 +265,14 @@
                       hover
                     >
                       <v-card-text class="white--text">
-                        Old CRUID <br><b>{{ event.unBreakFromCRUID }}</b>
+                        Reverting From CRUID <br><b>{{ event.unBreakFromCRUID }}</b>
                       </v-card-text>
                     </v-card>
                   </v-col>
                   <v-col cols="4">
                     <v-card elevation="12" color="red" hover>
                       <v-card-text class="white--text">
-                        Broken From <br>
+                        Reverting From <br>
                         <b>
                           <template v-for="unBreakFrom in event.unBreakFrom">
                             => {{ unBreakFrom }}
