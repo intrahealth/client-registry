@@ -1,36 +1,31 @@
 {
-  "resourceType": "Bundle",
-  "entry": [{
-    "resource": {
-      "resourceType": "Patient",
-      "identifier": [{
-        "system": "http://clientregistry.org/dhis2",
-        "value": "997542"
-      }, {
-        "system": "http://system2.org",
-        "value": "7653",
-        "period": {
-          "start": "2001-05-06"
-        },
-        "assigner": {
-          "display": "test Org"
-        }
-      }],
-      "active": true,
-      "name": [{
-        "use": "official",
-        "family": "Gideon",
-        "given": [
-          "Namalwa",
-          "Emanuel"
-        ]
-      }],
-      "telecom": [{
-        "system": "phone",
-        "value": "774 232423"
-      }],
-      "gender": "male",
-      "birthDate": "1974-12-25"
+  "resourceType": "Patient",
+  "identifier": [{
+    "system": "http://clientregistry.org/dhis2",
+    "value": "997542"
+  }, {
+    "system": "http://system2.org",
+    "value": "7653",
+    "period": {
+      "start": "2001-05-06"
+    },
+    "assigner": {
+      "display": "test Org"
     }
-  }]
+  }],
+  "active": true,
+  "name": [{
+    "use": "official",
+    "family": "Gideon",
+    "given": [
+      "Namalwa",
+      "Emanuel"
+    ]
+  }],
+  "telecom": [{
+    "system": "phone",
+    "value": "774 232423"
+  }],
+  "gender": "male",
+  "birthDate": "1974-12-25"
 }

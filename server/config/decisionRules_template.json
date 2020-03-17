@@ -1,0 +1,65 @@
+{
+  "__comments": {
+    "path": "Its a fhir path, for syntax refer to https://www.hl7.org/fhir/fhirpath.html",
+    "type": "String, Date, Number or Boolean",
+    "threshold": {
+      "levenshtein": "Lower the number, the closer the match, 0 being exact match",
+      "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
+    },
+    "supported_algorithms": {
+      "mediator": [
+        "levenshtein",
+        "damerau-levenshtein",
+        "jaro-winkler",
+        "soundex",
+        "metaphone",
+        "double-metaphone",
+        "exact"
+      ],
+      "elasticsearch": [
+        "levenshtein",
+        "damerau-levenshtein",
+        "phonetic"
+      ]
+    }
+  },
+  "rules": [{
+    "fields": {
+      "given": {
+        "algorithm": "damerau-levenshtein",
+        "threshold": 2,
+        "mValue": 0.7695942,
+        "uValue": 0.02268,
+        "fhirpath": "name.where(use='official').given",
+        "espath": "given",
+        "type": "String"
+      },
+      "family": {
+        "algorithm": "damerau-levenshtein",
+        "threshold": 2,
+        "mValue": 0.9995993,
+        "uValue": 0.00115,
+        "fhirpath": "name.where(use='official').family",
+        "espath": "family",
+        "type": "String"
+      },
+      "phone": {
+        "algorithm": "exact",
+        "threshold": 2,
+        "mValue": 0.8796964,
+        "uValue": 0.00056,
+        "fhirpath": "telecom.where(system='phone').value",
+        "espath": "phone"
+      }
+    },
+    "threshold": 0,
+    "filters": {
+      "gender": {
+        "algorithm": "exact",
+        "threshold": 2,
+        "fhirpath": "gender",
+        "espath": "gender"
+      }
+    }
+  }]
+}

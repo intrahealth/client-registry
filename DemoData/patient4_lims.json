@@ -1,36 +1,31 @@
 {
-  "resourceType": "Bundle",
-  "entry": [{
-    "resource": {
-      "resourceType": "Patient",
-      "identifier": [{
-        "system": "http://clientregistry.org/lims",
-        "value": "8733453490"
-      }, {
-        "system": "http://system3.org",
-        "value": "126903676",
-        "period": {
-          "start": "2001-05-06"
-        },
-        "assigner": {
-          "display": "test Org"
-        }
-      }],
-      "active": true,
-      "name": [{
-        "use": "official",
-        "family": "Gideon",
-        "given": [
-          "Namirimu",
-          "Emmanuel"
-        ]
-      }],
-      "telecom": [{
-        "system": "phone",
-        "value": "774 232423"
-      }],
-      "gender": "male",
-      "birthDate": "1974-12-25"
+  "resourceType": "Patient",
+  "identifier": [{
+    "system": "http://clientregistry.org/lims",
+    "value": "8733453490"
+  }, {
+    "system": "http://system3.org",
+    "value": "126903676",
+    "period": {
+      "start": "2001-05-06"
+    },
+    "assigner": {
+      "display": "test Org"
     }
-  }]
+  }],
+  "active": true,
+  "name": [{
+    "use": "official",
+    "family": "Gideon",
+    "given": [
+      "Namirimu",
+      "Emmanuel"
+    ]
+  }],
+  "telecom": [{
+    "system": "phone",
+    "value": "774 232423"
+  }],
+  "gender": "male",
+  "birthDate": "1974-12-25"
 }
