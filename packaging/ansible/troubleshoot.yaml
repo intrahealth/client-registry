@@ -1,0 +1,33 @@
+---
+- name: Troubleshooting
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+  tasks:
+
+# opencr
+
+# logs
+  - name: journalctl since last reboot
+    command: journalctl -u opencr.service -b
+    register: opencr
+
+
+  - debug:
+      msg: "{{ opencr.stdout_lines }}"
+
+# status
+  - name: status
+    command: systemctl status opencr.service
+    register: status
+
+  - debug:
+      msg: "{{ status.stdout_lines }}"
+

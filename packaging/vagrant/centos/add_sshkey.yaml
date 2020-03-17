@@ -1,0 +1,16 @@
+---
+- hosts: all
+  remote_user: vagrant
+  tasks:
+    - name: add key
+      authorized_key:
+        user: vagrant
+        state: present
+        manage_dir: yes
+        key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+    - name: ip address from centos/vagrant
+      command: "/sbin/ip address"
+      register: shell_result
+    - debug:
+        var: shell_result.stdout_lines

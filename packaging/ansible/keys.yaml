@@ -1,0 +1,24 @@
+---
+- name: Add maintainers' ssh keys to instance
+  hosts: all
+  remote_user: "{{ user }}"
+  tags: install
+
+
+  vars_prompt:
+
+    - name: "user"
+      prompt: "Existing user whom new keys will be added to"
+      private: no
+
+    - name: "add"
+      prompt: "Sender who wants their keys added to the existing user's account"
+      private: no
+
+
+  tasks:
+
+    - name: Ensure collaborators SSH keys are installed
+      authorized_key:
+        user: "{{ user }}"
+        key: "https://github.com/{{ add }}.keys"

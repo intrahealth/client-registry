@@ -1,0 +1,40 @@
+---
+- name: Installation
+  hosts: all
+  remote_user: "{{ user }}"
+  tags: install
+
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (without sudo)"
+      private: no
+
+  tasks:
+
+  - name: Does client-registry folder exist
+    stat:
+      path: $HOME/client-registry
+    register: stat_result2
+
+
+  - name: git clone repo
+    git:
+      repo: 'https://github.com/intrahealth/client-registry.git'
+      dest: $HOME/client-registry
+      clone: yes
+      update: yes
+    when: stat_result2.stat.exists == False
+
+
+  - name: git pull
+    shell: cd $HOME/client-registry && git pull
+
+
+  # - name: npm build of hearth
+  #   shell: cd $HOME/hearth && npm install
+
+  - name: Install/update npm packages in package.json.
+    npm:
+      path: $HOME/client-registry/server
+      state: latest

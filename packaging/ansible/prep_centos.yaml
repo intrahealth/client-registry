@@ -1,0 +1,173 @@
+---
+- name: Preparation
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+    - name: "pgpass"
+      prompt: "Please provide the password for the hapi postgres user in plain text (it will be md5-hashed)"
+      private: no
+
+
+  tasks:
+
+  # - name: upgrade all packages
+  #   yum:
+  #     name: '*'
+  #     state: latest
+
+
+  - name: Ensure git
+    yum:
+      name: git
+      state: present
+
+
+  - name: install enterprise packages for enterprise linux
+    yum: 
+      name: epel-release
+      state: present
+
+# rpm subdomain
+  - name: Download nodesource script for node v10
+    get_url:
+      url: https://rpm.nodesource.com/setup_10.x
+      dest: $HOME/nodesource.sh
+      mode: 0644
+      # overwrite
+      force: yes
+
+
+  - name: Install nodesource for node 10
+    command: bash $HOME/nodesource.sh
+
+
+  - name: install nodejs packages
+    yum: 
+      name: nodejs
+      state: present
+
+
+  - name: Ensure npm is latest
+    npm: 
+      name: npm
+      state: present
+      global: yes
+
+
+  - name: Ensure native tools for native builds
+    yum:
+      name: "{{ packages }}"
+    vars:
+      packages:
+      - gcc-c++
+      - make
+
+
+# java
+  - name: Add repository for AdoptOpenJDK
+    yum_repository:
+      name: AdoptOpenJDK
+      description: AdoptOpenJDK
+      baseurl: http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/7/x86_64/
+      gpgcheck: yes
+      gpgkey: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+      enabled: yes
+
+
+  - name: install adoptopenjdk packages
+    yum: 
+      name: adoptopenjdk-8-openj9
+      state: present
+
+
+# todo: move to proper installation using yum module
+# elasticsearch
+  - name: Download file with checksum url (sha512)
+    get_url:
+      url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm
+      dest: /home/opencr/
+      checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512
+
+  - name: install es rpm from a local file
+    yum:
+      name: elasticsearch-7.6.1-x86_64.rpm
+      state: present
+
+
+  # - name: get key
+  #   command: "wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512"
+  #   register: gkey
+
+  # - debug:
+  #     msg: "{{ gkey.stdout_lines }}"
+
+  # - rpm_key:
+  #     state: present
+  #     key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+
+  # - name: Add repository for ElasticSearch
+  #   yum_repository:
+  #     name: ElasticSearch repository for 7.x packages
+  #     description: ElasticSearch
+  #     baseurl: https://artifacts.elastic.co/packages/7.x/yum
+  #     gpgcheck: yes
+  #     gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+  #     enabled: yes
+
+
+  # - name: install ElasticSearch
+  #   yum: 
+  #     name: elasticsearch
+  #     state: present
+
+
+# es plugin
+  - elasticsearch_plugin:
+      name: analysis-phonetic
+      state: present
+
+
+# postgres
+  - name: install the postgres pgdg from remote
+    yum:
+      name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+      state: present
+
+  - name: postgres
+    yum:
+      name: postgresql10 
+      # - postgresql10-server 
+      # - postgresql10-contrib 
+      # - postgresql10-libs
+      state: latest
+
+
+  - name: Create a new database with name hapi
+    postgresql_db:
+      name: hapi
+
+  - name: Connect to hapi database, create hapi user, and grant access
+    postgresql_user:
+      db: hapi
+      name: hapi
+      password: "{{ pgpass }}"
+      encrypted: yes
+      priv: ALL
+
+
+# tomcat
+
+
+
+
+
+
+# hapi
+

@@ -13,3 +13,6 @@ config_docker.json
 
 # macos
 *.DS_Store
+
+# vagrant
+.vagrant

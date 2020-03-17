@@ -1,0 +1,14 @@
+[Unit]
+Description=opencr
+Documentation=https://example.com
+After=network.target
+
+[Service]
+Type=simple
+User={{ user }}
+WorkingDirectory=/home/{{ user }}/opencr/client-registry
+ExecStart={{ executable }} lib/app.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
