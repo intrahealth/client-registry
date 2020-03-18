@@ -195,7 +195,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                   return nxtEntry()
                 }
                 if(res.headers.location) {
-                  logger.info('CRUID ' + res.headers.location);
+                  logger.info('Assigned CRUID ' + res.headers.location);
                 } else {
                   logger.error('Something went wrong, no CRUID created');
                 }
