@@ -72,8 +72,8 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     password: 'openmrs'
   }
   const options = {
-    url: 'http://localhost:5001/Patient',
-    auth,
+    url: 'https://localhost:3000/Patient',
+    agentOptions,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
