@@ -47,6 +47,7 @@ bundle.type = 'batch';
 bundle.resourceType = 'Bundle';
 bundle.entry = [];
 const promises = [];
+let totalRecords = 0;
 fs.createReadStream(path.resolve(__dirname, '', csvFile))
   .pipe(
     csv.parse({
@@ -136,6 +137,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
           resource,
         });
         if (bundle.entry.length === 250) {
+          totalRecords += 250;
           let tmpBundle = {
             ...bundle,
           };
@@ -148,18 +150,21 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
   })
   .on('end', rowCount => {
     if (bundle.entry.length > 0) {
+      totalRecords += bundle.entry.length
       bundles.push(bundle);
     }
     Promise.all(promises).then(() => {
+      console.time('Total Processing Time');
+      let count = 0;
       async.eachSeries(
         bundles,
         (bundle, nxt) => {
           async.eachSeries(
             bundle.entry,
             (entry, nxtEntry) => {
-              console.log(
-                'sending a bundle of ' + bundle.entry.length + ' resources'
-              );
+              count++;
+              console.time('Processing Took')
+              console.log('Processing ' + count + ' of ' + totalRecords);
               let agentOptions = {
                 cert: fs.readFileSync(
                   '../server/sampleclientcertificates/openmrs_cert.pem'
@@ -175,8 +180,8 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 password: 'openmrs'
               }
               const options = {
-                url: 'https://localhost:3000/Patient',
-                agentOptions,
+                url: 'http://localhost:5001/Patient',
+                auth,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
@@ -189,16 +194,20 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                   logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details');
                   return nxtEntry()
                 }
-                logger.info(res.headers);
+                if(res.headers.location) {
+                  logger.info('CRUID ' + res.headers.location);
+                } else {
+                  logger.error('Something went wrong, no CRUID created');
+                }
+                console.timeEnd('Processing Took')
                 return nxtEntry();
               });
-            },
-            () => {
+            }, () => {
               return nxt();
             }
           );
-        },
-        () => {
+        }, () => {
+          console.timeEnd('Total Processing Time');
           if (csvTrueLinks) {
             uploadResults.uploadResults(csvTrueLinks);
           } else {

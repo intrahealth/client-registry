@@ -53,8 +53,9 @@ if(patients.entry) {
   logger.error('Invalid data submitted, aborting submission');
   process.exit()
 }
-
+console.time('Total Processing Time');
 async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
+  console.time('Processing Took')
   console.log('Processing ' + ++index + ' of ' + bundle.entry.length);
   let agentOptions = {
     cert: fs.readFileSync(
@@ -71,8 +72,8 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     password: 'openmrs'
   }
   const options = {
-    url: 'https://localhost:3000/Patient',
-    agentOptions,
+    url: 'http://localhost:5001/Patient',
+    auth,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
@@ -85,10 +86,16 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
       logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details');
       return nxtEntry()
     }
-    logger.info(res.headers);
+    if(res.headers.location) {
+      logger.info('CRUID ' + res.headers.location);
+    } else {
+      logger.error('Something went wrong, no CRUID created');
+    }
+    console.timeEnd('Processing Took')
     return nxtEntry();
   });
 }, () => {
+  console.timeEnd('Total Processing Time');
   if (csvTrueLinks) {
     uploadResults.uploadResults(csvTrueLinks);
   } else {
