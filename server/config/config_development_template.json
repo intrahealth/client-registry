@@ -37,8 +37,7 @@
     "reportRelationship": "patientreport"
   },
   "matching": {
-    "tool": "elasticsearch",
-    "type": "deterministic"
+    "tool": "elasticsearch"
   },
   "clients": [
     {

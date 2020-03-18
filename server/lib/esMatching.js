@@ -306,10 +306,13 @@ const performMatch = ({
   const decisionRules = config.get('rules');
   async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
     let esquery = {};
-    if(config.get('matching:type') === 'probabilistic') {
+    if(decisionRule.matchingType === 'probabilistic') {
       esquery = buildProbabilisticQuery(sourceResource, decisionRule);
-    } else if(config.get('matching:type') === 'deterministic') {
+    } else if(decisionRule.matchingType === 'deterministic') {
       esquery = buildDeterministicQuery(sourceResource, decisionRule);
+    } else {
+      logger.error('Matching type is not specified under decision rule, should be either deterministic or probabilistic');
+      return callback(true);
     }
     const url = URI(config.get('elastic:server'))
       .segment(config.get('elastic:index'))

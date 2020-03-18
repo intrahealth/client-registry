@@ -284,17 +284,19 @@ function appRoutes() {
             valueString: JSON.stringify(operSummary.submittedResource)
           }]
         };
-        for(const esmatch of operSummary.ESMatches) {
-          let match = {
-            rule: esmatch.rule,
-            match: esmatch.results,
-            query: esmatch.query
-          };
-          match = JSON.stringify(match);
-          submRes.detail.push({
-            type: 'match',
-            valueBase64Binary: Buffer.from(match).toString('base64')
-          });
+        if(operSummary.ESMatches && Array.isArray(operSummary.ESMatches)) {
+          for(const esmatch of operSummary.ESMatches) {
+            let match = {
+              rule: esmatch.rule,
+              match: esmatch.results,
+              query: esmatch.query
+            };
+            match = JSON.stringify(match);
+            submRes.detail.push({
+              type: 'match',
+              valueBase64Binary: Buffer.from(match).toString('base64')
+            });
+          }
         }
         auditEvent.entity.push(submRes);
       }
@@ -415,7 +417,7 @@ function appRoutes() {
         if(err) {
           operSummary.outcome = '8';
           operSummary.outcomeDesc = 'An error occured while finding matches';
-          return callback(err);
+          return callback(err, responseBundle, operationSummary);
         }
         operSummary.ESMatches = ESMatches;
         if (matches.entry && matches.entry.length === 0) {

@@ -282,12 +282,19 @@
                     </v-card>
                   </v-col>
                 </v-row>
-                <v-row v-for="(detail,j) in event.matchData" :key="j" v-else>
+                <v-row
+                  v-for="(detail,j) in event.matchData"
+                  v-else
+                  :key="j"
+                >
                   <v-col cols="6">
                     <v-card
                       elevation="12"
                       hover
                     >
+                      <v-card-title primary-title>
+                        Decision Rule {{ ++j }} => Matching Type:  &nbsp; <b> {{ detail.matchingType }}</b>
+                      </v-card-title>
                       <v-card-text>
                         <v-data-table
                           :headers="matchRuleHeaders"
@@ -717,6 +724,8 @@ export default {
                   }
                   modifiedEvent.matchData.push({
                     decisionRule: decRule,
+                    matchingType: matches.rule.matchingType,
+                    filters: matches.rule.filters,
                     match: JSON.stringify(matches.match,0,2),
                     query: JSON.stringify(matches.query,0,2)
                   })

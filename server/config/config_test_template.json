@@ -33,8 +33,7 @@
     "reportRelationship": "patientreport"
   },
   "matching": {
-    "tool": "mediator",
-    "type": "deterministic"
+    "tool": "mediator"
   },
   "systems": {
     "openmrs": {
