@@ -187,6 +187,8 @@
                 <template v-if="event.type !== 'submittedResource'">
                   User: {{ event.username }} <br>
                 </template>
+                Operation: <b>{{ event.operation }}</b> <br>
+                Operation Time {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
                 Status:
                 <template v-if="event.outcomeCode === '0'">
                   <v-chip
@@ -315,7 +317,7 @@
                                 {{ item.details.threshold }}
                               </v-chip><br>
                             </template>
-                            <template v-if="item.details.mValue">
+                            <template v-if="detail.matchingType === 'probabilistic'">
                               <b>mValue</b>
                               <v-chip
                                 color="green"
@@ -431,12 +433,8 @@ export default {
           value: "birthdate"
         }
       ],
-      match_items: [
-        //        { id: this.$route.params.clientId, gender: "f", birthdate: "1978-01-28", given: "flamina", family: "anicko", nin: "CF65426205VYNW", art: "RUK-793904", phone: "774 687023" }
-      ],
-      break_items: [
-        //        { id: "rec-978-org-", gender: "f", birthdate: "1914-09-20", given: "kabyanga", family: "anicia", nin: "CF59866315NPOE", art: "FPL-944851", phone: "772 702269" }
-      ]
+      match_items: [],
+      break_items: []
     };
   },
   mounted() {
@@ -656,6 +654,13 @@ export default {
           let isUnBreakEvent = event.resource.entity.find((entity) => {
             return entity.name === 'unBreak' || entity.name === 'unBreakFromResource'
           })
+          let operation
+          for(let subtype of event.resource.subtype) {
+            if(subtype.system === 'http://hl7.org/fhir/restful-interaction') {
+              operation = subtype.code
+            }
+          }
+          modifiedEvent.operation = operation
           modifiedEvent.outcomeCode = event.resource.outcome
           modifiedEvent.outcome = this.outcomes[event.resource.outcome]
           modifiedEvent.outcomeDesc = event.resource.outcomeDesc
