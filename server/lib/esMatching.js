@@ -428,15 +428,12 @@ const performMatch = ({
                 return entry.resource.id === results['_id'];
               });
             });
-            // ESMatches = ESMatches.filter((match) => {
-            //   return match.results.length > 0;
-            // });
           }
-          logger.info('Done matching')
+          logger.info('Done matching');
           return callback(error, FHIRMatches, ESMatches);
         });
       } else {
-        logger.info('Done matching')
+        logger.info('Done matching');
         return callback(error, FHIRMatches, ESMatches);
       }
     });

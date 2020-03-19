@@ -313,14 +313,15 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
         if (
           err.response &&
           err.response.status &&
-          err.response.status === 400
+          (err.response.status === 400 || err.response.status === 403)
         ) {
           logger.info(
             'Analyzer already exist into elasticsearch, not creating'
           );
           return callback(null);
         } else {
-          throw err;
+          logger.error(err);
+          return callback(true);
         }
       });
     },
