@@ -1,10 +1,6 @@
 # node
 node_modules
 
-# modified configs
-config_development.json
-config_docker.json
-
 # vscode
 .vscode
 
