@@ -65,6 +65,9 @@
       "artnumber": {
         "uri": "http://health.go.ug/cr/artnumber",
         "displayName": "ART Number"
+      },
+      "brokenMatch": {
+        "uri": "http://clientregistry.org/brokenMatch"
       }
     },
     "sync": {

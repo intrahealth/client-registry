@@ -29,15 +29,15 @@
     "max_compilations_rate": "10000/1m",
     "index": "patients"
   },
+  "matching": {
+    "tool": "elasticsearch"
+  },
   "codes": {
     "goldenRecord": "5c827da5-4858-4f3d-a50c-62ece001efea"
   },
   "structureDefinition": {
     "uri": "http://openclientregistry.org/fhir",
     "reportRelationship": "patientreport"
-  },
-  "matching": {
-    "tool": "elasticsearch"
   },
   "clients": [
     {
@@ -65,6 +65,9 @@
     "artnumber": {
       "uri": "http://health.go.ug/cr/artnumber",
       "displayName": "ART Number"
+    },
+    "brokenMatch": {
+      "uri": "http://clientregistry.org/brokenMatch"
     }
   },
   "sync": {
