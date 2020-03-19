@@ -369,12 +369,22 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           return callback(true);
         }
       }).catch(err => {
-        logger.error(err);
-        logger.error(
-          'Something went wrong while adding mappings into elasticsearch'
-        );
-        callback(err);
-        throw err;
+        if (
+          err.response &&
+          err.response.status &&
+          (err.response.status === 400 || err.response.status === 403)
+        ) {
+          logger.info(
+            'Mappings already exist into elasticsearch, not creating'
+          );
+          return callback(null);
+        } else {
+          logger.error(
+            'Something went wrong while adding mappings into elasticsearch'
+          );
+          logger.error(err);
+          return callback(true);
+        }
       });
     },
   }, err => {
