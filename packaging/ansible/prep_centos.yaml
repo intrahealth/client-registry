@@ -135,6 +135,22 @@
 
 
 # postgres
+
+  - name: Ensure pip - prereq for psycopg2
+    yum:
+      name: python-pip
+      state: present
+
+  - name: pip self-update
+    pip:
+      name: pip
+      state: latest      
+
+  - name: Make sure psycopg2 is installed
+    pip:
+      name: psycopg2-binary
+      state: present
+
   - name: install the postgres pgdg from remote
     yum:
       name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
@@ -147,19 +163,6 @@
       # - postgresql10-contrib 
       # - postgresql10-libs
       state: latest
-
-
-  - name: Create a new database with name hapi
-    postgresql_db:
-      name: hapi
-
-  - name: Connect to hapi database, create hapi user, and grant access
-    postgresql_user:
-      db: hapi
-      name: hapi
-      password: "{{ pgpass }}"
-      encrypted: yes
-      priv: ALL
 
 
 # tomcat

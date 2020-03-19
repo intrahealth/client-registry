@@ -29,6 +29,29 @@
       backup: no
 
 
+# postgres
+
+  - name: Create a new database with name hapi
+    postgresql_db:
+      name: hapi
+
+
+# need more here
+
+  - name: Connect to hapi database, create hapi user, and grant access
+    postgresql_user:
+      db: hapi
+      name: hapi
+      password: "{{ pgpass }}"
+      encrypted: yes
+      priv: ALL
+
+
+
+
+
+
+
 # elasticsearch
 # this also increases memory for es, no need to do separately
   - name: systemctl elasticsearch builtin
