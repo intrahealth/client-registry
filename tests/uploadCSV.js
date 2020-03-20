@@ -212,7 +212,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
             uploadResults.uploadResults(csvTrueLinks);
           } else {
             console.log(
-              'True links were not specified then upload results wont be displayed'
+              'CSV File that had true matches was not specified, import summary wont be displayed'
             );
           }
         }

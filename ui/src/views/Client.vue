@@ -205,9 +205,8 @@
                   >
                     {{ event.outcome }}
                   </v-chip>
-                </template>
-                <br>
-                IP Address: {{ event.ipaddress }}
+                </template><br>
+                IP Address: {{ event.ipaddress }} <br>
                 <v-row v-if="event.type === 'breakMatch'">
                   <v-col cols="4">
                     <v-card
@@ -341,29 +340,37 @@
                       </v-card-text>
                     </v-card>
                   </v-col>
-                  <v-col cols="6">
-                    <v-card>
-                      <v-card-text>
-                        <v-textarea
-                          filled
-                          color="deep-purple"
-                          label="Elasticsearch Query"
-                          rows="10"
-                          :value="detail.query"
-                        />
-                      </v-card-text>
-                    </v-card>
-                    <v-card>
-                      <v-card-text>
-                        <v-textarea
-                          filled
-                          color="deep-purple"
-                          label="Elasticsearch Results"
-                          rows="10"
-                          :value="detail.match"
-                        />
-                      </v-card-text>
-                    </v-card>
+                  <v-col
+                    cols="6"
+                  >
+                    <v-switch
+                      v-model="advancedView"
+                      label="View Advanced Details"
+                    />
+                    <template v-if="advancedView">
+                      <v-card>
+                        <v-card-text>
+                          <v-textarea
+                            filled
+                            color="deep-purple"
+                            label="Elasticsearch Query"
+                            rows="10"
+                            :value="detail.query"
+                          />
+                        </v-card-text>
+                      </v-card>
+                      <v-card>
+                        <v-card-text>
+                          <v-textarea
+                            filled
+                            color="deep-purple"
+                            label="Elasticsearch Results"
+                            rows="10"
+                            :value="detail.match"
+                          />
+                        </v-card-text>
+                      </v-card>
+                    </template>
                   </v-col>
                 </v-row>
               </v-expansion-panel-content>
@@ -384,6 +391,7 @@ export default {
   name: "Client",
   data() {
     return {
+      advancedView: false,
       outcomes: {
         0: 'Success',
         4: 'Minor Failure - Client Error',
@@ -731,8 +739,8 @@ export default {
                     decisionRule: decRule,
                     matchingType: matches.rule.matchingType,
                     filters: matches.rule.filters,
-                    match: JSON.stringify(matches.match,0,2),
-                    query: JSON.stringify(matches.query,0,2)
+                    match: JSON.stringify(matches.match, 0, 2),
+                    query: JSON.stringify(matches.query, 0, 2)
                   })
                 }
               }

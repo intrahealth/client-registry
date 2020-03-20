@@ -58,11 +58,11 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
   .on('data', row => {
     promises.push(
       new Promise((resolve, reject) => {
-        let sex = row['Sex'];
-        let dob = row['Date of Birth'];
+        let sex = row['gender'];
+        let dob = row['dob'];
         let uniqueID = row['Unique ID'];
-        let ARTNumb = row['Art Number'];
-        let dhis2FacId = row['DHIS2 Facility Code'];
+        let ARTNumb = row['art_number'];
+        let dhis2FacId = row['dhis2_uid'];
         if (sex && sex.trim() === 'M') {
           sex = 'male'
         } else if (sex && sex.trim() === 'F') {

@@ -25,6 +25,7 @@ module.exports = () => ({
     query,
     count
   }, callback) {
+    let statusCode = 500;
     let resourceData = {};
     resourceData.entry = [];
     if (!url) {
@@ -82,8 +83,9 @@ module.exports = () => ({
         };
         url = false;
         request.get(options, (err, res, body) => {
+          statusCode = res.statusCode;
           if (res && (res.statusCode < 200 || res.statusCode > 299)) {
-            logger.error(JSON.stringify(body, 0, 2));
+            logger.error(body);
           }
           if (err) {
             logger.error(err);
@@ -95,11 +97,7 @@ module.exports = () => ({
             return callback(null, false);
           }
           body = JSON.parse(body);
-          if (body.total === 0 && body.entry && body.entry.length > 0) {
-            logger.error('Non resource data returned for resource ' + resource);
-            return callback(null, false);
-          }
-          if (id && body) {
+          if (id && body || body.resourceType !== 'Bundle') {
             resourceData = body;
           } else if (body.entry && body.entry.length > 0) {
             if (count) {
@@ -110,9 +108,12 @@ module.exports = () => ({
               resourceData.entry = resourceData.entry.concat(body.entry);
             }
           }
-          const next = body.link && body.link.find(link => link.relation === 'next');
+          let next = body.link && body.link.find(link => link.relation === 'next');
 
-          if (!count || (count && !isNaN(count) && resourceData.entry.length < count)) {
+          if(err || res.statusCode < 200 || res.statusCode > 299) {
+            next = false;
+          }
+          if (!count || (count && !isNaN(count) && resourceData.entry && resourceData.entry.length < count)) {
             if (next) {
               url = next.url;
             }
@@ -125,7 +126,7 @@ module.exports = () => ({
           return callback(null, url);
         });
       }, () => {
-        return callback(resourceData);
+        return callback(resourceData, statusCode);
       }
     );
   },

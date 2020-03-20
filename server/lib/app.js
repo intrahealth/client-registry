@@ -107,27 +107,43 @@ function appRoutes() {
     app.use(certificateValidity);
   }
   app.use(jwtValidator);
-  app.get('/ocrux/fhir/:resource?', (req, res) => {
-    getPatient(req, true, (resourceData) => {
+  app.get('/ocrux/fhir/:resource?/:id?', (req, res) => {
+    getResource({
+      req,
+      noCaching: true
+    }, (resourceData, statusCode) => {
       for (const index in resourceData.link) {
         const urlArr = resourceData.link[index].url.split('fhir');
         if(urlArr.length === 2) {
           resourceData.link[index].url = '/ocrux/fhir' + urlArr[1];
         }
       }
-      res.status(200).json(resourceData);
+      res.status(statusCode).json(resourceData);
     });
   });
-  app.get('/fhir/:resource?', (req, res) => {
-    getPatient(req, true, (resourceData) => {
-      for (const index in resourceData.link) {
-        const urlArr = resourceData.link[index].url.split('fhir');
-        if(urlArr.length === 2) {
-          resourceData.link[index].url = '/fhir' + urlArr[1];
+  app.get('/fhir/:resource?/:id?', (req, res) => {
+    const id = req.params.id;
+    if(id === '$ihe-pix') {
+      pixmRequest({req}, (resourceData, statusCode) => {
+        res.status(statusCode).send(resourceData);
+      });
+    } else {
+      getResource({
+        req,
+        noCaching: true
+      }, (resourceData, statusCode) => {
+        for (const index in resourceData.link) {
+          if(!resourceData.link[index].url) {
+            continue;
+          }
+          const urlArr = resourceData.link[index].url.split('fhir');
+          if(urlArr.length === 2) {
+            resourceData.link[index].url = '/fhir' + urlArr[1];
+          }
         }
-      }
-      res.status(200).json(resourceData);
-    });
+        res.status(statusCode).json(resourceData);
+      });
+    }
   });
 
   app.get('/ocrux/getURI', (req, res) => {
@@ -137,6 +153,116 @@ function appRoutes() {
   app.get('/ocrux/getClients', (req, res) => {
     return res.status(200).json(config.get('clients'));
   });
+
+  function getResource({
+    req,
+    noCaching
+  }, callback) {
+    const resource = req.params.resource;
+    const id = req.params.id;
+    let url = URI(config.get('fhirServer:baseURL'));
+    if (resource) {
+      url = url.segment(resource);
+    }
+    if(id) {
+      url = url.segment(id);
+    }
+    for (const param in req.query) {
+      url.addQuery(param, req.query[param]);
+    }
+    url = url.toString();
+    fhirWrapper.getResource({
+      url,
+      noCaching
+    }, (resourceData, statusCode) => {
+      return callback(resourceData, statusCode);
+    });
+  }
+
+  function pixmRequest({
+    req
+  }, callback) {
+    const {sourceIdentifier, targetSystem, ...otherQueries} = req.query;
+    const outcome = {
+      "resourceType": "OperationOutcome",
+      "issue": []
+    };
+    if(Object.keys(otherQueries).length > 0) {
+      const unknownQueries = [];
+      for(const qr in otherQueries) {
+        unknownQueries.push(qr);
+      }
+      outcome.issue.push({
+        "severity": "error",
+        "code": "processing",
+        "diagnostics": "Unknown search parameter '" + unknownQueries.join('&') + "'. Value search parameters for this search are: [sourceIdentifier, targetSystem]"
+      });
+    }
+    if(!sourceIdentifier) {
+      outcome.issue.push({
+        "severity": "error",
+        "code": "processing",
+        "diagnostics": "Missing search parameter 'sourceIdentifier'"
+      });
+    } else {
+      const srcId = sourceIdentifier.split('|');
+      if(srcId.length !== 2) {
+        outcome.issue.push({
+          "severity": "error",
+          "code": "processing",
+          "diagnostics": "Invalid value for parameter 'sourceIdentifier', the value must include both the Patient Identity Domain (i.e., Assigning Authority) and the identifier value, separated by a '|' i.e nationalid|123."
+        });
+      }
+    }
+    if(outcome.issue.length > 0) {
+      return callback(outcome);
+    }
+    const query = `identifier=${sourceIdentifier}&_include:recurse=Patient:link`;
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      query
+    }, (resourceData, statusCode) => {
+      const parameters = {
+        resourceType: 'Parameters',
+        parameter: []
+      };
+      if(resourceData.entry && resourceData.entry.length > 0) {
+        for(const entry of resourceData.entry) {
+          const isGoldenRec = entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
+            return tag.code === config.get('codes:goldenRecord');
+          });
+          if (isGoldenRec) {
+            continue;
+          }
+          for(const identifier of entry.resource.identifier) {
+            if(targetSystem) {
+              if(targetSystem === identifier.system) {
+                const parameter = populateId(identifier);
+                parameters.parameter.push(parameter);
+              }
+            } else {
+              const parameter = populateId(identifier);
+              parameters.parameter.push(parameter);
+            }
+          }
+        }
+      }
+      return callback(parameters, statusCode);
+    });
+
+    const populateId = (identifier) => {
+      const parameter = {};
+      parameter.name = 'targetIdentifier';
+      parameter.valueIdentifier = {};
+      if(identifier.system) {
+        parameter.valueIdentifier.system = identifier.system;
+      }
+      if(identifier.value) {
+        parameter.valueIdentifier.value = identifier.value;
+      }
+      return parameter;
+    };
+  }
 
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
@@ -309,24 +435,6 @@ function appRoutes() {
       });
     }
     return auditBundle;
-  }
-
-  function getPatient(req, noCaching, callback) {
-    const resource = req.params.resource;
-    let url = URI(config.get('fhirServer:baseURL'));
-    if (resource) {
-      url = url.segment(resource);
-    }
-    for (const param in req.query) {
-      url.addQuery(param, req.query[param]);
-    }
-    url = url.toString();
-    fhirWrapper.getResource({
-      url,
-      noCaching
-    }, (resourceData) => {
-      return callback(resourceData);
-    });
   }
 
   function addPatient(clientID, patientsBundle, callback) {
