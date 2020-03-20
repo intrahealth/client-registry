@@ -4,6 +4,9 @@ node_modules
 # vscode
 .vscode
 
+# config files
+config_docker.json
+
 # ipynb
 *.ipynb_checkpoints
 
