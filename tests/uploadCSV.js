@@ -107,13 +107,13 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         ];
         if (nationalID) {
           resource.identifier.push({
-            system: 'http://system1/nationalid',
+            system: 'http://clientregistry/nationalid',
             value: nationalID,
           });
         }
         if (ARTNumb) {
           resource.identifier.push({
-            system: 'http://system1/artnumber',
+            system: 'http://clientregistry/artnumber',
             value: ARTNumb,
           });
         }

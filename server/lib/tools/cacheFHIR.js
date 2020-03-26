@@ -343,6 +343,9 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           type: field.type,
           analyzer: 'levenshtein_analyzer',
           fields: {
+            jaro: {
+              type: 'keyword'
+            },
             phonetic: {
               type: field.type,
               analyzer: 'phonetic_analyzer',
@@ -462,6 +465,10 @@ const deleteESDocument = (id, index, callback) => {
   }).then(response => {
     logger.info(response.data);
     return callback();
+  }).catch((err) => {
+    logger.error('An error occured while trying to delete ES record with id ' + id);
+    logger.error(err);
+    return callback();
   });
 };
 
@@ -573,9 +580,10 @@ const fhir2ES = ({
                 async.eachSeries(resourceData, (data, next) => {
                   logger.info('processing ' + count + '/' + resourceData.length + ' records of resource ' + orderedResource.resource);
                   count++;
-                  if(!data.resource.link ||
+                  if(data.resource &&
+                    (!data.resource.link ||
                     (data.resource.link && Array.isArray(data.resource.link) && data.resource.link.length === 0) ||
-                    data.resource.link && !Array.isArray(data.resource.link)) {
+                    data.resource.link && !Array.isArray(data.resource.link))) {
                     return next();
                   }
                   const isGoldenRec = data.resource && data.resource.meta && data.resource.meta.tag && data.resource.meta.tag.find((tag) => {

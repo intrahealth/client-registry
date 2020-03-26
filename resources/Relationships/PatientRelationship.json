@@ -70,6 +70,24 @@
         "url": "name",
         "valueString": "telecom.where(system='phone').value"
       }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+      "extension": [{
+        "url": "label",
+        "valueString": "nationalid"
+      }, {
+        "url": "name",
+        "valueString": "identifier.where(system='http://clientregistry.org/nationalid').last().value"
+      }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+      "extension": [{
+        "url": "label",
+        "valueString": "art"
+      }, {
+        "url": "name",
+        "valueString": "identifier.where(system='http://clientregistry/artnumber').last().value"
+      }]
     }]
   }],
   "code": {

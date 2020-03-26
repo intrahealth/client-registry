@@ -444,6 +444,7 @@ function appRoutes() {
     };
     const operationSummary = [];
     if(!clientID) {
+      const operSummary = {};
       operSummary.outcome = '4';
       operSummary.outcomeDesc ='Request didnt include POS/client ID';
       operationSummary.push(operSummary);
@@ -762,6 +763,7 @@ function appRoutes() {
           newPatient.resource.meta.tag = [];
         }
         newPatient.resource.meta.tag.push({
+          system: clientID,
           code: 'clientid',
           display: clientID
         });
@@ -1752,6 +1754,7 @@ function reloadConfig(data, callback) {
 }
 
 function start(callback) {
+  prerequisites.loadESScripts();
   if (config.get("matching:tool") === "elasticsearch" && config.get('app:installed')) {
     const runsLastSync = config.get("sync:lastFHIR2ESSync");
     cacheFHIR.fhir2ES({

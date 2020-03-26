@@ -47,6 +47,7 @@ router.beforeEach((to, from, next) => {
   if (!store.state.auth.token &&
     (!VueCookies.get('token') || VueCookies.get('token') === 'null' || !VueCookies.get('userID') || VueCookies.get('userID') === 'null')
   ) {
+    store.state.denyAccess = true
     if (to.path !== '/Login') {
       next({
         path: '/Login'

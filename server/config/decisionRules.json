@@ -3,23 +3,15 @@
     "path": "Its a fhir path, for syntax refer to https://www.hl7.org/fhir/fhirpath.html",
     "matchingType": "Must be specified, it can either",
     "threshold": {
-      "levenshtein": "Lower the number, the closer the match, 0 being exact match",
+      "levenshtein": "Lower the number, the closer the match, 0 being exact match, max threshold is 2",
       "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
     },
     "supported_algorithms": {
-      "mediator": [
-        "levenshtein",
-        "damerau-levenshtein",
-        "jaro-winkler",
-        "soundex",
-        "metaphone",
-        "double-metaphone",
-        "exact"
-      ],
       "elasticsearch": [
         "levenshtein",
         "damerau-levenshtein",
-        "phonetic"
+        "phonetic",
+        "jaro-winkler"
       ]
     }
   },
@@ -29,30 +21,28 @@
       "given": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "mValue": 0.99999,
-        "uValue": 0.004117988390380518,
+        "mValue": 0.9172,
+        "uValue": 0.003628206379557255,
         "fhirpath": "name.where(use='official').given",
-        "espath": "given",
-        "type": "String"
+        "espath": "given"
       },
       "family": {
         "algorithm": "damerau-levenshtein",
         "threshold": 2,
-        "mValue": 0.99999,
-        "uValue": 0.0018393126085277747,
+        "mValue": 0.9346,
+        "uValue": 0.0018975910650996456,
         "fhirpath": "name.where(use='official').family",
-        "espath": "family",
-        "type": "String"
+        "espath": "family"
       },
       "phone": {
         "algorithm": "exact",
-        "mValue": 0.99999,
-        "uValue": 0.0024534430787441675,
+        "mValue": 0.832,
+        "uValue": 0.00277670269535094,
         "fhirpath": "telecom.where(system='phone').value",
         "espath": "phone"
       }
     },
-    "threshold": 100,
+    "threshold": 10,
     "filters": {
       "gender": {
         "algorithm": "exact",
@@ -60,5 +50,15 @@
         "espath": "gender"
       }
     }
+  }, {
+    "matchingType": "deterministic",
+    "fields": {
+      "nationalid": {
+        "algorithm": "exact",
+        "fhirpath": "identifier.where(system='http://clientregistry.org/nationalid').value",
+        "espath": "nationalid"
+      }
+    },
+    "filters": {}
   }]
 }
