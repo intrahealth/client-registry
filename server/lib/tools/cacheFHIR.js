@@ -698,6 +698,9 @@ const fhir2ES = ({
                         if (!value) {
                           value = '';
                         }
+                        if(Array.isArray(value)) {
+                          value = value.join(" ");
+                        }
                         record[fieldLabel] = value;
                       }
                       record[orderedResource.name] = id;

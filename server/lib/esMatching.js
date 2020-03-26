@@ -99,44 +99,45 @@ const buildDeterministicQuery = (sourceResource, decisionRule) => {
       values.push(pathValue);
     }
 
-    for(const value of values) {
-      if(rule.algorithm === 'jaro-winkler') {
-        esquery.query.bool.must.push({
+    // for(const value of values) {
+    const value = values.join(" ");
+    if(rule.algorithm === 'jaro-winkler') {
+      esquery.query.bool.must.push({
+        script: {
           script: {
-            script: {
-              id: 'jaro-winkler',
-              params: {
-                field: path,
-                threshold: rule.threshold,
-                value,
-                ignoreCase: true,
-                maxPrefix: 4,
-                scalingFactor: 0.1
-              }
+            id: 'jaro-winkler',
+            params: {
+              field: path,
+              threshold: rule.threshold,
+              value,
+              ignoreCase: true,
+              maxPrefix: 4,
+              scalingFactor: 0.1
             }
           }
-        });
-      } else {
-        match[path] = {
-          query: value,
-        };
-        if(rule.weight > 0) {
-          match[path].boost = rule.weight;
         }
-        if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
-          match[path].fuzziness = rule.threshold;
-          if (rule.algorithm === 'damerau-levenshtein') {
-            match[path].fuzzy_transpositions = true;
-          } else {
-            match[path].fuzzy_transpositions = false;
-          }
-        }
-        const tmpMatch = _.cloneDeep(match);
-        esquery.query.bool.must.push({
-          match: tmpMatch,
-        });
+      });
+    } else {
+      match[path] = {
+        query: value,
+      };
+      if(rule.weight > 0) {
+        match[path].boost = rule.weight;
       }
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          match[path].fuzzy_transpositions = true;
+        } else {
+          match[path].fuzzy_transpositions = false;
+        }
+      }
+      const tmpMatch = _.cloneDeep(match);
+      esquery.query.bool.must.push({
+        match: tmpMatch,
+      });
     }
+    // }
   }
   if (decisionRule.filters && Object.keys(decisionRule.filters).length > 0) {
     esquery.query.bool.filter = [];
@@ -222,34 +223,35 @@ const buildProbabilisticQuery = (sourceResource, decisionRule) => {
       values.push(pathValue);
     }
 
-    for(const value of values) {
-      if(rule.algorithm === 'jaro-winkler') {
-        esfunction.filter.script = {
-          script: {
-            id: 'jaro-winkler',
-            params: {
-              field: path,
-              value
-            }
-          }
-        };
-        delete esfunction.filter.match;
-      } else {
-        esfunction.filter.match[path] = {
-          query: value
-        };
-        if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
-          esfunction.filter.match[path].fuzziness = rule.threshold;
-          if (rule.algorithm === 'damerau-levenshtein') {
-            esfunction.filter.match[path].fuzzy_transpositions = true;
-          } else {
-            esfunction.filter.match[path].fuzzy_transpositions = false;
+    // for(const value of values) {
+    const value = values.join(" ");
+    if(rule.algorithm === 'jaro-winkler') {
+      esfunction.filter.script = {
+        script: {
+          id: 'jaro-winkler',
+          params: {
+            field: path,
+            value
           }
         }
+      };
+      delete esfunction.filter.match;
+    } else {
+      esfunction.filter.match[path] = {
+        query: value
+      };
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        esfunction.filter.match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          esfunction.filter.match[path].fuzzy_transpositions = true;
+        } else {
+          esfunction.filter.match[path].fuzzy_transpositions = false;
+        }
       }
-      const tmpESFunction = _.cloneDeep(esfunction);
-      esquery.query.script_score.query.function_score.functions.push(tmpESFunction);
     }
+    const tmpESFunction = _.cloneDeep(esfunction);
+    esquery.query.script_score.query.function_score.functions.push(tmpESFunction);
+    // }
   }
 
   if (!decisionRule.filters || Object.keys(decisionRule.filters).length === 0) {
@@ -345,6 +347,7 @@ const performMatch = ({
         logger.error('Matching type is not specified under decision rule, should be either deterministic or probabilistic');
         return callback(true);
       }
+      logger.error(JSON.stringify(esquery,0,2));
       const url = URI(config.get('elastic:server'))
         .segment(config.get('elastic:index'))
         .segment('_search')
