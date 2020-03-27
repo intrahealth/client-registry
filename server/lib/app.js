@@ -522,7 +522,7 @@ function appRoutes() {
       matchingTool.performMatch({
         sourceResource: patient,
         ignoreList: [patient.id],
-      }, (err, matches, ESMatches) => {
+      }, (err, matches, ESMatches, matchedGoldenRecords) => {
         if(err) {
           operSummary.outcome = '8';
           operSummary.outcomeDesc = 'An error occured while finding matches';
@@ -647,89 +647,83 @@ function appRoutes() {
               logger.error('Cant build query from resource id');
               return callback(true);
             }
-            fhirWrapper.getResource({
-              resource: 'Patient',
-              query,
-              noCaching: true
-            }, (goldenRecords) => {
-              if(!goldenRecords || !goldenRecords.entry || goldenRecords.entry.length === 0) {
-                operSummary.outcome = '8';
-                operSummary.outcomeDesc = 'Querying for CRUID details from FHIR Server returned nothing';
-                return callback(true);
-              }
-              if(currentLinks.length > 0) {
-                /**
-                 * The purpose for this piece of code is to remove this patient from existing golden links
-                 * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
-                 * otherwise just remove the patient from this exisitng golden link
-                 * It also remove the exisitng golden link from the patient
-                 */
-                for (const currentLink of currentLinks) {
-                  const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
-                    return link.other.reference === 'Patient/' + patient.id;
+            if(!matchedGoldenRecords || !matchedGoldenRecords.entry || matchedGoldenRecords.entry.length === 0) {
+              operSummary.outcome = '8';
+              operSummary.outcomeDesc = 'Querying for CRUID details from FHIR Server returned nothing';
+              return callback(true);
+            }
+            if(currentLinks.length > 0) {
+              /**
+               * The purpose for this piece of code is to remove this patient from existing golden links
+               * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
+               * otherwise just remove the patient from this exisitng golden link
+               * It also remove the exisitng golden link from the patient
+               */
+              for (const currentLink of currentLinks) {
+                const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
+                  return link.other.reference === 'Patient/' + patient.id;
+                });
+                let replacedByNewGolden = false;
+                if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
+                  const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
+                    return entry.resource.id === currentLink.resource.id;
                   });
-                  let replacedByNewGolden = false;
-                  if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
-                    const inNewMatches = goldenRecords.entry.find((entry) => {
-                      return entry.resource.id === currentLink.resource.id;
-                    });
-                    if(!inNewMatches) {
-                      replacedByNewGolden = true;
-                    }
+                  if(!inNewMatches) {
+                    replacedByNewGolden = true;
                   }
-                  for(const index in currentLink.resource.link) {
-                    if(currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
-                      // remove patient from golden link
-                      if(replacedByNewGolden) {
-                        currentLink.resource.link[index].other.reference = 'Patient/' + goldenRecords.entry[0].resource.id;
-                        currentLink.resource.link[index].type = 'replaced-by';
-                      } else {
-                        currentLink.resource.link.splice(index,1);
-                      }
-                      // remove golden link from patient
-                      for(const index in patient.link) {
-                        if(patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
-                          patient.link.splice(index, 1);
-                        }
-                      }
-                      bundle.entry.push({
-                        resource: currentLink.resource,
-                        request: {
-                          method: 'PUT',
-                          url: `Patient/${currentLink.resource.id}`,
-                        },
-                      });
+                }
+                for(const index in currentLink.resource.link) {
+                  if(currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
+                    // remove patient from golden link
+                    if(replacedByNewGolden) {
+                      currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
+                      currentLink.resource.link[index].type = 'replaced-by';
+                    } else {
+                      currentLink.resource.link.splice(index,1);
                     }
+                    // remove golden link from patient
+                    for(const index in patient.link) {
+                      if(patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
+                        patient.link.splice(index, 1);
+                      }
+                    }
+                    bundle.entry.push({
+                      resource: currentLink.resource,
+                      request: {
+                        method: 'PUT',
+                        url: `Patient/${currentLink.resource.id}`,
+                      },
+                    });
                   }
                 }
               }
-              // adding new links now to the patient
-              for (const goldenRecord of goldenRecords.entry) {
-                operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
-                responseBundle.entry.push({
-                  response: {
-                    location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
-                  }
-                });
-                addLinks(patient, goldenRecord.resource);
-                bundle.entry.push({
-                  resource: patient,
-                  request: {
-                    method: 'PUT',
-                    url: `Patient/${patient.id}`,
-                  },
-                }, {
-                  resource: goldenRecord.resource,
-                  request: {
-                    method: 'PUT',
-                    url: `Patient/${goldenRecord.resource.id}`,
-                  },
-                });
-              }
-              operSummary.FHIRMatches = matches.entry;
-              operSummary.ESMatches = ESMatches;
-              return callback();
-            });
+            }
+            // adding new links now to the patient
+            for (const goldenRecord of matchedGoldenRecords.entry) {
+              operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
+              responseBundle.entry.push({
+                response: {
+                  location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
+                }
+              });
+              addLinks(patient, goldenRecord.resource);
+              bundle.entry.push({
+                resource: patient,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${patient.id}`,
+                },
+              }, {
+                resource: goldenRecord.resource,
+                request: {
+                  method: 'PUT',
+                  url: `Patient/${goldenRecord.resource.id}`,
+                },
+              });
+            }
+            operSummary.FHIRMatches = matches.entry;
+            operSummary.ESMatches = ESMatches;
+            return callback();
           }
         } else {
           operSummary.outcome = '8';

@@ -347,7 +347,6 @@ const performMatch = ({
         logger.error('Matching type is not specified under decision rule, should be either deterministic or probabilistic');
         return callback(true);
       }
-      logger.error(JSON.stringify(esquery,0,2));
       const url = URI(config.get('elastic:server'))
         .segment(config.get('elastic:index'))
         .segment('_search')
@@ -408,10 +407,20 @@ const performMatch = ({
           error = true;
           return callback(error);
         }
+        query += '&_include=Patient:link';
         fhirWrapper.getResource({
           resource: 'Patient',
-          query
-        }, (results) => {
+          query,
+          noCaching: true
+        }, (resourceData) => {
+          const goldenRecords = {entry: []};
+          goldenRecords.entry = resourceData.entry.filter((entry) => {
+            return entry.search.mode === 'include';
+          });
+          const results = {entry: []};
+          results.entry = resourceData.entry.filter((entry) => {
+            return entry.search.mode === 'match';
+          });
           // get golden id of the resource that had higher score
           let goldenID;
           for(const entry of results.entry) {
@@ -421,11 +430,15 @@ const performMatch = ({
               }
             }
           }
-          // remove any other macthed resources that has different golden id than the one with highest score
+          // remove any other matched resources that has different golden id than the one with highest score
           FHIRMatches.entry = results.entry.filter((entry) => {
             return entry.resource.link.find((link) => {
               return link.other.reference === goldenID;
             });
+          });
+
+          goldenRecords.entry = goldenRecords.entry.filter((entry) => {
+            return entry.resource.resourceType + '/' + entry.resource.id === goldenID;
           });
 
           for(const index in ESMatches) {
@@ -436,11 +449,11 @@ const performMatch = ({
             });
           }
           logger.info('Done matching');
-          return callback(error, FHIRMatches, ESMatches);
+          return callback(error, FHIRMatches, ESMatches, goldenRecords);
         });
       } else {
         logger.info('Done matching');
-        return callback(error, FHIRMatches, ESMatches);
+        return callback(error, FHIRMatches, ESMatches, []);
       }
     });
   });
