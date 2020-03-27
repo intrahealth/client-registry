@@ -1,9 +1,5 @@
 # Client Registry
 
-This is a lightweight mediator for [OpenHIM](http://openhim.org) that, in combination with a FHIR server, acts as a client registry.
-
-> This is not an OpenHIE product. Rather, it is a prototypical client registry to facilitate discussion among a broad set of stakeholders. Please join the [OpenHIE Client Registry Community](https://discourse.ohie.org) calls and get involved!
-
 # Installation
 
 Clone the repository
