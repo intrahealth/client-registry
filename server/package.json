@@ -4,6 +4,8 @@
   "description": "Client Registry",
   "main": "app.js",
   "scripts": {
+    "start": "env NODE_ENV=production node lib/app.js",
+    "dev": "env NODE_ENV=development node lib/app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
