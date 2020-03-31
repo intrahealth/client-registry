@@ -1,0 +1,63 @@
+---
+- name: ElasticSearch
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+
+
+  tasks:
+
+# elasticsearch
+  - name: Download file with checksum url (sha512)
+    get_url:
+      url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm
+      dest: /home/opencr/
+      checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512
+
+  - name: install es rpm from a local file
+    yum:
+      name: elasticsearch-7.6.1-x86_64.rpm
+      state: present
+
+# es plugin
+  - elasticsearch_plugin:
+      name: analysis-phonetic
+      state: present
+
+# this es-provided script also increases memory for es, no need to do separately
+  - name: systemctl elasticsearch builtin
+    command: systemctl enable --now elasticsearch
+    register: es
+
+  - debug:
+      msg: "{{ es.stdout_lines }}"
+
+
+# start/restart
+  - name: run backend
+    service: 
+      name: elasticsearch.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+
+
+# es test
+  - name: show es status
+    uri:
+      url: "http://localhost:9200/_cat/health?v&pretty"
+      method: GET
+      return_content: yes
+    register: status
+
+  - debug:
+      msg: "{{ status }}"
+
+

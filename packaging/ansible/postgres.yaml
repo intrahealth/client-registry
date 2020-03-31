@@ -1,0 +1,91 @@
+---
+- name: Preparation
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+    - name: "pgpass"
+      prompt: "Please provide the password for the hapi postgres user in plain text (it will be md5-hashed)"
+      private: no
+
+  tasks:
+
+  # postgres
+
+    - name: install the postgres pgdg from remote
+      yum:
+        name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+        state: present
+
+    - name: install postgres components
+      yum:
+        name: 
+          - postgresql10 
+          - postgresql10-server 
+          - postgresql10-contrib 
+          - postgresql10-libs
+        state: latest
+
+
+# postgres initdb: this should fail if it exists - and that's okay 
+
+    - stat:
+        path: /var/lib/pgsql/10/data
+      register: pgdata 
+
+
+    # install 
+    - name: Initialize Postgres
+      command: /usr/pgsql-10/bin/postgresql-10-setup initdb
+      when: pgdata.stat.exists == False
+
+
+    - name: install systemd template for pg
+      template:
+        src: postgres.service.j2
+        dest: /etc/systemd/system/postgres.service
+        mode: 644
+        force: yes
+
+
+    - name: run pg
+      service: 
+        name: postgres.service
+        state: restarted
+        enabled: yes
+        daemon_reload: yes
+
+
+    - name: Create a new database with name hapi
+      postgresql_db:
+        name: hapi
+      become_user: postgres
+
+
+# create hapi user
+
+    - name: Connect to hapi database, create hapi user, and grant access
+      postgresql_user:
+        db: hapi
+        name: hapi
+        password: "{{ pgpass }}"
+        encrypted: yes
+        priv: ALL
+      become_user: postgres
+
+    - name: Confirm actions worked for hapi database/user
+      become: yes
+      become_user: postgres
+      postgresql_info:
+        db: hapi
+        filter: "!settings"
+      register: pginfo
+
+    - debug:
+        msg: "{{ pginfo }}"

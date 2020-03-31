@@ -1,0 +1,69 @@
+---
+- name: Installation
+  hosts: all
+  remote_user: "{{ user }}"
+  tags: install
+
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (without sudo)"
+      private: no
+
+  tasks:
+
+  - name: Does client-registry folder exist
+    stat:
+      path: $HOME/client-registry
+    register: stat_result2
+
+
+  - name: git clone repo
+    git:
+      repo: 'https://github.com/intrahealth/client-registry.git'
+      dest: /home/{{ user }}/client-registry
+      clone: yes
+      update: yes
+    when: stat_result2.stat.exists == False
+
+
+  - name: git pull
+    shell: cd /home/{{ user }}/client-registry && git pull
+
+
+  # - name: npm build of hearth
+  #   shell: cd $HOME/hearth && npm install
+
+  - name: Install/update npm packages in package.json.
+    npm:
+      path: /home/{{ user }}/client-registry/server
+      state: latest
+
+
+  - name: install systemd template for opencr service (centos)
+    template:
+      src: opencr.service.j2
+      dest: /etc/systemd/system/opencr.service
+      mode: 644
+      force: yes
+    vars:
+      executable: "/usr/bin/node"
+    when: ansible_distribution == 'CentOS'
+
+
+  - name: run backend
+    service: 
+      name: opencr.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+
+
+# status
+  - name: status
+    command: systemctl status hapi.service
+    register: status
+
+  - debug:
+      msg: "{{ status.stdout_lines }}"
+

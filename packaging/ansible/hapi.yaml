@@ -1,0 +1,52 @@
+---
+- name: HAPI FHIR Server
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+
+  tasks:
+
+  - name: Does hapi folder exist
+    stat:
+      path: $HOME/hapi-fhir-jpaserver-starter
+    register: stat_result2
+
+
+  - name: git clone repo
+    git:
+      repo: 'https://github.com/hapifhir/hapi-fhir-jpaserver-starter.git'
+      dest: /home/{{ user }}/hapi-fhir-jpaserver-starter
+      clone: yes
+    when: stat_result2.stat.exists == False
+
+
+  - name: git pull if updated
+    git:
+      repo: 'https://github.com/hapifhir/hapi-fhir-jpaserver-starter.git'
+      dest: /home/{{ user }}/hapi-fhir-jpaserver-starter
+      update: yes
+
+
+  - name: install systemd template for hapi
+    template:
+      src: hapi.service.j2
+      dest: /etc/systemd/system/hapi.service
+      mode: 644
+      force: yes
+
+
+  - name: run hapi
+    service: 
+      name: hapi.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+

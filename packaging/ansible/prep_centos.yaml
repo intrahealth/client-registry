@@ -10,18 +10,7 @@
       prompt: "Please enter the username (with sudo)"
       private: no
 
-    - name: "pgpass"
-      prompt: "Please provide the password for the hapi postgres user in plain text (it will be md5-hashed)"
-      private: no
-
-
   tasks:
-
-  # - name: upgrade all packages
-  #   yum:
-  #     name: '*'
-  #     state: latest
-
 
   - name: Ensure git
     yum:
@@ -34,7 +23,8 @@
       name: epel-release
       state: present
 
-# rpm subdomain
+
+# node and npm
   - name: Download nodesource script for node v10
     get_url:
       url: https://rpm.nodesource.com/setup_10.x
@@ -70,6 +60,13 @@
       - make
 
 
+# python psycopg2 for ansible to manage postgres
+  - name: Ensure python-psycopg2 for ansible to manage postgres
+    yum:
+      name: python-psycopg2
+      state: present
+
+
 # java
   - name: Add repository for AdoptOpenJDK
     yum_repository:
@@ -87,90 +84,25 @@
       state: present
 
 
-# todo: move to proper installation using yum module
-# elasticsearch
-  - name: Download file with checksum url (sha512)
-    get_url:
-      url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm
-      dest: /home/opencr/
-      checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512
+# maven
 
-  - name: install es rpm from a local file
+  - name: Ensure maven for java builds
     yum:
-      name: elasticsearch-7.6.1-x86_64.rpm
+      name: maven
       state: present
 
 
-  # - name: get key
-  #   command: "wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512"
-  #   register: gkey
+# enable cpu and memory accounting by systemd
+  - name: Ensure memory accounting for systemd
+    replace:
+      path: /etc/systemd/system.conf
+      regexp: '#DefaultMemoryAccounting=no'
+      replace: 'DefaultMemoryAccounting=yes'
+      backup: no
 
-  # - debug:
-  #     msg: "{{ gkey.stdout_lines }}"
-
-  # - rpm_key:
-  #     state: present
-  #     key: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
-
-  # - name: Add repository for ElasticSearch
-  #   yum_repository:
-  #     name: ElasticSearch repository for 7.x packages
-  #     description: ElasticSearch
-  #     baseurl: https://artifacts.elastic.co/packages/7.x/yum
-  #     gpgcheck: yes
-  #     gpgkey: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-  #     enabled: yes
-
-
-  # - name: install ElasticSearch
-  #   yum: 
-  #     name: elasticsearch
-  #     state: present
-
-
-# es plugin
-  - elasticsearch_plugin:
-      name: analysis-phonetic
-      state: present
-
-
-# postgres
-
-  - name: Ensure pip - prereq for psycopg2
-    yum:
-      name: python-pip
-      state: present
-
-  - name: pip self-update
-    pip:
-      name: pip
-      state: latest      
-
-  - name: Make sure psycopg2 is installed
-    pip:
-      name: psycopg2-binary
-      state: present
-
-  - name: install the postgres pgdg from remote
-    yum:
-      name: https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-      state: present
-
-  - name: postgres
-    yum:
-      name: postgresql10 
-      # - postgresql10-server 
-      # - postgresql10-contrib 
-      # - postgresql10-libs
-      state: latest
-
-
-# tomcat
-
-
-
-
-
-
-# hapi
-
+  - name: Ensure cpu accounting for systemd
+    replace:
+      path: /etc/systemd/system.conf
+      regexp: '#DefaultCPUAccounting=no'
+      replace: 'DefaultCPUAccounting=yes'
+      backup: no
