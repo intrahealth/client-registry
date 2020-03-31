@@ -13,6 +13,7 @@
   "author": "Intrahealth International",
   "license": "ISC",
   "dependencies": {
+    "acorn": ">=7.1.1",
     "async": "^3.1.0",
     "axios": "^0.19.2",
     "damerau-levenshtein": "^1.0.5",
@@ -26,6 +27,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "metaphone": "^1.0.6",
+    "minimist": ">=1.2.2",
     "moment": "^2.24.0",
     "nconf": "^0.10.0",
     "openhim-mediator-utils": "^0.2.3",
@@ -40,6 +42,7 @@
     "winston-daily-rotate-file": "^4.4.2"
   },
   "devDependencies": {
+    "acorn": ">=7.1.1",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-config-standard": "^14.1.0",
@@ -47,6 +50,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-vue": "^6.1.2"
+    "eslint-plugin-vue": "^6.1.2",
+    "minimist": ">=1.2.2"
   }
 }
