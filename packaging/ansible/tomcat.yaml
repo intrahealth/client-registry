@@ -1,0 +1,79 @@
+---
+- name: Tomcat
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+  tasks:
+
+# tomcat
+# from: https://www.digitalocean.com/community/tutorials/install-tomcat-9-ubuntu-1804
+  - name: Add group tomcat
+    group: 
+      name: tomcat
+
+
+  - name: Add user tomcat
+    user: 
+      name: tomcat 
+      group: tomcat 
+      home: /opt/tomcat
+      createhome: yes
+
+
+# todo: 
+  - name: Download Tomcat v9.0.33
+    get_url: 
+      url: http://mirror.cc.columbia.edu/pub/software/apache/tomcat/tomcat-9/v9.0.33/bin/apache-tomcat-9.0.33.tar.gz
+      dest: /opt/apache-tomcat-9.0.33.tar.gz
+      # ansible fails 'Unable to find a checksum for file'
+      # checksum: sha512:https://www.apache.org/dist/tomcat/tomcat-9/v9.0.33/bin/apache-tomcat-9.0.33.tar.gz.asc
+
+
+# todo: switch to unarchive module
+  - name: Extract tomcat archive
+    command: /bin/tar xvf /opt/apache-tomcat-9.0.33.tar.gz -C /opt/tomcat --strip-components=1 
+    args:
+      chdir: /opt
+
+
+  - name: Recursively change ownership of tomcat dirs
+    file:
+      path: /opt/tomcat
+      state: directory
+      recurse: yes
+      owner: tomcat
+      group: tomcat
+
+
+  - name: install systemd template for tomcat
+    template:
+      src: tomcat.service.j2
+      dest: /etc/systemd/system/tomcat.service
+      mode: 644
+      force: yes
+
+
+  - name: run tomcat
+    service: 
+      name: tomcat.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+
+# status
+  - name: status
+    command: systemctl status tomcat.service
+    register: status
+
+  - debug:
+      msg: "{{ status.stdout_lines }}"
+
+

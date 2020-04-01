@@ -38,7 +38,7 @@
     command: bash $HOME/nodesource.sh
 
 
-  - name: install nodejs packages
+  - name: Install nodejs packages
     yum: 
       name: nodejs
       state: present
@@ -69,31 +69,10 @@
 
 # java
 
-  - name: Ensure java
+  - name: Ensure java 1.8
     yum:
       name: java-1.8.0-openjdk-devel
       state: present
-
-# tomcat
-  # - name: Download Tomcat
-  #   get_url: 
-  #     url: https://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.27/bin/apache-tomcat-9.0.27.tar.gz
-  #     dest: /opt/apache-tomcat-9.0.27.tar.gz
-
-
-  # - name: Extract archive
-  #   command: /bin/tar xvf /opt/apache-tomcat-9.0.27.tar.gz -C /opt/ 
-  #   args:
-  #     creates: /opt/apache-tomcat-7.0.61
-  #     chdir: /usr/share /bin/tar xvf /opt/apache-tomcat-9.0.27.tar.gz -C /opt/ creates=/opt/apache-tomcat-9.0.27
-
-    
-  # - name: Symlink install directory
-  #   file: 
-  #     src: /opt/apache-tomcat-9.0.27 
-  #     path: /usr/share/tomcat
-  #     state: link
-
 
 # this works but using another openjdk for now.
   # - name: Add repository for AdoptOpenJDK
@@ -113,14 +92,9 @@
 
 
 # maven
-
 # yum version of maven is too out of date for hapi, need to upgrade
-  # - name: Ensure maven for java builds
-  #   yum:
-  #     name: maven
-  #     state: present
 
-  - name: Download Apache Maven 
+  - name: Download Apache Maven 3.6.3
     get_url: 
       url: https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
       dest: /tmp/apache-maven-3.6.3-bin.tar.gz

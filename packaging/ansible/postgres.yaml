@@ -85,10 +85,12 @@
     - debug:
         msg: "{{ pginfo }}"
 
-# authorize ident or it wont work
 
-# local   all
-# host    all
+# todo: check if these entries can be removed
+# authorize ident or it wont work
+# see: https://serverfault.com/questions/406606/postgres-error-message-fatal-ident-authentication-failed-for-user
+# could be changed to md5 from trust?
+# https://www.cyberciti.biz/faq/psql-fatal-ident-authentication-failed-for-user/
 
     - name: Comment out entries in pg_hba.conf
       replace:
@@ -101,11 +103,6 @@
         dest: /var/lib/pgsql/10/data/pg_hba.conf
         regexp: '^host    all'
         replace: '#host    all'
-
-
-# append:
-# local	all		all					trust
-# host	all		all 		127.0.0.1/32		trust
 
 
     - name: Add a line to a file

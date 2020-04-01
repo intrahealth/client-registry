@@ -48,7 +48,6 @@
       force: yes
     vars:
       executable: "/usr/bin/node"
-    when: ansible_distribution == 'CentOS'
 
 
   - name: run backend

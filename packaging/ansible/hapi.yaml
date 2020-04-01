@@ -20,13 +20,14 @@
     register: stat_result2
 
 
-  - name: git clone repo
+  - name: git clone repo (hapi jpa-server-starter v4.2.0)
     git:
       repo: 'https://github.com/hapifhir/hapi-fhir-jpaserver-starter.git'
       dest: /home/{{ user }}/hapi-fhir-jpaserver-starter
       clone: yes
       # note that this blows away any existing changes to files
       force: yes
+      version: v4.2.0
     when: stat_result2.stat.exists == False
 
 
@@ -65,7 +66,7 @@
     lineinfile:
       path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
       regexp: '^datasource.username='
-      line: datasource.username=admin
+      line: datasource.username=hapi
 
 
 # todo: need to sub in md5 hashed pwd 
@@ -73,7 +74,7 @@
     lineinfile:
       path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
       regexp: '^datasource.password='
-      line: datasource.password=admin
+      line: datasource.password=hapi
       
 
 # builds /home/opencr/hapi-fhir-jpaserver-starter/target/hapi-fhir-jpaserver.war
@@ -92,28 +93,16 @@
       chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter
 
 
+# move package into tomcat/webapps
+  - name: move war file to /opt/tomcat/webapps
+    shell: cp hapi-fhir-jpaserver.war /opt/tomcat/webapps/
+    args:
+      chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter/target/
 
+# kick tomcat
 
-# FAILS HERE
-
-# hapi cannot ident with postgres
-# /var/lib/pgsql/10/data/pg_hba.conf
-
-
-
-  # - name: install systemd template for hapi
-  #   template:
-  #     src: hapi.service.j2
-  #     dest: /etc/systemd/system/hapi.service
-  #     mode: 644
-  #     force: yes
-
-
-  # - name: run hapi
-  #   service: 
-  #     name: hapi.service
-  #     state: started
-  #     enabled: yes
-  #     daemon_reload: yes
-
-
+  - name: kick tomcat
+    service: 
+      name: tomcat.service
+      state: restarted
+      enabled: yes
