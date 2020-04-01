@@ -41,7 +41,7 @@
 
 
 # start/restart
-  - name: run backend
+  - name: run es systemd
     service: 
       name: elasticsearch.service
       state: restarted

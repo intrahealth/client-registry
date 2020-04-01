@@ -14,7 +14,7 @@
 
   - name: Does client-registry folder exist
     stat:
-      path: $HOME/client-registry
+      path: /home/{{ user }}/client-registry
     register: stat_result2
 
 

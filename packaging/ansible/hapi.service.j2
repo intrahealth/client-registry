@@ -4,7 +4,8 @@ Description=HAPI FHIR Server
 [Service]
 Type=notify
 User=opencr
-ExecStart=ExecStart=/usr/bin/bash -c '/usr/bin/mvn -Djetty.port=8080 jetty:run'
+# ExecStart=ExecStart=/usr/bin/bash -c '/opt/apache-maven-3.6.3/bin/mvn -Djetty.port=8080 jetty:run'
+ExecStart=/opt/apache-maven-3.6.3/bin/mvn jetty:run
 WorkingDirectory=/home/{{ user }}/hapi-fhir-jpaserver-starter
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed

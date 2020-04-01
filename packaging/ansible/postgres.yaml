@@ -33,33 +33,28 @@
         state: latest
 
 
+
+    # - stat:
+    #     path: /var/lib/pgsql/10/data
+    #   register: pgdata 
+
+
 # postgres initdb: this should fail if it exists - and that's okay 
 
-    - stat:
-        path: /var/lib/pgsql/10/data
-      register: pgdata 
-
-
-    # install 
     - name: Initialize Postgres
       command: /usr/pgsql-10/bin/postgresql-10-setup initdb
-      when: pgdata.stat.exists == False
+      # when: pgdata.stat.exists == False
+      ignore_errors: yes 
 
 
-    - name: install systemd template for pg
-      template:
-        src: postgres.service.j2
-        dest: /etc/systemd/system/postgres.service
-        mode: 644
-        force: yes
-
+# note that postgres initdb installs its own systemd unit
 
     - name: run pg
       service: 
-        name: postgres.service
-        state: restarted
+        name: postgresql-10
+        state: started
         enabled: yes
-        daemon_reload: yes
+        # daemon_reload: yes
 
 
     - name: Create a new database with name hapi
@@ -89,3 +84,45 @@
 
     - debug:
         msg: "{{ pginfo }}"
+
+# authorize ident or it wont work
+
+# local   all
+# host    all
+
+    - name: Comment out entries in pg_hba.conf
+      replace:
+        dest: /var/lib/pgsql/10/data/pg_hba.conf
+        regexp: '^local   all'
+        replace: '#local   all'
+
+    - name: Comment out entries in pg_hba.conf
+      replace:
+        dest: /var/lib/pgsql/10/data/pg_hba.conf
+        regexp: '^host    all'
+        replace: '#host    all'
+
+
+# append:
+# local	all		all					trust
+# host	all		all 		127.0.0.1/32		trust
+
+
+    - name: Add a line to a file
+      lineinfile:
+        path: /var/lib/pgsql/10/data/pg_hba.conf
+        line: local	all	all	trust
+
+
+    - name: Add a line to a file
+      lineinfile:
+        path: /var/lib/pgsql/10/data/pg_hba.conf
+        line: host all all 127.0.0.1/32 trust        
+
+
+    - name: run pg
+      service: 
+        name: postgresql-10
+        state: restarted
+        enabled: yes
+        # daemon_reload: yes

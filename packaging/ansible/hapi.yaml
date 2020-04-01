@@ -5,6 +5,7 @@
   become: true
   tags: prep
 
+  
   vars_prompt:
     - name: "user"
       prompt: "Please enter the username (with sudo)"
@@ -24,6 +25,8 @@
       repo: 'https://github.com/hapifhir/hapi-fhir-jpaserver-starter.git'
       dest: /home/{{ user }}/hapi-fhir-jpaserver-starter
       clone: yes
+      # note that this blows away any existing changes to files
+      force: yes
     when: stat_result2.stat.exists == False
 
 
@@ -34,19 +37,83 @@
       update: yes
 
 
-  - name: install systemd template for hapi
-    template:
-      src: hapi.service.j2
-      dest: /etc/systemd/system/hapi.service
-      mode: 644
-      force: yes
+# add postgres to src/main/resources/hapi.properties
+
+  - name: replace line(s) for postgres as datasource in hapi.properties
+    lineinfile:
+      path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
+      regexp: '^datasource.driver='
+      line: datasource.driver=org.postgresql.Driver
+
+      
+  - name: replace line(s) for postgres as datasource in hapi.properties
+    lineinfile:
+      path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
+      regexp: '^datasource.url='
+      # line: datasource.url=jdbc:postgresql://localhost:5432/hapi_dstu3
+      line: datasource.url=jdbc:postgresql://localhost:5432/hapi
 
 
-  - name: run hapi
-    service: 
-      name: hapi.service
-      state: started
-      enabled: yes
-      daemon_reload: yes
+  - name: replace line(s) for postgres as datasource in hapi.properties
+    lineinfile:
+      path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
+      regexp: '^hibernate.dialect='
+      line: hibernate.dialect=org.hibernate.dialect.PostgreSQL95Dialect
+
+
+  - name: replace line(s) for postgres as datasource in hapi.properties
+    lineinfile:
+      path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
+      regexp: '^datasource.username='
+      line: datasource.username=admin
+
+
+# todo: need to sub in md5 hashed pwd 
+  - name: replace line(s) for postgres as datasource in hapi.properties
+    lineinfile:
+      path: /home/{{ user }}/hapi-fhir-jpaserver-starter/src/main/resources/hapi.properties
+      regexp: '^datasource.password='
+      line: datasource.password=admin
+      
+
+# builds /home/opencr/hapi-fhir-jpaserver-starter/target/hapi-fhir-jpaserver.war
+# must use -DskipTests as integration tests use builtin derby server not postgres
+
+  - name: maven clean install
+    shell: /opt/apache-maven-3.6.3/bin/mvn clean install -DskipTests
+    args:
+      chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter
+
+# builds /home/opencr/hapi-fhir-jpaserver-starter/target/hapi-fhir-jpaserver.war
+# not necessary for mvn jetty runs but would be with tomcat or other approach
+  - name: maven package
+    shell: /opt/apache-maven-3.6.3/bin/mvn package
+    args:
+      chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter
+
+
+
+
+# FAILS HERE
+
+# hapi cannot ident with postgres
+# /var/lib/pgsql/10/data/pg_hba.conf
+
+
+
+  # - name: install systemd template for hapi
+  #   template:
+  #     src: hapi.service.j2
+  #     dest: /etc/systemd/system/hapi.service
+  #     mode: 644
+  #     force: yes
+
+
+  # - name: run hapi
+  #   service: 
+  #     name: hapi.service
+  #     state: started
+  #     enabled: yes
+  #     daemon_reload: yes
 
 

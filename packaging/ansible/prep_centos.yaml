@@ -68,28 +68,74 @@
 
 
 # java
-  - name: Add repository for AdoptOpenJDK
-    yum_repository:
-      name: AdoptOpenJDK
-      description: AdoptOpenJDK
-      baseurl: http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/7/x86_64/
-      gpgcheck: yes
-      gpgkey: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
-      enabled: yes
 
-
-  - name: install adoptopenjdk packages
-    yum: 
-      name: adoptopenjdk-8-openj9
+  - name: Ensure java
+    yum:
+      name: java-1.8.0-openjdk-devel
       state: present
+
+# tomcat
+  # - name: Download Tomcat
+  #   get_url: 
+  #     url: https://www-eu.apache.org/dist/tomcat/tomcat-9/v9.0.27/bin/apache-tomcat-9.0.27.tar.gz
+  #     dest: /opt/apache-tomcat-9.0.27.tar.gz
+
+
+  # - name: Extract archive
+  #   command: /bin/tar xvf /opt/apache-tomcat-9.0.27.tar.gz -C /opt/ 
+  #   args:
+  #     creates: /opt/apache-tomcat-7.0.61
+  #     chdir: /usr/share /bin/tar xvf /opt/apache-tomcat-9.0.27.tar.gz -C /opt/ creates=/opt/apache-tomcat-9.0.27
+
+    
+  # - name: Symlink install directory
+  #   file: 
+  #     src: /opt/apache-tomcat-9.0.27 
+  #     path: /usr/share/tomcat
+  #     state: link
+
+
+# this works but using another openjdk for now.
+  # - name: Add repository for AdoptOpenJDK
+  #   yum_repository:
+  #     name: AdoptOpenJDK
+  #     description: AdoptOpenJDK
+  #     baseurl: http://adoptopenjdk.jfrog.io/adoptopenjdk/rpm/centos/7/x86_64/
+  #     gpgcheck: yes
+  #     gpgkey: https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public
+  #     enabled: yes
+
+
+  # - name: install adoptopenjdk packages
+  #   yum: 
+  #     name: adoptopenjdk-8-openj9
+  #     state: present
 
 
 # maven
 
-  - name: Ensure maven for java builds
-    yum:
-      name: maven
-      state: present
+# yum version of maven is too out of date for hapi, need to upgrade
+  # - name: Ensure maven for java builds
+  #   yum:
+  #     name: maven
+  #     state: present
+
+  - name: Download Apache Maven 
+    get_url: 
+      url: https://www-us.apache.org/dist/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+      dest: /tmp/apache-maven-3.6.3-bin.tar.gz
+
+  - name: Untar Maven 
+    shell: 
+      chdir: /tmp 
+      creates: /opt/apache-maven-3.6.3
+      cmd: tar -zxf apache-maven-3.6.3-bin.tar.gz -C /opt
+
+# will have to call maven by its abs path: /opt/apache-maven-3.6.3/bin/mvn
+
+# not upgrading env
+  # - name: Update path for maven use
+  #   shell: export PATH=/opt/apache-maven-3.6.3/bin:$PATH
 
 
 # enable cpu and memory accounting by systemd
