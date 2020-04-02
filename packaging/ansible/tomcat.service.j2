@@ -16,6 +16,9 @@ Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./
 ExecStart=/opt/tomcat/bin/startup.sh
 ExecStop=/opt/tomcat/bin/shutdown.sh
 
+# this is critical
+WorkingDirectory=/opt/tomcat
+
 User=tomcat
 Group=tomcat
 UMask=0007

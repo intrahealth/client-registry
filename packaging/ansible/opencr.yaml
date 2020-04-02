@@ -31,13 +31,26 @@
     shell: cd /home/{{ user }}/client-registry && git pull
 
 
-  # - name: npm build of hearth
-  #   shell: cd $HOME/hearth && npm install
-
   - name: Install/update npm packages in package.json.
     npm:
       path: /home/{{ user }}/client-registry/server
       state: latest
+
+
+  - name: Copy template config for config_production.json
+    copy:
+      remote_src: yes
+      src: /home/{{ user }}/client-registry/server/config/config_production_template.json
+      dest: /home/{{ user }}/client-registry/server/config/config_production.json
+      force: yes
+
+
+# modify /server/config template
+  - name: replace line(s) for config_production.json
+    lineinfile:
+      path: /home/{{ user }}/client-registry/server/config/config_production.json
+      regexp: '"baseURL": "http://localhost:8081/clientregistry/fhir",'
+      line: '"baseURL": "http://localhost:8080/hapi-fhir-jpaserver/fhir",'
 
 
   - name: install systemd template for opencr service (centos)
@@ -48,6 +61,7 @@
       force: yes
     vars:
       executable: "/usr/bin/node"
+    become: true
 
 
   - name: run backend
@@ -56,13 +70,25 @@
       state: restarted
       enabled: yes
       daemon_reload: yes
+    become: true
 
 
 # status
   - name: status
-    command: systemctl status hapi.service
+    command: systemctl status opencr.service
     register: status
+    become: true
 
   - debug:
       msg: "{{ status.stdout_lines }}"
+
+
+  - name: Gather facts on listening ports
+    listen_ports_facts:
+
+
+  - name: List TCP ports
+    debug:
+      msg: "{{ ansible_facts.tcp_listen  | map(attribute='port') | sort | list }}"
+
 

@@ -73,7 +73,15 @@
     command: systemctl status tomcat.service
     register: status
 
+
   - debug:
       msg: "{{ status.stdout_lines }}"
 
 
+  - name: Gather facts on listening ports
+    listen_ports_facts:
+
+
+  - name: List TCP ports
+    debug:
+      msg: "{{ ansible_facts.tcp_listen  | map(attribute='port') | sort | list }}"

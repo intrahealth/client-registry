@@ -39,47 +39,20 @@ Create the `opencr` user and gives it sudo access:
 ansible-playbook -i /usr/local/etc/ansible/hosts user.yaml
 ```
 
-## Prerequisites
+## Installation
 
-Install prerequisites
 ```sh 
-# for centos
-ansible-playbook -i /usr/local/etc/ansible/hosts prep_centos.yaml
-```
-
-The prerequisites installation includes programs needed to build packages, node, java (Adopt OpenJDK distribution), and maven. The version of maven provided by yum is too out-of-date for builds.
-
-
-## ElasticSearch
-
-ElasticSearch is installed, a plugin is installed, and it is started and controlled by systemd. A verification is done to ensure its running.
-```
-ansible-playbook -i /usr/local/etc/ansible/hosts elasticsearch.yaml
-```
-
-## Postgres
-
-This creates a hapi user, adds a user-entered password, and creates a hapi database.
-```
-ansible-playbook -i /usr/local/etc/ansible/hosts postgres.yaml
-```
-
-## HAPI
-
-This is in-progress.
-
-todo:
-* hapi is not talking to postgres correctly
-* hapi should be run by tomcat (which requires installation)
-
-```
+ansible-playbook -i /usr/local/etc/ansible/hosts prep_centos.yaml -e user=opencr
+ansible-playbook -i /usr/local/etc/ansible/hosts elasticsearch.yaml -e user=opencr
+ansible-playbook -i /usr/local/etc/ansible/hosts tomcat.yaml -e user=opencr
+ansible-playbook -i /usr/local/etc/ansible/hosts postgres.yaml -e user=opencr -e pgpass=hapi
 ansible-playbook -i /usr/local/etc/ansible/hosts hapi.yaml -e user=opencr
+ansible-playbook -i /usr/local/etc/ansible/hosts opencr.yaml -e user=opencr
 ```
 
+Visit: https://<ip>:3000/crux
 
-## OpenCR Service
-
-This is completed but not useful until hapi is talking to postgres.
+HTTPS must be used.
 
 
 ## Add additional user public keys
@@ -88,4 +61,3 @@ As necessary, add additional ssh keys to the user `opencr`. (Ensure that the use
 ```
 ansible-playbook -i /usr/local/etc/ansible/hosts keys.yaml
 ```
-

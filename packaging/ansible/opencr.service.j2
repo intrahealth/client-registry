@@ -5,8 +5,10 @@ After=network.target
 
 [Service]
 Type=simple
-User={{ user }}
-WorkingDirectory=/home/{{ user }}/client-registry
+# User={{ user }}
+User=root
+Environment=NODE_ENV=production
+WorkingDirectory=/home/{{ user }}/client-registry/server
 ExecStart={{ executable }} lib/app.js
 Restart=on-failure
 

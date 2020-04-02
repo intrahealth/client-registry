@@ -1,0 +1,58 @@
+---
+- name: firewall
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+
+  tasks:
+
+
+  - name: firewalld
+    yum: 
+      name: firewalld
+      state: present
+
+  - name: start firewalld
+    service: 
+      name: firewalld.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+
+  - firewalld:
+      zone: public
+      interface: eth0
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+
+# https://docs.ansible.com/ansible/latest/modules/firewalld_module.html
+  - name: restart firewalld to pick up zone add
+    service: 
+      name: firewalld.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+
+# hapi
+  - name: open 8080
+    firewalld:
+      port: 8080/tcp
+      permanent: yes
+      immediate: yes
+      state: enabled
+
+
+# opencr
+  - firewalld:
+      port: 3000/tcp
+      permanent: yes
+      state: enabled
+      immediate: yes
+    become: true
+
+

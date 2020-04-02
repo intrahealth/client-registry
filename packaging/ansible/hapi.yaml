@@ -38,6 +38,10 @@
       update: yes
 
 
+
+# default: fhir_version=R4      
+# default: server_address=http://localhost:8080/hapi-fhir-jpaserver/fhir/
+
 # add postgres to src/main/resources/hapi.properties
 
   - name: replace line(s) for postgres as datasource in hapi.properties
@@ -100,7 +104,6 @@
       chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter/target/
 
 # kick tomcat
-
   - name: kick tomcat
     service: 
       name: tomcat.service
