@@ -1,9 +1,5 @@
 # Ansible
 
-> This is incomplete and a work in-progress.
-
-# Ansible
-
 You must have a local VM or remote server. See `/packaging/vagrant/centos` for a Vagrant VM (CentOS 7) script for working example of creating a local VM.
 
 > These steps are for installing on a server OS directly and require experience with remote configuration.
