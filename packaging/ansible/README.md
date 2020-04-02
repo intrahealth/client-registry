@@ -46,7 +46,7 @@ ansible-playbook -i /usr/local/etc/ansible/hosts hapi.yaml -e user=opencr
 ansible-playbook -i /usr/local/etc/ansible/hosts opencr.yaml -e user=opencr
 ```
 
-Visit: https://<ip>:3000/crux
+Visit: https://ipaddress:3000/crux
 
 HTTPS must be used.
 
