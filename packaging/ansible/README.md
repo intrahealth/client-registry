@@ -23,7 +23,7 @@ An `ansible/hosts` file that has an entry for one server would be:
 
 Alternately, hosts may be specified on the command line (the comma is necessary even if there is only one host):
 ```
-ansible-playbook -i /usr/local/etc/ansible/hosts, someplaybook.yaml
+ansible-playbook -i 172.16.168.158, someplaybook.yaml
 ```
 
 ## opencr user (optional)
