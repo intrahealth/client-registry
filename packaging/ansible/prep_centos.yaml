@@ -67,6 +67,12 @@
       state: present
 
 
+  - name: Install net-tools (for netstat)
+    yum: 
+      name: net-tools
+      state: present
+
+
 # java
 
   - name: Ensure java 1.8
