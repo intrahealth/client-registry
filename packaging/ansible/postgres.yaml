@@ -108,13 +108,13 @@
     - name: Add a line to a file
       lineinfile:
         path: /var/lib/pgsql/10/data/pg_hba.conf
-        line: local	all	all	trust
+        line: "local	all	all	trust"
 
 
     - name: Add a line to a file
       lineinfile:
         path: /var/lib/pgsql/10/data/pg_hba.conf
-        line: host all all 127.0.0.1/32 trust        
+        line: "host all all 127.0.0.1/32 trust"
 
 
     - name: run pg
