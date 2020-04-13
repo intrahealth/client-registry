@@ -23,3 +23,9 @@ packaging/ansible/dhis2_key.pem
 packaging/ansible/dhis2_cert.pem
 packaging/ansible/dhis2_csr.pem
 packaging/ansible/dhis2.p12
+
+# mac
+.DS_Store
+
+# notebook checkpoints
+*.ipynb_checkpoints/

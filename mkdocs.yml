@@ -1,0 +1,96 @@
+# Project information
+site_name: "OpenCR Documentation"
+site_description: "Technical documentation for the Open Client Registry"
+site_author: "IntraHealth"
+site_url: "https://github.com/intrahealth/client-registry"
+
+# Repository
+repo_name: "intrahealth/client-registry"
+repo_url: "https://github.com/intrahealth/client-registry"
+
+# Copyright
+copyright: "Copyright &copy; 2020 IntraHealth International"
+
+# Theme
+theme:
+  name: "material"
+  palette:
+    primary: "blue grey"
+    accent: "indigo"
+  language: "en"
+  features:
+    - tabs
+  font:
+    text: "Roboto"
+    code: "Roboto Mono"
+
+nav:
+  - Overview:
+    - 'index.md'
+    - 'process.md'
+    - 'usecases.md'
+    - 'openmrs.md'
+    - 'cruid.md'
+    - 'algos.md'
+    - 'supported.md'
+    - 'architecture.md'
+  - User Manual: 
+    - 'user/introduction.md'
+    - 'user/process.md'
+    - 'user/ui.md'
+    - 'user/guide.md'
+    - 'user/roles.md'
+    - 'user/resources.md'
+  - Developer Manual:
+    - 'Introduction': 
+      - 'dev/proficiencies.md'
+      - 'dev/internals.md'
+    - 'Getting Started (Docker)':
+      - 'dev/docker.md'
+      - 'dev/queries.md'
+      - 'notebooks/basic_query_in_python.ipynb'
+      - 'dev/decision_rules.md'
+    - 'Installation':
+      - 'dev/requirements.md'
+      - 'dev/method.md'
+      - 'dev/configuration.md'
+      - 'dev/installation.md'
+      - 'dev/installation_full.md'
+      - 'dev/ansible.md'
+    - 'Load Bulk Data':
+      - 'dev/loadjs.md'
+      - 'notebooks/load_bulk_data_in_python.ipynb'
+    - 'Production Considerations':
+      - 'dev/security.md'
+      - 'dev/backup.md'
+      - 'dev/troubleshooting.md'
+    - 'dev/docs.md'
+    - 'dev/license.md'
+    - 'dev/contributing.md'
+
+markdown_extensions:
+  - admonition
+  - codehilite:
+      guess_lang: false
+  - toc:
+      toc_depth : "1-1"
+  - footnotes
+  
+# https://github.com/zhaoterryy/mkdocs-pdf-export-plugin not working
+plugins:
+  - search
+  - git-revision-date-localized
+  - mknotebooks
+  # - pdf-export:
+  #     combined: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/intrahealth/client-registry
+
+
+# theme:
+# logo: 'images/logo.png' must be 128x128
+# logo:
+#   icon: 'menu_book'
