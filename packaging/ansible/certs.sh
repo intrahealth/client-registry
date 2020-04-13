@@ -13,9 +13,10 @@ echo "generating self-signed server cert for $1\n\n"
 # create server certs without pass phrase. 
 openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -days 365 -subj "/CN=$1" -nodes
 openssl x509 -in server_cert.pem -text | grep "Subject: CN"
-openssl req -newkey rsa:4096 -keyout dhis2_key.pem -out dhis2_csr.pem -nodes -days 365 -subj "/CN=dhis2"
-openssl x509 -req -in dhis2_csr.pem -CA server_cert.pem -CAkey server_key.pem -out dhis2_cert.pem -set_serial 01 -days 36500
-openssl pkcs12 -export -in dhis2_cert.pem -inkey dhis2_key.pem -out dhis2.p12
+
+openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -days 365 -subj "/CN=ansible"
+openssl x509 -req -in ansible_csr.pem -CA server_cert.pem -CAkey server_key.pem -out ansible_cert.pem -set_serial 01 -days 36500
+openssl pkcs12 -export -in ansible_cert.pem -inkey ansible_key.pem -out ansible.p12
 
 # backup existing server cert
 mv ../../server/certificates/server_cert.pem ../../server/certificates/server_cert.pem.bak
@@ -24,16 +25,11 @@ mv ../../server/certificates/server_key.pem ../../server/certificates/server_key
 cp server_cert.pem ../../server/certificates/server_cert.pem
 cp server_key.pem ../../server/certificates/server_key.pem
 
-# backup existing client cert
-mv ../../server/sampleclientcertificates/dhis2_key.pem ../../server/sampleclientcertificates/dhis2_key.pem.bak
-mv ../../server/sampleclientcertificates/dhis2_csr.pem ../../server/sampleclientcertificates/dhis2_csr.pem.bak
-mv ../../server/sampleclientcertificates/dhis2_cert.pem ../../server/sampleclientcertificates/dhis2_cert.pem.bak
-mv ../../server/sampleclientcertificates/dhis2.p12 ../../server/sampleclientcertificates/dhis2.p12.bak
-# replace client certs
-cp dhis2_key.pem ../../server/sampleclientcertificates/dhis2_key.pem
-cp dhis2_csr.pem ../../server/sampleclientcertificates/dhis2_csr.pem
-cp dhis2_cert.pem ../../server/sampleclientcertificates/dhis2_cert.pem
-cp dhis2.p12 ../../server/sampleclientcertificates/dhis2.p12
+# add client certs
+cp ansible_key.pem ../../server/sampleclientcertificates/
+cp ansible_csr.pem ../../server/sampleclientcertificates/
+cp ansible_cert.pem ../../server/sampleclientcertificates/
+cp ansible.p12 ../../server/sampleclientcertificates/
 
 echo "fin"
 
