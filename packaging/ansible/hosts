@@ -1,0 +1,7 @@
+
+[local]
+# uncomment the line below to run directly on the host not the target
+# localhost ansible_connection=local
+
+[server]
+172.16.168.165

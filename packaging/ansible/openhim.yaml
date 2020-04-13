@@ -1,0 +1,88 @@
+---
+- name: OpenHIM
+  hosts: all
+  remote_user: "{{ user }}"
+  become: true
+  tags: prep
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (with sudo)"
+      private: no
+
+
+
+  tasks:
+
+
+# mongodb
+  - name: Add mongo repository
+    yum_repository:
+      name: mongodb-org-4.2
+      description: mongodb-org-4.2
+      baseurl: https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.2/x86_64/
+      gpgcheck: true
+      gpgkey: https://www.mongodb.org/static/pgp/server-4.2.asc
+
+
+  - name: Ensure mongodb
+    yum:
+      name: mongodb-org
+      state: present
+
+
+  - name: run mongo
+    service: 
+      name: mongod.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+
+# core
+  - name: Download openhim rpm
+    get_url:
+      url: https://github.com/jembi/openhim-core-js/releases/download/v5.2.5/openhim-core-5.2.5-1.x86_64.rpm
+      dest: /home/opencr/
+
+
+# 5.2.5 requires nodejs < 2:10.15.1
+# but nodesource is installing nodejs-10.16.1-1
+  - name: install openhim core
+    yum:
+      name: openhim-core-5.2.5-1.x86_64.rpm
+      state: present
+
+
+  - name: run openhim core
+    service: 
+      name: openhim-core.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+
+# console
+  - name: Download openhim console
+    get_url:
+      url: https://github.com/jembi/openhim-console/releases/download/v1.13.3/openhim-console-1.13.3-1.x86_64.rpm
+      dest: /home/opencr/
+
+
+  - name: install openhim console
+    yum:
+      name: openhim-console-1.13.3-1.x86_64.rpm
+      state: present
+
+
+# systemctl console
+  - name: run openhim console
+    service: 
+      name: openhim-console.service
+      state: started
+      enabled: yes
+      daemon_reload: yes
+
+
+
+
