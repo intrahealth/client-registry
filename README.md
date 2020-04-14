@@ -1,6 +1,8 @@
-*Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.*
+# Open Client Registry
 
-> Regardless if you're just curious, an implementer, or a developer, please read the overview in the documentation first at [openclientregistry.com](https://openclientregistry.com). We've kept them short.
+Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.
+
+> Regardless if you're just curious, an implementer, or a developer, please read the overview at [openclientregistry.com](https://openclientregistry.com).
 
 # What is OpenCR?
 
