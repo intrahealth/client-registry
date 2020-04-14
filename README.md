@@ -4,6 +4,8 @@ Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a
 
 > Regardless if you're just curious, an implementer, or a developer, please read the overview at [openclientregistry.com](https://openclientregistry.com).
 
+This repository is the source code for the OpenCR Service API, and the full OpenCR stack requires ElasticSearch and HAPI FHIR Server.
+
 ## What is OpenCR?
 
 OpenCR is an open source and standards-based client registry. A client registry facilitates the exchange of patient information between disparate systems. A client registry holds patient identifers and may include patient demographic information. It is a necessary tool for public health to help manage patients, monitor outcomes, and conduct case-based surveillance.
@@ -12,7 +14,7 @@ A client registry sits within a health information exchange (HIE). An HIE is use
 
 ## What does OpenCR do?
 
-OpenCR is offers the ability to:
+OpenCR offers the ability to:
 
 * Assign and look-up unique identifiers,
 * Allow connections from diverse point of service (POS) systems, such as lab systems and electronic medical record (EMR) systems, that can submit messages in FHIR,
