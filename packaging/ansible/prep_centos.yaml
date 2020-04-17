@@ -25,16 +25,16 @@
 
 
 # node and npm
-  - name: Download nodesource script for node v10
+  - name: Download nodesource script for node v12
     get_url:
-      url: https://rpm.nodesource.com/setup_10.x
+      url: https://rpm.nodesource.com/setup_12.x
       dest: $HOME/nodesource.sh
       mode: 0644
       # overwrite
       force: yes
 
 
-  - name: Install nodesource for node 10
+  - name: Install nodesource for node 12
     command: bash $HOME/nodesource.sh
 
 
@@ -74,10 +74,10 @@
 
 
 # java
-
-  - name: Ensure java 1.8
+# need -devel for javac
+  - name: Ensure java 11
     yum:
-      name: java-1.8.0-openjdk-devel
+      name: java-11-openjdk-devel
       state: present
 
 # this works but using another openjdk for now.

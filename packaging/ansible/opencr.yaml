@@ -73,6 +73,11 @@
     become: true
 
 
+# pause to let opencr start and then check status
+  - pause:
+      seconds: 5
+
+
 # status
   - name: status
     command: systemctl status opencr.service

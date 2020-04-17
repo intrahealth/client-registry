@@ -6,7 +6,8 @@ After=network.target
 Type=forking
 
 # java_home is fragile, must be a better way
-Environment=JAVA_HOME=//usr/lib/jvm/java-1.8.0-openjdk-1.8.0.242.b08-0.el7_7.x86_64
+# Environment=JAVA_HOME=/usr/lib/jvm/java-11-openjdk-11.0.6.10-1.el7_7.x86_64
+Environment=JAVA_HOME=/etc/alternatives/java_sdk
 Environment=CATALINA_PID=/opt/tomcat/temp/tomcat.pid
 Environment=CATALINA_HOME=/opt/tomcat
 Environment=CATALINA_BASE=/opt/tomcat

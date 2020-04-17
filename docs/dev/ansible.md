@@ -38,7 +38,7 @@ $ openssl x509 -in ../../server/certificates/server_cert.pem -text
 
 This means that new server and client certificates need to be generated with the IP address or domain for clients to access the client registry if it is not running on localhost.
 
-Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that.
+Make a note of your IP or domain for which you need to create a server cert. Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that.
 ```
 openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -days 365 -subj "/CN=172.16.168.165" -nodes
 ```
@@ -78,7 +78,7 @@ cp server_key.pem ../../server/certificates/server_key.pem
 Add client certs
 ```sh
 # add client certs
-cp ansible.pem ../../server/sampleclientcertificates/
+cp ansible_key.pem ../../server/sampleclientcertificates/
 cp ansible_csr.pem ../../server/sampleclientcertificates/
 cp ansible_cert.pem ../../server/sampleclientcertificates/
 cp ansible.p12 ../../server/sampleclientcertificates/

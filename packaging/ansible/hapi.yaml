@@ -84,7 +84,7 @@
 # builds /home/opencr/hapi-fhir-jpaserver-starter/target/hapi-fhir-jpaserver.war
 # must use -DskipTests as integration tests use builtin derby server not postgres
 
-  - name: maven clean install
+  - name: maven --no-transfer-progress --batch-mode clean install
     shell: /opt/apache-maven-3.6.3/bin/mvn clean install -DskipTests
     args:
       chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter
@@ -93,7 +93,7 @@
 
 # builds /home/opencr/hapi-fhir-jpaserver-starter/target/hapi-fhir-jpaserver.war
 # not necessary for mvn jetty runs but would be with tomcat or other approach
-  - name: maven package
+  - name: maven --no-transfer-progress --batch-mode package
     shell: /opt/apache-maven-3.6.3/bin/mvn package -DskipTests
     args:
       chdir: /home/{{ user }}/hapi-fhir-jpaserver-starter

@@ -68,6 +68,11 @@
       daemon_reload: yes
 
 
+# pause to let tomcat start and then check status
+  - pause:
+      seconds: 5
+
+
 # status
   - name: status
     command: systemctl status tomcat.service

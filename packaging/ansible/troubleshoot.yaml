@@ -12,11 +12,31 @@
 
   tasks:
 
+# hapi
+
+# logs
+  - name: journalctl since last reboot
+    command: journalctl -u tomcat -b
+    register: tomcat
+
+
+  - debug:
+      msg: "{{ tomcat.stdout_lines }}"
+
+# status
+  - name: status tomcat
+    command: systemctl status tomcat
+    register: statustomcat
+
+  - debug:
+      msg: "{{ statustomcat.stdout_lines }}"
+
+
 # opencr
 
 # logs
   - name: journalctl since last reboot
-    command: journalctl -u opencr.service -b
+    command: journalctl -u opencr -b
     register: opencr
 
 
@@ -24,10 +44,11 @@
       msg: "{{ opencr.stdout_lines }}"
 
 # status
-  - name: status
-    command: systemctl status opencr.service
-    register: status
+  - name: status opencr
+    command: systemctl status opencr
+    register: statusopencr
 
   - debug:
-      msg: "{{ status.stdout_lines }}"
+      msg: "{{ statusopencr.stdout_lines }}"
+
 
