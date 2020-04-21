@@ -950,7 +950,7 @@
 <p>There is a set of generated certificates for testing and demonstrations. They are not appropriate for production.</p>
 <h2>A Simple CLI Query</h2>
 <p>Inside /client-registry/server directory, a cURL query using the provided example JSON file would be:</p>
-<div class="codehilite"><pre><span></span><code>curl --cert sampleclientcertificates/openmrs.p12 --cert-type p12 --cacert certificates/server_cert.pem -d @/Users/richard/src/github.com/openhie/client-registry/DemoData/patient1_openmrs.json -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -XPOST https://localhost:3000/Patient
+<div class="codehilite"><pre><span></span><code>curl --cert sampleclientcertificates/openmrs.p12 --cert-type p12 --cacert certificates/server_cert.pem -d @/Users/richard/src/github.com/intrahealth/client-registry/DemoData/patient1_openmrs.json -H <span class="s2">&quot;Content-Type: application/json&quot;</span> -XPOST https://localhost:3000/Patient
 </code></pre></div>
 
 
@@ -968,7 +968,7 @@ info: Patient <span class="o">[{</span><span class="s2">&quot;system&quot;</span
 <div class="md-source-date">
   <small>
     
-      Last update: April 13, 2020
+      Last update: April 21, 2020
     
   </small>
 </div>

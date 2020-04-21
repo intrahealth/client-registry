@@ -962,63 +962,6 @@ cd client-registry/packaging/ansible
 </code></pre></div>
 
 
-<h3>Certificates</h3>
-<blockquote>
-<p>Warning: Self-signed certificates must only be created for testing and demonstrations and in non-production settings.</p>
-</blockquote>
-<p>Two certificate pairs are required, one pair for the server and one for the client generated from the server's. The existing self-signed server certs use localhost as the CN.</p>
-<p>This can be seen with the following for any cert:</p>
-<div class="codehilite"><pre><span></span><code>$ openssl x509 -in ../../server/certificates/server_cert.pem -text
-...
-        Subject: <span class="nv">CN</span> <span class="o">=</span> localhost, <span class="nv">O</span> <span class="o">=</span> Client Registry
-...
-</code></pre></div>
-
-
-<p>This means that new server and client certificates need to be generated with the IP address or domain for clients to access the client registry if it is not running on localhost.</p>
-<p>Make a note of your IP or domain for which you need to create a server cert. Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that.</p>
-<div class="codehilite"><pre><span></span><code>openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -days 365 -subj &quot;/CN=172.16.168.165&quot; -nodes
-</code></pre></div>
-
-
-<p>This will create two files, server_key.pem and server_cert.pem.</p>
-<p>We can inspect the certificate to verify it has the IP address in the subject.</p>
-<div class="codehilite"><pre><span></span><code>$ openssl x509 -in server_cert.pem -text
-...
-       Subject: <span class="nv">CN</span> <span class="o">=</span> <span class="m">172</span>.16.168.165
-...
-</code></pre></div>
-
-
-<p>Now it is necessary to create new a new client cert based on the server cert. A key is first created, then the certificate, and they are packaged together in a p12 file.</p>
-<div class="codehilite"><pre><span></span><code>openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -days <span class="m">365</span> -subj <span class="s2">&quot;/CN=ansible&quot;</span>
-<span class="c1"># requires pass phrase of server key</span>
-openssl x509 -req -in ansible_csr.pem -CA server_cert.pem -CAkey server_key.pem -out ansible_cert.pem -set_serial <span class="m">01</span> -days <span class="m">36500</span>
-<span class="c1"># requires specifying an export key</span>
-openssl pkcs12 -export -in ansible_cert.pem -inkey ansible_key.pem -out ansible.p12
-</code></pre></div>
-
-
-<p>The final steps are to replace server and client certs</p>
-<p>Backup and replace server certs</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># backup existing server cert</span>
-mv ../../server/certificates/server_cert.pem ../../server/certificates/server_cert.pem.bak
-mv ../../server/certificates/server_key.pem ../../server/certificates/server_key.pem.bak
-<span class="c1"># move new server cert in</span>
-cp server_cert.pem ../../server/certificates/server_cert.pem
-cp server_key.pem ../../server/certificates/server_key.pem
-</code></pre></div>
-
-
-<p>Add client certs</p>
-<div class="codehilite"><pre><span></span><code><span class="c1"># add client certs</span>
-cp ansible_key.pem ../../server/sampleclientcertificates/
-cp ansible_csr.pem ../../server/sampleclientcertificates/
-cp ansible_cert.pem ../../server/sampleclientcertificates/
-cp ansible.p12 ../../server/sampleclientcertificates/
-</code></pre></div>
-
-
 <h2>Specify hosts</h2>
 <p>Hosts can be specified in inventory files or on the command line. To use Ansible with an inventory file, you must create a file or edit the one in the repository. There are yaml and ini formats supported.</p>
 <p>A <code>hosts</code> file that has an entry for one server would be:</p>
@@ -1027,7 +970,9 @@ cp ansible.p12 ../../server/sampleclientcertificates/
 </code></pre></div>
 
 
-<p>Note that <code>[servers]</code> is not necessary, it is way to tag groups of servers.</p>
+<blockquote>
+<p>Note that <code>[servers]</code> is not necessary, it is way to tag groups of servers. The file may simply contain an IP address or domain.</p>
+</blockquote>
 <p>To use the hosts file:</p>
 <div class="codehilite"><pre><span></span><code>ansible-playbook -i hosts someplaybook.yaml
 </code></pre></div>
@@ -1055,8 +1000,73 @@ ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class
 </code></pre></div>
 
 
+<p>OpenCR is now running. It will only allow requests from localhost (from the same server it is installed on).</p>
 <p>Visit: https://ipaddress:3000/crux</p>
 <p>HTTPS must be used.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If not running localhost, follow the next steps to create self-signed server and client certs, and copy them onto the server using an Ansible script below.</p>
+</div>
+<h3>Certificates (Required if not using localhost)</h3>
+<p>Two certificate pairs are required, one pair for the server and one for the client generated from the server's. The existing self-signed server certs use localhost as the CN. This can be seen with the following for any cert:</p>
+<div class="codehilite"><pre><span></span><code>$ openssl x509 -in ../../server/certificates/server_cert.pem -text
+...
+        Subject: <span class="nv">CN</span> <span class="o">=</span> localhost, <span class="nv">O</span> <span class="o">=</span> Client Registry
+...
+</code></pre></div>
+
+
+<p>This means that new server and client certificates need to be generated with the IP address or domain for clients to access the client registry if it is not running on localhost.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>Self-signed certificates must only be created for testing and demonstrations and in non-production settings.</p>
+</div>
+<p>Make a note of your IP or domain for which you need to create a server cert. Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that. This will create two files, server_key.pem and server_cert.pem. We can inspect the certificate to verify it has the IP address in the subject.</p>
+<div class="codehilite"><pre><span></span><code># confirm ip being used
+cat hosts
+openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -days 365 -subj &quot;/CN=172.16.168.172&quot; -nodes
+# confirm new CN
+openssl x509 -in server_cert.pem -text
+</code></pre></div>
+
+
+<p>Now it is necessary to create new a new client cert based on the server cert. A key is first created, then the certificate, and they are packaged together in a p12 file.</p>
+<div class="codehilite"><pre><span></span><code>openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -days <span class="m">365</span> -subj <span class="s2">&quot;/CN=ansible&quot;</span>
+openssl x509 -req -in ansible_csr.pem -CA server_cert.pem -CAkey server_key.pem -out ansible_cert.pem -set_serial <span class="m">01</span> -days <span class="m">36500</span>
+<span class="c1"># requires specifying an export key</span>
+openssl pkcs12 -export -in ansible_cert.pem -inkey ansible_key.pem -out ansible.p12
+</code></pre></div>
+
+
+<p>The client certs can be placed in the existing folder for client certs for convenience.</p>
+<div class="codehilite"><pre><span></span><code><span class="c1"># add client certs</span>
+cp ansible_key.pem ../../server/sampleclientcertificates/
+cp ansible_csr.pem ../../server/sampleclientcertificates/
+cp ansible_cert.pem ../../server/sampleclientcertificates/
+cp ansible.p12 ../../server/sampleclientcertificates/
+</code></pre></div>
+
+
+<blockquote>
+<p>Server certs may also be copied into ../../certificates/ for convenience but this will overwrite the copies and break localhost if the repo is used to upload code to GitHub.</p>
+</blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>To complete the process, server certs need to be placed into the server. This will be done using an Ansible script below.</p>
+</div>
+<p>Copy the server certs to the server and restart opencr service to use them.</p>
+<div class="codehilite"><pre><span></span><code>ansible-playbook -i hosts servercerts.yaml -e user=opencr
+</code></pre></div>
+
+
+<p>Test (for servers not localhost):</p>
+<div class="codehilite"><pre><span></span><code># this assumes the server cert and client cert are in this (/packaging/ansible) directory
+# replace the path to your copy of the repo
+# replace the ip address of the server
+curl --cert ansible.p12 --cert-type p12 --cacert server_cert.pem -d @/Users/richard/src/github.com/intrahealth/client-registry/DemoData/patient1_openmrs.json -H &quot;Content-Type: application/json&quot; -XPOST https://172.16.168.172:3000/Patient
+</code></pre></div>
+
+
 <h2>Add additional user public keys</h2>
 <p>As necessary, add additional ssh keys to the user <code>opencr</code>. (Ensure that the user's public key is available on github, ie. https://github.com/citizenrich.keys):</p>
 <div class="codehilite"><pre><span></span><code>ansible-playbook -i hosts keys.yaml
@@ -1069,7 +1079,7 @@ ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class
 <div class="md-source-date">
   <small>
     
-      Last update: April 17, 2020
+      Last update: April 21, 2020
     
   </small>
 </div>
