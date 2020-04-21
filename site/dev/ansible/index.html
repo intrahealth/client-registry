@@ -17,7 +17,7 @@
         <meta name="author" content="IntraHealth">
       
       <link rel="shortcut icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.0">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.1">
     
     
       
@@ -25,9 +25,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.89dc9fe3.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a676eddb.min.css">
       
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ecd4686e.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.b302131d.min.css">
       
       
         
@@ -976,7 +976,7 @@ cd client-registry/packaging/ansible
 
 
 <p>This means that new server and client certificates need to be generated with the IP address or domain for clients to access the client registry if it is not running on localhost.</p>
-<p>Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that.</p>
+<p>Make a note of your IP or domain for which you need to create a server cert. Run the following to create a new server cert/key pair. It will ask for a pass phrase (which is required in production) but -nodes option squashes that.</p>
 <div class="codehilite"><pre><span></span><code>openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -days 365 -subj &quot;/CN=172.16.168.165&quot; -nodes
 </code></pre></div>
 
@@ -1012,7 +1012,7 @@ cp server_key.pem ../../server/certificates/server_key.pem
 
 <p>Add client certs</p>
 <div class="codehilite"><pre><span></span><code><span class="c1"># add client certs</span>
-cp ansible.pem ../../server/sampleclientcertificates/
+cp ansible_key.pem ../../server/sampleclientcertificates/
 cp ansible_csr.pem ../../server/sampleclientcertificates/
 cp ansible_cert.pem ../../server/sampleclientcertificates/
 cp ansible.p12 ../../server/sampleclientcertificates/
@@ -1069,7 +1069,7 @@ ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class
 <div class="md-source-date">
   <small>
     
-      Last update: April 13, 2020
+      Last update: April 17, 2020
     
   </small>
 </div>
@@ -1154,15 +1154,15 @@ ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class
       
     </div>
     
-      <script src="../../assets/javascripts/vendor.36cbf620.min.js"></script>
-      <script src="../../assets/javascripts/bundle.00c583dd.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../../assets/javascripts/vendor.c51dfa35.min.js"></script>
+      <script src="../../assets/javascripts/bundle.eaaa3931.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "../..",
           features: ["tabs"],
           search: Object.assign({
-            worker: "../../assets/javascripts/worker/search.7f7c8775.min.js"
+            worker: "../../assets/javascripts/worker/search.58d22e8e.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>

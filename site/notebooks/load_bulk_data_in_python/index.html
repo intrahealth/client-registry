@@ -17,7 +17,7 @@
         <meta name="author" content="IntraHealth">
       
       <link rel="shortcut icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.0">
+      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.1">
     
     
       
@@ -25,9 +25,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.89dc9fe3.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a676eddb.min.css">
       
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ecd4686e.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.b302131d.min.css">
       
       
         
@@ -1139,10 +1139,10 @@ FHIR client version: 3.2.0
 <pre>female    3224
            963
 male       809
-d            1
 r            1
-q            1
+d            1
 k            1
+q            1
 Name: sex, dtype: int64
          rec_id     sex date_of_birth given_name      surname phone_number  \
 0  rec-2762-org  female    1967-12-07     zuwena        acile   712 300633   
@@ -1168,7 +1168,7 @@ Name: sex, dtype: int64
 <div class="input">
 
 <div class="codehilite"><pre><span></span><code><span class="c1"># default server/path</span>
-<span class="n">server</span> <span class="o">=</span> <span class="s2">&quot;https://167.172.131.240:3000/Patient&quot;</span>
+<span class="n">server</span> <span class="o">=</span> <span class="s2">&quot;https://localhost:3000/Patient&quot;</span>
 <span class="c1"># 3 records, modify if more are required</span>
 <span class="n">limit</span> <span class="o">=</span> <span class="mi">3</span>
 <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">df_a</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(),</span> <span class="n">limit</span><span class="p">):</span>
@@ -1203,11 +1203,27 @@ Name: sex, dtype: int64
                     <span class="n">pkcs12_filename</span><span class="o">=</span><span class="n">clientcert</span><span class="p">,</span> <span class="n">pkcs12_password</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="n">servercert</span><span class="p">)</span>
     <span class="n">end</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
     <span class="nb">print</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">],</span> <span class="s2">&quot; | &quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">((</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">),</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;ms&quot;</span><span class="p">)</span> <span class="c1"># response.headers[&#39;Date&#39;]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">headers</span><span class="p">)</span>
+    <span class="c1"># print(response.headers)</span>
 </code></pre></div>
 
 
 </div>
+</div>
+</div>
+
+<div class="output_wrapper" markdown="1">
+<div class="output" markdown="1">
+
+
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>0 Patient/53eddeb0-2fb1-4494-8b51-d2e667b962f2  |  1.3 ms
+1 Patient/16e4cb00-847f-49af-b624-4b0357d6c897  |  1.5 ms
+2 Patient/dd4766a5-cfed-4914-b650-6b49a99ccc06  |  1.1 ms
+</pre>
+</div>
+</div>
+
 </div>
 </div>
 
@@ -1229,7 +1245,7 @@ Name: sex, dtype: int64
 <div class="md-source-date">
   <small>
     
-      Last update: April 13, 2020
+      Last update: April 21, 2020
     
   </small>
 </div>
@@ -1314,15 +1330,15 @@ Name: sex, dtype: int64
       
     </div>
     
-      <script src="../../assets/javascripts/vendor.36cbf620.min.js"></script>
-      <script src="../../assets/javascripts/bundle.00c583dd.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+      <script src="../../assets/javascripts/vendor.c51dfa35.min.js"></script>
+      <script src="../../assets/javascripts/bundle.eaaa3931.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
       
       <script>
         app = initialize({
           base: "../..",
           features: ["tabs"],
           search: Object.assign({
-            worker: "../../assets/javascripts/worker/search.7f7c8775.min.js"
+            worker: "../../assets/javascripts/worker/search.58d22e8e.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
