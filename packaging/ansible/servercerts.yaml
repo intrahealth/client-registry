@@ -1,0 +1,38 @@
+---
+- name: Replace server cert and key
+  hosts: all
+  remote_user: "{{ user }}"
+  tags: install
+
+
+  vars_prompt:
+    - name: "user"
+      prompt: "Please enter the username (without sudo)"
+      private: no
+
+  tasks:
+
+  - name: Copy a new server_cert.pem file into place
+    copy:
+      src: ./server_cert.pem
+      dest: /home/{{ user }}/client-registry/server/certificates/server_cert.pem
+      mode: '0644'
+      backup: yes
+
+
+  - name: Copy a new server_key.pem file into place
+    copy:
+      src: ./server_key.pem
+      dest: /home/{{ user }}/client-registry/server/certificates/server_key.pem
+      mode: '0644'
+      backup: yes
+
+
+  - name: restart backend
+    service: 
+      name: opencr.service
+      state: restarted
+      enabled: yes
+      daemon_reload: yes
+    become: true
+

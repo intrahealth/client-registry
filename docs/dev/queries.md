@@ -13,7 +13,7 @@ There is a set of generated certificates for testing and demonstrations. They ar
 Inside /client-registry/server directory, a cURL query using the provided example JSON file would be:
 
 ```sh
-curl --cert sampleclientcertificates/openmrs.p12 --cert-type p12 --cacert certificates/server_cert.pem -d @/Users/richard/src/github.com/openhie/client-registry/DemoData/patient1_openmrs.json -H "Content-Type: application/json" -XPOST https://localhost:3000/Patient
+curl --cert sampleclientcertificates/openmrs.p12 --cert-type p12 --cacert certificates/server_cert.pem -d @/Users/richard/src/github.com/intrahealth/client-registry/DemoData/patient1_openmrs.json -H "Content-Type: application/json" -XPOST https://localhost:3000/Patient
 ```
 
 Should result in a successful result in stdout:
