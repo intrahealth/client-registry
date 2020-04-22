@@ -51,7 +51,7 @@ module.exports = () => ({
             return callback(resourceData);
           }
           url.addQuery(qrArr[0], qrArr[1]);
-          if(qrArr[0] === '_count') {
+          if (qrArr[0] === '_count') {
             count = true;
           }
         }
@@ -62,7 +62,7 @@ module.exports = () => ({
     }
     logger.info(`Getting ${url} from server`);
     let headers = {};
-    if(noCaching) {
+    if (noCaching) {
       headers = {
         'Cache-Control': 'no-cache',
       };
@@ -110,7 +110,7 @@ module.exports = () => ({
           }
           let next = body.link && body.link.find(link => link.relation === 'next');
 
-          if(err || res.statusCode < 200 || res.statusCode > 299) {
+          if (err || res.statusCode < 200 || res.statusCode > 299) {
             next = false;
           }
           if (!count || (count && !isNaN(count) && resourceData.entry && resourceData.entry.length < count)) {

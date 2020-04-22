@@ -36,36 +36,50 @@ const refreshIndex = (callback) => {
   });
 };
 
-const buildQuery = (sourceResource, decisionRule) => {
-  const esquery = {};
-  esquery.query = {};
-  esquery.query.function_score = {
-    query: {
-      bool: {}
-    },
-    boost_mode: "sum",
-    functions: [],
-    min_score: decisionRule.threshold
-  };
-  let esfunction = {
-    script_score: {
-      script: {
-        source: "string_similarity",
-        lang: "similarity_scripts",
-        params: {}
+const generatePrimes = (total) => {
+  const primeArray = [];
+  let count = 0;
+  let currentNum = 2;
+  while (count < total) {
+    if (_isPrime(currentNum)) {
+      primeArray.push(currentNum);
+      count++;
+    }
+    currentNum++;
+  }
+  return primeArray;
+
+  function _isPrime(num) {
+    if (num <= 1) {
+      throw new Error("Number cannot be smaller than 2");
+    }
+    var status = true;
+    if (num !== 2 && num % 2 === 0) {
+      status = false;
+    } else {
+      for (var i = 2; i < num; ++i) {
+        if (num % i == 0) {
+          status = false;
+          break;
+        }
       }
     }
-  };
-  if (decisionRule.matchingType === 'deterministic') {
-    esfunction.script_score.script.params.score_mode = 'sum';
-  } else if (decisionRule.matchingType === 'probabilistic') {
-    esfunction.script_score.script.params.score_mode = 'fellegi-sunter';
-    esfunction.script_score.script.params.base_score = 100.0;
+    return status;
   }
-  let matchers = [];
+};
+
+const buildDeterministicQuery = (sourceResource, decisionRule) => {
+  const esquery = {};
+  esquery.query = {};
+  esquery.query.bool = {};
+  esquery.query.bool.must = [];
   for (const ruleField in decisionRule.fields) {
     const rule = decisionRule.fields[ruleField];
+    const match = {};
     let path = rule.espath;
+    if (rule.algorithm === 'phonetic') {
+      path += '.phonetic';
+    }
     let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
     const values = [];
     if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
@@ -84,55 +98,49 @@ const buildQuery = (sourceResource, decisionRule) => {
       }
       values.push(pathValue);
     }
+
+    // for(const value of values) {
     const value = values.join(" ");
-    if (rule.algorithm === 'phonetic' && decisionRule.matchingType === 'probabilistic') {
-      logger.error('Phonetic is not supported for probabilistic matching, use it for deterministic matching only. Aborting matching process');
-      return {};
-    }
-    if (rule.algorithm === 'phonetic') {
-      path += '.phonetic';
-      if (!esquery.query.function_score.query.bool.must) {
-        esquery.query.function_score.query.bool.must = [];
-      }
-      let phonet = {};
-      phonet.match = {};
-      phonet.match[path] = {
-        query: value
-      };
-      esquery.query.function_score.query.bool.must.push(phonet);
-      continue;
-    }
-    let matcher = {
-      field: path,
-      value
-    };
-    if (rule.algorithm === 'exact') {
-      matcher.matcher = 'normalized-levenshtein-similarity';
-      matcher.threshold = 1.0;
+    if (rule.algorithm === 'jaro-winkler') {
+      esquery.query.bool.must.push({
+        script: {
+          script: {
+            id: 'jaro-winkler',
+            params: {
+              field: path,
+              threshold: rule.threshold,
+              value,
+              ignoreCase: true,
+              maxPrefix: 4,
+              scalingFactor: 0.1
+            }
+          }
+        }
+      });
     } else {
-      matcher.matcher = rule.algorithm;
-      if (!isNaN(parseFloat(rule.threshold))) {
-        matcher.threshold = rule.threshold;
+      match[path] = {
+        query: value,
+      };
+      if (rule.weight > 0) {
+        match[path].boost = rule.weight;
       }
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          match[path].fuzzy_transpositions = true;
+        } else {
+          match[path].fuzzy_transpositions = false;
+        }
+      }
+      const tmpMatch = _.cloneDeep(match);
+      esquery.query.bool.must.push({
+        match: tmpMatch,
+      });
     }
-    if (!isNaN(parseFloat(rule.weight)) && decisionRule.matchingType === 'deterministic') {
-      matcher.weight = rule.weight;
-    }
-    if (decisionRule.matchingType === 'probabilistic') {
-      matcher.m_value = rule.mValue;
-      matcher.u_value = rule.uValue;
-    }
-    matchers.push(matcher);
-  }
-  esfunction.script_score.script.params.matchers = matchers;
-  esquery.query.function_score.functions.push(esfunction);
-  if (!decisionRule.filters || Object.keys(decisionRule.filters).length === 0) {
-    esquery.query.function_score.query = {
-      match_all: {}
-    };
+    // }
   }
   if (decisionRule.filters && Object.keys(decisionRule.filters).length > 0) {
-    esquery.query.function_score.query.bool.filter = [];
+    esquery.query.bool.filter = [];
     for (const filterField in decisionRule.filters) {
       const block = decisionRule.filters[filterField];
       const term = {};
@@ -141,14 +149,14 @@ const buildQuery = (sourceResource, decisionRule) => {
       if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
         if (pathValue.length === 0) {
           term[path] = '';
-          esquery.query.function_score.query.bool.filter.push({
+          esquery.query.bool.filter.push({
             term
           });
         }
         for (const value of pathValue) {
           term[path] = value;
           const tmpTerm = _.cloneDeep(term);
-          esquery.query.function_score.query.bool.filter.push({
+          esquery.query.bool.filter.push({
             term: tmpTerm,
           });
         }
@@ -160,12 +168,164 @@ const buildQuery = (sourceResource, decisionRule) => {
           pathValue == '';
         }
         term[path] = pathValue;
-        esquery.query.function_score.query.bool.filter.push({
+        esquery.query.bool.filter.push({
           term,
         });
       }
     }
   }
+  return esquery;
+};
+
+const buildProbabilisticQuery = (sourceResource, decisionRule) => {
+  const esquery = {};
+  esquery.query = {};
+  esquery.query = {
+    script_score: {
+      query: {
+        function_score: {
+          query: {},
+          functions: []
+        }
+      }
+    }
+  };
+  const primes = generatePrimes(Object.keys(decisionRule.fields).length);
+  let index = 0;
+  for (const ruleField in decisionRule.fields) {
+    const rule = decisionRule.fields[ruleField];
+    const esfunction = {
+      filter: {}
+    };
+    esfunction.weight = primes[index];
+    index++;
+    let path = rule.espath;
+    if (rule.algorithm === 'phonetic') {
+      path += '.phonetic';
+    }
+    const values = [];
+    esfunction.filter.match = {};
+    let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
+    if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+      if (pathValue.length === 0) {
+        values.push("");
+      }
+      for (const value of pathValue) {
+        values.push(value);
+      }
+    } else {
+      if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+        pathValue = '';
+      }
+      if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+        pathValue == '';
+      }
+      values.push(pathValue);
+    }
+
+    // for(const value of values) {
+    const value = values.join(" ");
+    if (rule.algorithm === 'jaro-winkler') {
+      esfunction.filter.script = {
+        script: {
+          id: 'jaro-winkler',
+          params: {
+            field: path,
+            value
+          }
+        }
+      };
+      delete esfunction.filter.match;
+    } else {
+      esfunction.filter.match[path] = {
+        query: value
+      };
+      if (rule.algorithm === 'damerau-levenshtein' || rule.algorithm === 'levenshtein') {
+        esfunction.filter.match[path].fuzziness = rule.threshold;
+        if (rule.algorithm === 'damerau-levenshtein') {
+          esfunction.filter.match[path].fuzzy_transpositions = true;
+        } else {
+          esfunction.filter.match[path].fuzzy_transpositions = false;
+        }
+      }
+    }
+    const tmpESFunction = _.cloneDeep(esfunction);
+    esquery.query.script_score.query.function_score.functions.push(tmpESFunction);
+    // }
+  }
+
+  if (!decisionRule.filters || Object.keys(decisionRule.filters).length === 0) {
+    esquery.query.script_score.query.function_score.query = {
+      match_all: {}
+    };
+  }
+
+  if (decisionRule.filters && Object.keys(decisionRule.filters).length > 0) {
+    esquery.query.script_score.query.function_score.query.bool = {
+      filter: []
+    };
+    for (const filterField in decisionRule.filters) {
+      const block = decisionRule.filters[filterField];
+      const term = {};
+      const path = block.espath;
+      let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
+      if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
+        if (pathValue.length === 0) {
+          term[path] = {
+            value: ''
+          };
+          esquery.query.script_score.query.function_score.query.bool.filter.push({
+            term
+          });
+        }
+        for (const value of pathValue) {
+          term[path] = {
+            value
+          };
+          const tmpTerm = _.cloneDeep(term);
+          esquery.query.script_score.query.function_score.query.bool.filter.push({
+            term: tmpTerm,
+          });
+        }
+      } else {
+        if (!pathValue || (Array.isArray(pathValue) && pathValue.length === 1 && pathValue[0] === undefined)) {
+          pathValue = '';
+        }
+        if (typeof pathValue === 'object' && Object.keys(pathValue).length === 0) {
+          pathValue == '';
+        }
+        term[path] = {
+          value: pathValue
+        };
+        esquery.query.script_score.query.function_score.query.bool.filter.push({
+          term
+        });
+      }
+    }
+  }
+  esquery.query.script_score.query.function_score.score_mode = 'multiply';
+  esquery.query.script_score.query.function_score.boost_mode = 'replace';
+  esquery.query.script_score.query.function_score.min_score = 2;
+  index = 0;
+  const params = {
+    fields: []
+  };
+  for (const ruleField in decisionRule.fields) {
+    const rule = decisionRule.fields[ruleField];
+    const match = Math.log(parseFloat(rule.mValue) / parseFloat(rule.uValue));
+    const unmatch = Math.log((1 - parseFloat(rule.mValue)) / (1 - parseFloat(rule.uValue)));
+    params.fields.push({
+      prime: primes[index],
+      match,
+      unmatch
+    });
+    index++;
+  }
+  esquery.query.script_score.script = {
+    "source": "double result = 0.0;for( item in params.fields ) {result += ( _score % item.prime == 0 ?item.match : item.unmatch );}return result;",
+    params
+  };
+  esquery.query.script_score.min_score = decisionRule.threshold;
   return esquery;
 };
 
@@ -184,14 +344,16 @@ const performMatch = ({
   refreshIndex(() => {
     const decisionRules = config.get('rules');
     async.eachSeries(decisionRules, (decisionRule, nxtRule) => {
-      if (decisionRule.matchingType !== 'probabilistic' && decisionRule.matchingType !== 'deterministic') {
+      let esquery = {};
+      if (decisionRule.matchingType === 'probabilistic') {
+        esquery = buildProbabilisticQuery(sourceResource, decisionRule);
+      } else if (decisionRule.matchingType === 'deterministic') {
+        esquery = buildDeterministicQuery(sourceResource, decisionRule);
+      } else {
         logger.error('Matching type is not specified under decision rule, should be either deterministic or probabilistic');
         return callback(true);
       }
-      let esquery = buildQuery(sourceResource, decisionRule);
-      if (Object.keys(esquery).length === 0) {
-        return callback(true);
-      }
+      logger.error(JSON.stringify(esquery, 0, 2));
       const url = URI(config.get('elastic:server'))
         .segment(config.get('elastic:index'))
         .segment('_search')

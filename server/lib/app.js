@@ -42,7 +42,10 @@ function appRoutes() {
   app.set('trust proxy', true);
   app.use('/crux', express.static(`${__dirname}/../gui`));
   app.use('/ocrux', userRouter);
-  app.use(bodyParser.json({limit: '10Mb', type: ['application/fhir+json', 'application/json+fhir', 'application/json']}));
+  app.use(bodyParser.json({
+    limit: '10Mb',
+    type: ['application/fhir+json', 'application/json+fhir', 'application/json']
+  }));
   const jwtValidator = function (req, res, next) {
     if (!req.path.startsWith('/ocrux')) {
       return next();
@@ -114,7 +117,7 @@ function appRoutes() {
     }, (resourceData, statusCode) => {
       for (const index in resourceData.link) {
         const urlArr = resourceData.link[index].url.split('fhir');
-        if(urlArr.length === 2) {
+        if (urlArr.length === 2) {
           resourceData.link[index].url = '/ocrux/fhir' + urlArr[1];
         }
       }
@@ -123,8 +126,10 @@ function appRoutes() {
   });
   app.get('/fhir/:resource?/:id?', (req, res) => {
     const id = req.params.id;
-    if(id === '$ihe-pix') {
-      pixmRequest({req}, (resourceData, statusCode) => {
+    if (id === '$ihe-pix') {
+      pixmRequest({
+        req
+      }, (resourceData, statusCode) => {
         res.status(statusCode).send(resourceData);
       });
     } else {
@@ -133,11 +138,11 @@ function appRoutes() {
         noCaching: true
       }, (resourceData, statusCode) => {
         for (const index in resourceData.link) {
-          if(!resourceData.link[index].url) {
+          if (!resourceData.link[index].url) {
             continue;
           }
           const urlArr = resourceData.link[index].url.split('fhir');
-          if(urlArr.length === 2) {
+          if (urlArr.length === 2) {
             resourceData.link[index].url = '/fhir' + urlArr[1];
           }
         }
@@ -164,7 +169,7 @@ function appRoutes() {
     if (resource) {
       url = url.segment(resource);
     }
-    if(id) {
+    if (id) {
       url = url.segment(id);
     }
     for (const param in req.query) {
@@ -182,14 +187,18 @@ function appRoutes() {
   function pixmRequest({
     req
   }, callback) {
-    const {sourceIdentifier, targetSystem, ...otherQueries} = req.query;
+    const {
+      sourceIdentifier,
+      targetSystem,
+      ...otherQueries
+    } = req.query;
     const outcome = {
       "resourceType": "OperationOutcome",
       "issue": []
     };
-    if(Object.keys(otherQueries).length > 0) {
+    if (Object.keys(otherQueries).length > 0) {
       const unknownQueries = [];
-      for(const qr in otherQueries) {
+      for (const qr in otherQueries) {
         unknownQueries.push(qr);
       }
       outcome.issue.push({
@@ -198,7 +207,7 @@ function appRoutes() {
         "diagnostics": "Unknown search parameter '" + unknownQueries.join('&') + "'. Value search parameters for this search are: [sourceIdentifier, targetSystem]"
       });
     }
-    if(!sourceIdentifier) {
+    if (!sourceIdentifier) {
       outcome.issue.push({
         "severity": "error",
         "code": "processing",
@@ -206,7 +215,7 @@ function appRoutes() {
       });
     } else {
       const srcId = sourceIdentifier.split('|');
-      if(srcId.length !== 2) {
+      if (srcId.length !== 2) {
         outcome.issue.push({
           "severity": "error",
           "code": "processing",
@@ -214,7 +223,7 @@ function appRoutes() {
         });
       }
     }
-    if(outcome.issue.length > 0) {
+    if (outcome.issue.length > 0) {
       return callback(outcome);
     }
     const query = `identifier=${sourceIdentifier}&_include:recurse=Patient:link`;
@@ -226,17 +235,17 @@ function appRoutes() {
         resourceType: 'Parameters',
         parameter: []
       };
-      if(resourceData.entry && resourceData.entry.length > 0) {
-        for(const entry of resourceData.entry) {
+      if (resourceData.entry && resourceData.entry.length > 0) {
+        for (const entry of resourceData.entry) {
           const isGoldenRec = entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
             return tag.code === config.get('codes:goldenRecord');
           });
           if (isGoldenRec) {
             continue;
           }
-          for(const identifier of entry.resource.identifier) {
-            if(targetSystem) {
-              if(targetSystem === identifier.system) {
+          for (const identifier of entry.resource.identifier) {
+            if (targetSystem) {
+              if (targetSystem === identifier.system) {
                 const parameter = populateId(identifier);
                 parameters.parameter.push(parameter);
               }
@@ -254,10 +263,10 @@ function appRoutes() {
       const parameter = {};
       parameter.name = 'targetIdentifier';
       parameter.valueIdentifier = {};
-      if(identifier.system) {
+      if (identifier.system) {
         parameter.valueIdentifier.system = identifier.system;
       }
-      if(identifier.value) {
+      if (identifier.value) {
         parameter.valueIdentifier.value = identifier.value;
       }
       return parameter;
@@ -294,9 +303,11 @@ function appRoutes() {
     }
     addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
       const auditBundle = createAddPatientAudEvent(operationSummary, req);
-      fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+      fhirWrapper.saveResource({
+        resourceData: auditBundle
+      }, () => {
         logger.info('Audit saved successfully');
-        if(err) {
+        if (err) {
           res.status(500).send();
         } else {
           res.setHeader('location', response.entry[0].response.location);
@@ -329,7 +340,7 @@ function appRoutes() {
       clientID = cert.subject.CN;
     }
     addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
-      if(err) {
+      if (err) {
         return res.status(500).send();
       }
       res.status(201).json(response);
@@ -341,9 +352,9 @@ function appRoutes() {
     auditBundle.type = 'batch';
     auditBundle.resourceType = 'Bundle';
     auditBundle.entry = [];
-    for(const operSummary of operationSummary) {
+    for (const operSummary of operationSummary) {
       let action;
-      if(operSummary.action === 'create') {
+      if (operSummary.action === 'create') {
         action = 'C';
       } else if (operSummary.action === 'update') {
         action = 'U';
@@ -384,34 +395,40 @@ function appRoutes() {
         auditEvent.outcomeDesc = 'Success';
       }
       auditEvent.entity = [];
-      if(operSummary.cruid && operSummary.cruid.length > 0) {
-        for(const cruid of operSummary.cruid) {
+      if (operSummary.cruid && operSummary.cruid.length > 0) {
+        for (const cruid of operSummary.cruid) {
           auditEvent.entity.push({
             name: 'CRUID',
-            what: {reference: cruid}
+            what: {
+              reference: cruid
+            }
           });
         }
       }
-      if(operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
-        for(const match of operSummary.FHIRMatches) {
+      if (operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
+        for (const match of operSummary.FHIRMatches) {
           auditEvent.entity.push({
             name: 'match',
-            what: {reference: match.resource.resourceType + '/' + match.resource.id}
+            what: {
+              reference: match.resource.resourceType + '/' + match.resource.id
+            }
           });
         }
       }
 
-      if(operSummary.submittedResource) {
+      if (operSummary.submittedResource) {
         const submRes = {
           name: 'submittedResource',
-          what: {reference: operSummary.submittedResource.resourceType + '/' + operSummary.submittedResource.id},
+          what: {
+            reference: operSummary.submittedResource.resourceType + '/' + operSummary.submittedResource.id
+          },
           detail: [{
             type: 'resource',
             valueString: JSON.stringify(operSummary.submittedResource)
           }]
         };
-        if(operSummary.ESMatches && Array.isArray(operSummary.ESMatches)) {
-          for(const esmatch of operSummary.ESMatches) {
+        if (operSummary.ESMatches && Array.isArray(operSummary.ESMatches)) {
+          for (const esmatch of operSummary.ESMatches) {
             let match = {
               rule: esmatch.rule,
               match: esmatch.results,
@@ -443,10 +460,10 @@ function appRoutes() {
       entry: []
     };
     const operationSummary = [];
-    if(!clientID) {
+    if (!clientID) {
       const operSummary = {};
       operSummary.outcome = '4';
-      operSummary.outcomeDesc ='Request didnt include POS/client ID';
+      operSummary.outcomeDesc = 'Request didnt include POS/client ID';
       operationSummary.push(operSummary);
       logger.error('No client ID found, cant add patient');
       return callback(true, responseBundle, operationSummary);
@@ -523,7 +540,7 @@ function appRoutes() {
         sourceResource: patient,
         ignoreList: [patient.id],
       }, (err, matches, ESMatches, matchedGoldenRecords) => {
-        if(err) {
+        if (err) {
           operSummary.outcome = '8';
           operSummary.outcomeDesc = 'An error occured while finding matches';
           return callback(err, responseBundle, operationSummary);
@@ -616,7 +633,7 @@ function appRoutes() {
               operSummary.cruid.push(goldenRecord.resourceType + '/' + goldenRecord.id);
               return callback();
             }).catch((err) => {
-              if(!operSummary.outcome) {
+              if (!operSummary.outcome) {
                 operSummary.outcome = '8';
                 operSummary.outcomeDesc = 'Unknown Error Occured';
               }
@@ -647,12 +664,12 @@ function appRoutes() {
               logger.error('Cant build query from resource id');
               return callback(true);
             }
-            if(!matchedGoldenRecords || !matchedGoldenRecords.entry || matchedGoldenRecords.entry.length === 0) {
+            if (!matchedGoldenRecords || !matchedGoldenRecords.entry || matchedGoldenRecords.entry.length === 0) {
               operSummary.outcome = '8';
               operSummary.outcomeDesc = 'Querying for CRUID details from FHIR Server returned nothing';
               return callback(true);
             }
-            if(currentLinks.length > 0) {
+            if (currentLinks.length > 0) {
               /**
                * The purpose for this piece of code is to remove this patient from existing golden links
                * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
@@ -668,22 +685,22 @@ function appRoutes() {
                   const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
                     return entry.resource.id === currentLink.resource.id;
                   });
-                  if(!inNewMatches) {
+                  if (!inNewMatches) {
                     replacedByNewGolden = true;
                   }
                 }
-                for(const index in currentLink.resource.link) {
-                  if(currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
+                for (const index in currentLink.resource.link) {
+                  if (currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
                     // remove patient from golden link
-                    if(replacedByNewGolden) {
+                    if (replacedByNewGolden) {
                       currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
                       currentLink.resource.link[index].type = 'replaced-by';
                     } else {
-                      currentLink.resource.link.splice(index,1);
+                      currentLink.resource.link.splice(index, 1);
                     }
                     // remove golden link from patient
-                    for(const index in patient.link) {
-                      if(patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
+                    for (const index in patient.link) {
+                      if (patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
                         patient.link.splice(index, 1);
                       }
                     }
@@ -747,13 +764,13 @@ function appRoutes() {
       const tagExist = newPatient.resource.meta && newPatient.resource.meta.tag && newPatient.resource.meta.tag.find((tag) => {
         return tag.code === 'clientid';
       });
-      if(!tagExist) {
-        if(!newPatient.resource.meta) {
+      if (!tagExist) {
+        if (!newPatient.resource.meta) {
           newPatient.resource.meta = {
             tag: []
           };
         }
-        if(!newPatient.resource.meta.tag) {
+        if (!newPatient.resource.meta.tag) {
           newPatient.resource.meta.tag = [];
         }
         newPatient.resource.meta.tag.push({
@@ -763,7 +780,7 @@ function appRoutes() {
         });
       }
       const internalIdURI = config.get("systems:internalid:uri");
-      if(!internalIdURI || internalIdURI.length === 0) {
+      if (!internalIdURI || internalIdURI.length === 0) {
         operSummary.outcome = '8';
         operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
         logger.error('URI for internal id is not defined on configuration files, stop processing patient');
@@ -805,14 +822,14 @@ function appRoutes() {
             bundle,
             operSummary
           }, (err) => {
-            if(err) {
+            if (err) {
               operationSummary.push(operSummary);
               return nxtPatient();
             }
             fhirWrapper.saveResource({
               resourceData: bundle,
             }, (err) => {
-              if(err) {
+              if (err) {
                 operSummary.outcome = '8';
                 operSummary.outcomeDesc = 'An error occured while saving a bundle that contians matches of a submitted resource and the submitted resource itself';
                 operationSummary.push(operSummary);
@@ -823,7 +840,7 @@ function appRoutes() {
                 cacheFHIR.fhir2ES({
                   "patientsBundle": bundle
                 }, (err) => {
-                  if(err) {
+                  if (err) {
                     operSummary.outcome = '8';
                     operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
                   }
@@ -894,7 +911,7 @@ function appRoutes() {
               bundle,
               operSummary
             }, (err) => {
-              if(err) {
+              if (err) {
                 operationSummary.push(operSummary);
                 return nxtPatient();
               }
@@ -905,7 +922,7 @@ function appRoutes() {
                   cacheFHIR.fhir2ES({
                     "patientsBundle": bundle
                   }, (err) => {
-                    if(err) {
+                    if (err) {
                       logger.error('An error has occured while caching patient changes into elasticsearch');
                       operSummary.outcome = '8';
                       operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
@@ -923,7 +940,7 @@ function appRoutes() {
         }
       });
     }, () => {
-      if(responseBundle.entry.length === 0) {
+      if (responseBundle.entry.length === 0) {
         logger.error('An error has occured while adding patient');
         return callback(true, responseBundle, operationSummary);
       }
@@ -962,11 +979,13 @@ function appRoutes() {
     const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
     for (const idPair of ids) {
       if (!idPair.id1 || !idPair.id2) {
-        const operSummary = {unBreakResources: []};
-        if(idPair.id1) {
+        const operSummary = {
+          unBreakResources: []
+        };
+        if (idPair.id1) {
           const idArr1 = idPair.id1.toString().split('/');
           const [resourceName1, resourceId1] = idArr1;
-          if(resourceName1 && resourceId1) {
+          if (resourceName1 && resourceId1) {
             operSummary.editingResource = resourceName1 + '/' + resourceId1;
             operSummary.outcome = '4';
             operSummary.outcomeDesc = 'Missing ID2';
@@ -976,10 +995,10 @@ function appRoutes() {
             operSummary.outcomeDesc = 'Wrong ID Format';
           }
         }
-        if(idPair.id2) {
+        if (idPair.id2) {
           const idArr2 = idPair.id2.toString().split('/');
           const [resourceName2, resourceId2] = idArr2;
-          if(resourceName2 && resourceId2) {
+          if (resourceName2 && resourceId2) {
             operSummary.unBreakResources.push(resourceName2 + '/' + resourceId2);
             operSummary.outcome = '4';
             operSummary.outcomeDesc = 'Missing ID1';
@@ -1008,9 +1027,11 @@ function appRoutes() {
         query = '_id=' + idPair.id1 + ',' + idPair.id2;
       }
     }
-    if(dontSaveChanges) {
+    if (dontSaveChanges) {
       createAuditEvent();
-      fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+      fhirWrapper.saveResource({
+        resourceData: auditBundle
+      }, () => {
         return res.status(400).json({
           resourceType: "OperationOutcome",
           issue: [{
@@ -1043,7 +1064,7 @@ function appRoutes() {
           const clientIdTag2 = resource2.resource.meta && resource2.resource.meta.tag && resource2.resource.meta.tag.find((tag) => {
             return tag.code === 'clientid';
           });
-          if(!clientIdTag1) {
+          if (!clientIdTag1) {
             logger.error('Client ID tag is missing, unbreak match failed');
             dontSaveChanges = true;
           }
@@ -1063,7 +1084,7 @@ function appRoutes() {
             }
           }
 
-          if(!clientIdTag2) {
+          if (!clientIdTag2) {
             logger.error('Client ID tag is missing, unbreak match failed');
             dontSaveChanges = true;
           }
@@ -1082,19 +1103,21 @@ function appRoutes() {
               }
             }
           }
-          if(!auditedId.includes(id1)) {
-            const operSummary = {unBreakResources: []};
+          if (!auditedId.includes(id1)) {
+            const operSummary = {
+              unBreakResources: []
+            };
             operSummary.editingResource = resource1.resource.resourceType + '/' + resource1.resource.id;
             operSummary.CRUID = resource2.resource.link[0].other.reference;
-            if(dontSaveChanges) {
+            if (dontSaveChanges) {
               operSummary.outcome = '8';
             }
             operSummary.unBreakResources.push(resource2.resource.resourceType + '/' + resource2.resource.id);
             operationSummary.push(operSummary);
           } else {
-            for(const index in operationSummary) {
+            for (const index in operationSummary) {
               const oper = operationSummary[index];
-              if(oper.editingResource === resource1.resource.resourceType + '/' + resource1.resource.id) {
+              if (oper.editingResource === resource1.resource.resourceType + '/' + resource1.resource.id) {
                 operationSummary[index].unBreakResources.push(resource2.resource.resourceType + '/' + resource2.resource.id);
               }
             }
@@ -1102,7 +1125,7 @@ function appRoutes() {
           auditedId.push(id1);
         }
         logger.info('Saving the unbroken matches');
-        if(!dontSaveChanges) {
+        if (!dontSaveChanges) {
           fhirWrapper.saveResource({
             resourceData: bundle
           }, (err) => {
@@ -1126,7 +1149,7 @@ function appRoutes() {
               const clientIdTag = entry.resource.meta && entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
                 return tag.code === 'clientid';
               });
-              if(clientIdTag) {
+              if (clientIdTag) {
                 clientID = clientIdTag.display;
               }
               if (clientID) {
@@ -1139,7 +1162,7 @@ function appRoutes() {
                   const tmpAuditBundle = createAddPatientAudEvent(operationSummary, req);
                   auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
                   logger.info('Done rematching ' + entry.resource.id);
-                  if(err) {
+                  if (err) {
                     errFound = true;
                   }
                   Object.assign(responseBundle, response);
@@ -1150,8 +1173,10 @@ function appRoutes() {
               }
             }, () => {
               createAuditEvent();
-              fhirWrapper.saveResource({resourceData: auditBundle}, () => {
-                if(errFound) {
+              fhirWrapper.saveResource({
+                resourceData: auditBundle
+              }, () => {
+                if (errFound) {
                   return res.status(500).json(responseBundle);
                 }
                 res.status(201).json(responseBundle);
@@ -1160,7 +1185,9 @@ function appRoutes() {
           });
         } else {
           createAuditEvent();
-          fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+          fhirWrapper.saveResource({
+            resourceData: auditBundle
+          }, () => {
             return res.status(400).json({
               resourceType: "OperationOutcome",
               issue: [{
@@ -1186,24 +1213,30 @@ function appRoutes() {
     function createAuditEvent() {
       const ipAddress = req.ip.split(':').pop();
       const username = req.query.username;
-      for(const operSummary of operationSummary) {
+      for (const operSummary of operationSummary) {
         const entity = [];
-        if(operSummary.editingResource) {
+        if (operSummary.editingResource) {
           entity.push({
             name: 'unBreak',
-            what: {reference: operSummary.editingResource}
+            what: {
+              reference: operSummary.editingResource
+            }
           });
         }
-        if(operSummary.CRUID) {
+        if (operSummary.CRUID) {
           entity.push({
             name: 'unBreakFromCRUID',
-            what: {reference: operSummary.CRUID}
+            what: {
+              reference: operSummary.CRUID
+            }
           });
         }
-        for(const unbreak of operSummary.unBreakResources) {
+        for (const unbreak of operSummary.unBreakResources) {
           entity.push({
             name: 'unBreakFromResource',
-            what: {reference: unbreak}
+            what: {
+              reference: unbreak
+            }
           });
         }
         let outcome;
@@ -1302,7 +1335,9 @@ function appRoutes() {
       }, (resourceData) => {
         const goldenRec2RecoLink = {};
         for (const entry of resourceData.entry) {
-          const operSummary = {brokenResources: []};
+          const operSummary = {
+            brokenResources: []
+          };
           operSummary.editingResource = entry.resource.resourceType + '/' + entry.resource.id;
           if (!entry.resource.link || (entry.resource.link && entry.resource.link.length === 0)) {
             operSummary.outcome = '8';
@@ -1368,8 +1403,8 @@ function appRoutes() {
           // get broken links for auditing
           for (const goldenRecord of goldenRecords.entry) {
             for (const linkIndex in goldenRecord.resource.link) {
-              if(!ids.includes(goldenRecord.resource.link[linkIndex].other.reference)) {
-                for(const index in operationSummary) {
+              if (!ids.includes(goldenRecord.resource.link[linkIndex].other.reference)) {
+                for (const index in operationSummary) {
                   operationSummary[index].brokenResources.push(goldenRecord.resource.link[linkIndex].other.reference);
                 }
               }
@@ -1407,8 +1442,8 @@ function appRoutes() {
                 return 'Patient/' + entry.resource.id === linkToGoldId;
               });
               if (!goldenRecord) {
-                for(const index in operationSummary) {
-                  if(operationSummary[index].editingResource === resourceData.entry[index].resource.resourceType + '/' + resourceData.entry[index].resource.id) {
+                for (const index in operationSummary) {
+                  if (operationSummary[index].editingResource === resourceData.entry[index].resource.resourceType + '/' + resourceData.entry[index].resource.id) {
                     operationSummary[index].outcome = '8';
                     operationSummary[index].outcomeDesc = 'Golden record was not found on the database';
                   }
@@ -1590,7 +1625,7 @@ function appRoutes() {
                 resourceData: bundle
               }, (err) => {
                 if (err) {
-                  for(const index in operationSummary) {
+                  for (const index in operationSummary) {
                     operationSummary[index].outcome = '8';
                     operationSummary[index].outcomeDesc = 'Error occured while saving changes';
                   }
@@ -1611,7 +1646,7 @@ function appRoutes() {
               });
             });
           } else {
-            for(const index in operationSummary) {
+            for (const index in operationSummary) {
               operationSummary[index].outcome = '8';
               operationSummary[index].outcomeDesc = 'Links to records were not found';
             }
@@ -1649,24 +1684,30 @@ function appRoutes() {
       auditBundle.type = 'batch';
       auditBundle.resourceType = 'Bundle';
       auditBundle.entry = [];
-      for(const operSummary of operationSummary) {
+      for (const operSummary of operationSummary) {
         const entity = [];
-        if(operSummary.editingResource) {
+        if (operSummary.editingResource) {
           entity.push({
             name: 'break',
-            what: {reference: operSummary.editingResource}
+            what: {
+              reference: operSummary.editingResource
+            }
           });
         }
-        if(operSummary.oldCRUID) {
+        if (operSummary.oldCRUID) {
           entity.push({
             name: 'oldCRUID',
-            what: {reference: operSummary.oldCRUID}
+            what: {
+              reference: operSummary.oldCRUID
+            }
           });
         }
-        for(const broken of operSummary.brokenResources) {
+        for (const broken of operSummary.brokenResources) {
           entity.push({
             name: 'breakFrom',
-            what: {reference: broken}
+            what: {
+              reference: broken
+            }
           });
         }
         let outcome;
@@ -1717,8 +1758,10 @@ function appRoutes() {
           }
         });
       }
-      if(auditBundle.entry.length > 0) {
-        fhirWrapper.saveResource({resourceData: auditBundle}, () => {
+      if (auditBundle.entry.length > 0) {
+        fhirWrapper.saveResource({
+          resourceData: auditBundle
+        }, () => {
           logger.info('Audit event saved successfully');
           return callback();
         });

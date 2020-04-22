@@ -38,26 +38,28 @@ if (extTrueLinks !== '.csv') {
   csvTrueLinks = '';
 }
 
-const patients = require(jsonFile)
+const patients = require(jsonFile);
 
 logger.info('Upload started ...');
 
-let bundle = {entry: []}
-if(patients.entry) {
-  bundle.entry = bundle.entry.concat(patients.entry)
-} else if(patients.resourceType === 'Patient') {
+const bundle = {
+  entry: []
+};
+if (patients.entry) {
+  bundle.entry = bundle.entry.concat(patients.entry);
+} else if (patients.resourceType === 'Patient') {
   bundle.entry.push({
     resource: patients
-  })
+  });
 } else {
   logger.error('Invalid data submitted, aborting submission');
-  process.exit()
+  process.exit();
 }
 console.time('Total Processing Time');
 async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
-  console.time('Processing Took')
+  console.time('Processing Took');
   console.log('Processing ' + ++index + ' of ' + bundle.entry.length);
-  let agentOptions = {
+  const agentOptions = {
     cert: fs.readFileSync(
       '../server/sampleclientcertificates/openmrs_cert.pem'
     ),
@@ -66,32 +68,32 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     ),
     ca: fs.readFileSync('../server/certificates/server_cert.pem'),
     securityOptions: 'SSL_OP_NO_SSLv3',
-  }
-  let auth = {
+  };
+  const auth = {
     username: 'openmrs',
     password: 'openmrs'
-  }
+  };
   const options = {
     url: 'https://localhost:3000/Patient',
     agentOptions,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
-    if(err) {
+    if (err) {
       logger.error('An error has occured');
       logger.error(err);
       return nxtEntry();
     }
-    if(!res.headers) {
+    if (!res.headers) {
       logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details');
-      return nxtEntry()
+      return nxtEntry();
     }
-    if(res.headers.location) {
+    if (res.headers.location) {
       logger.info('CRUID ' + res.headers.location);
     } else {
       logger.error('Something went wrong, no CRUID created');
     }
-    console.timeEnd('Processing Took')
+    console.timeEnd('Processing Took');
     return nxtEntry();
   });
 }, () => {

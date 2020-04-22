@@ -26,11 +26,8 @@
       }],
       "name": [{
         "use": "official",
-        "family": "Joshu",
-        "given": [
-          "Emmanuel",
-          "Jakob"
-        ]
+        "family": "Joshua",
+        "given": ["Emmanuel"]
       }],
       "gender": "male",
       "birthDate": "2020-01-02",
@@ -72,22 +69,13 @@
       "name": [{
         "use": "official",
         "family": "Joshua",
-        "given": [
-          "Emmanuel",
-          "Jakob"
-        ]
+        "given": ["Emanuel"]
       }],
       "gender": "male",
       "birthDate": "2020-01-02",
       "telecom": [{
         "system": "phone",
         "value": "774 232423"
-      }],
-      "link": [{
-        "other": {
-          "reference": "Patient/c20a8c2e-2e59-4f55-b0e3-78a43981aec0"
-        },
-        "type": "refer"
       }]
     }
   }]
