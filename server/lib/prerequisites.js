@@ -21,7 +21,10 @@ const loadResources = (callback) => {
   for (const folder of folders) {
     fs.readdirSync(folder).forEach(file => {
       promises.push(new Promise((resolve) => {
-        files.push({folder,name: file});
+        files.push({
+          folder,
+          name: file
+        });
         resolve();
       }));
     });
@@ -93,8 +96,39 @@ const loadResources = (callback) => {
   });
 };
 
+const checkInstalledPlugins = (callback) => {
+  logger.info('Checking if all elasticsearch plugins are installed');
+  const url = URI(config.get('elastic:server'))
+    .segment('_cat')
+    .segment('plugins')
+    .toString();
+  const options = {
+    url,
+    auth: {
+      username: config.get('elastic:username'),
+      password: config.get('elastic.password'),
+    }
+  };
+  request.get(options, (err, res, body) => {
+    if (!body) {
+      logger.error('It seems like elasticsearch is not running, please check to ensure elasticsearch is up and running');
+      return callback(true);
+    }
+    if (!body.includes('analysis-phonetic')) {
+      logger.error('Phonetic plugin is missing, to install run sudo bin/elasticsearch-plugin install analysis-phonetic and restart elasticsearch');
+      return callback(true);
+    }
+    if (!body.includes('string-similarity-scoring')) {
+      logger.error('String similarity plugin is missing, refer https://github.com/intrahealth/similarity-scoring for installation then restart elasticsearch');
+      return callback(true);
+    }
+    logger.info('All plugins are available');
+    return callback();
+  });
+};
+
 const loadESScripts = (callback) => {
-  jaroWinkler = {
+  let jaroWinkler = {
     script: {
       lang: "painless",
       source: `
@@ -186,15 +220,47 @@ const loadESScripts = (callback) => {
     json: jaroWinkler
   };
   request.post(options, (err, res, body) => {
-    if(err) {
-      logger.error('An error has occured while adding probabilistic jaro winkler script for elasticsearch');
+    if (err) {
+      logger.error('An error has occured while adding pro;babilistic jaro winkler script for elasticsearch');
+      return callback(err);
     } else {
-      logger.info('Jaro winkler loaded successfully');
+      logger.info('Jaro w;inkler loaded successfully');
+      return callback();
     }
   });
 };
 
+const init = (callback) => {
+  let errFound = false;
+  async.parallel({
+    loadResources: (callback) => {
+      loadResources((err) => {
+        if (err) {
+          errFound = true;
+        }
+        return callback(null);
+      });
+    },
+    loadESScripts: (callback) => {
+      loadESScripts((err) => {
+        if (err) {
+          errFound = true;
+        }
+        return callback(null);
+      });
+    },
+    checkInstalledPlugins: (callback) => {
+      checkInstalledPlugins((err) => {
+        if (err) {
+          errFound = true;
+        }
+        return callback(null);
+      });
+    }
+  }, () => {
+    return callback(errFound);
+  });
+};
 module.exports = {
-  loadResources,
-  loadESScripts
+  init
 };

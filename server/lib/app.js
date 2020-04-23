@@ -947,7 +947,7 @@ function appRoutes() {
       logger.info('Done adding patient');
       return callback(false, responseBundle, operationSummary);
     });
-  };
+  }
 
   app.post('/ocrux/unBreakMatch', (req, res) => {
     const operationSummary = [];
@@ -1606,7 +1606,7 @@ function appRoutes() {
                     code: "processing",
                     diagnostics: "Invalid ID format submitted for " + notProcessed.join(', ') + " but no link found"
                   });
-                };
+                }
                 saveAuditEvent(() => {
                   return res.status(400).json(respObj);
                 });
@@ -1791,8 +1791,7 @@ function reloadConfig(data, callback) {
 }
 
 function start(callback) {
-  prerequisites.loadESScripts();
-  if (config.get("matching:tool") === "elasticsearch" && config.get('app:installed')) {
+  if (config.get("matching:tool") === "elasticsearch") {
     const runsLastSync = config.get("sync:lastFHIR2ESSync");
     cacheFHIR.fhir2ES({
       lastSync: runsLastSync
@@ -1820,19 +1819,11 @@ function start(callback) {
           config.set('mediator:api:urn', mediatorConfig.urn);
           logger.info('Received initial config:', newConfig);
           logger.info('Successfully registered mediator!');
-          if (!config.get('app:installed')) {
-            prerequisites.loadResources((err) => {
-              if (!err) {
-                mixin.updateConfigFile(['app', 'installed'], true, () => {});
-              }
-              if (config.get("matching:tool") === "elasticsearch") {
-                const runsLastSync = config.get("sync:lastFHIR2ESSync");
-                cacheFHIR.fhir2ES({
-                  lastSync: runsLastSync
-                }, (err) => {});
-              }
-            });
-          }
+          prerequisites.init((err) => {
+            if (err) {
+              process.exit();
+            }
+          });
           const app = appRoutes();
           const server = app.listen(config.get('app:port'), () => {
             const configEmitter = medUtils.activateHeartbeat(config.get('mediator:api'));
@@ -1840,13 +1831,11 @@ function start(callback) {
               logger.info('Received updated config:', newConfig);
               const updatedConfig = Object.assign(configFile, newConfig);
               reloadConfig(updatedConfig, () => {
-                if (!config.get('app:installed')) {
-                  prerequisites.loadResources((err) => {
-                    if (!err) {
-                      mixin.updateConfigFile(['app', 'installed'], true, () => {});
-                    }
-                  });
-                }
+                prerequisites.init((err) => {
+                  if (err) {
+                    process.exit();
+                  }
+                });
                 config.set('mediator:api:urn', mediatorConfig.urn);
               });
             });
@@ -1859,19 +1848,11 @@ function start(callback) {
     logger.info('Running client registry as a stand alone');
     const app = appRoutes();
     const server = https.createServer(serverOpts, app).listen(config.get('app:port'), () => {
-      if (!config.get('app:installed')) {
-        prerequisites.loadResources((err) => {
-          if (!err) {
-            mixin.updateConfigFile(['app', 'installed'], true, () => {});
-          }
-          if (config.get("matching:tool") === "elasticsearch") {
-            const runsLastSync = config.get("sync:lastFHIR2ESSync");
-            cacheFHIR.fhir2ES({
-              lastSync: runsLastSync
-            }, (err) => {});
-          }
-        });
-      }
+      prerequisites.init((err) => {
+        if (err) {
+          process.exit();
+        }
+      });
       callback(server);
     });
   }

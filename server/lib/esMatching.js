@@ -11,7 +11,6 @@ const matchingMixin = require('./matchingMixin');
 const fhir = new Fhir();
 
 const refreshIndex = (callback) => {
-  console.time('Refresh');
   logger.info('Refreshing index ' + config.get('elastic:index'));
   const url = URI(config.get('elastic:server'))
     .segment(config.get('elastic:index'))
@@ -31,7 +30,6 @@ const refreshIndex = (callback) => {
       return callback();
     }
     logger.info('Index ' + config.get('elastic:index') + ' refreshed');
-    console.timeEnd('Refresh');
     return callback();
   });
 };
