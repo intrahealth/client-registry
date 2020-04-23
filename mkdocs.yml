@@ -64,6 +64,7 @@ nav:
       - 'dev/security.md'
       - 'dev/backup.md'
       - 'dev/troubleshooting.md'
+    - 'dev/addalgos.md'
     - 'dev/docs.md'
     - 'dev/license.md'
     - 'dev/contributing.md'
@@ -81,8 +82,8 @@ plugins:
   - search
   - git-revision-date-localized
   - mknotebooks
-  # - pdf-export:
-  #     combined: true
+  - pdf-export:
+      combined: true
 
 extra:
   social:
