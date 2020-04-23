@@ -1,949 +1,489 @@
 
+<!DOCTYPE html>
 
-
-<!doctype html>
-<html lang="en" class="no-js">
-  <head>
-    
-      <meta charset="utf-8">
-      <meta name="viewport" content="width=device-width,initial-scale=1">
-      
-        <meta name="description" content="Technical documentation for the Open Client Registry">
-      
-      
-        <link rel="canonical" href="https://github.com/intrahealth/client-registry/dev/configuration/">
-      
-      
-        <meta name="author" content="IntraHealth">
-      
-      <link rel="shortcut icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.1, mkdocs-material-5.1.1">
-    
-    
-      
-        <title>Configuration - OpenCR Documentation</title>
-      
-    
-    
-      <link rel="stylesheet" href="../../assets/stylesheets/main.a676eddb.min.css">
-      
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.b302131d.min.css">
-      
-      
-        
-        
-        <meta name="theme-color" content="#546e7a">
-      
-    
-    
-    
-      
-        <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&display=fallback">
-        <style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
-      
-    
-    
-    
-      <link rel="stylesheet" href="../../css/ansi-colours.css">
-    
-      <link rel="stylesheet" href="../../css/jupyter-cells.css">
-    
-      <link rel="stylesheet" href="../../css/pandas-dataframe.css">
-    
-    
-      
-    
-    
-  </head>
-  
-  
-    
-    
-    <body dir="ltr" data-md-color-primary="blue-grey" data-md-color-accent="indigo">
-  
-    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
-    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
-    <label class="md-overlay" for="__drawer"></label>
-    <div data-md-component="skip">
-      
-        
-        <a href="#configuration" class="md-skip">
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<meta content="Technical documentation for the Open Client Registry" name="description"/>
+<link href="https://github.com/intrahealth/client-registry/dev/configuration/" rel="canonical"/>
+<meta content="IntraHealth" name="author"/>
+<link href="../../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1, mkdocs-material-5.1.1" name="generator"/>
+<title>Configuration - OpenCR Documentation</title>
+<link href="../../assets/stylesheets/main.a676eddb.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.b302131d.min.css" rel="stylesheet"/>
+<meta content="#546e7a" name="theme-color"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+<link href="../../css/ansi-colours.css" rel="stylesheet"/>
+<link href="../../css/jupyter-cells.css" rel="stylesheet"/>
+<link href="../../css/pandas-dataframe.css" rel="stylesheet"/>
+</head>
+<body data-md-color-accent="indigo" data-md-color-primary="blue-grey" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#configuration">
           Skip to content
         </a>
-      
-    </div>
-    <div data-md-component="announce">
-      
-    </div>
-    
-      <header class="md-header" data-md-component="header">
-  <nav class="md-header-nav md-grid" aria-label="Header">
-    <a href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation" class="md-header-nav__button md-logo" aria-label="OpenCR Documentation">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
-
-    </a>
-    <label class="md-header-nav__button md-icon" for="__drawer">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z" /></svg>
-    </label>
-    <div class="md-header-nav__title" data-md-component="header-title">
-      
-        <div class="md-header-nav__ellipsis">
-          <span class="md-header-nav__topic md-ellipsis">
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="OpenCR Documentation" class="md-header-nav__button md-logo" href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
             OpenCR Documentation
           </span>
-          <span class="md-header-nav__topic md-ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
             
               Configuration
             
           </span>
-        </div>
-      
-    </div>
-    
-      <label class="md-header-nav__button md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
-      </label>
-      
+</div>
+</div>
+<label class="md-header-nav__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
+</label>
 <div class="md-search" data-md-component="search" role="dialog">
-  <label class="md-search__overlay" for="__search"></label>
-  <div class="md-search__inner" role="search">
-    <form class="md-search__form" name="search">
-      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" data-md-state="active">
-      <label class="md-search__icon md-icon" for="__search">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" /></svg>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-      </label>
-      <button type="reset" class="md-search__icon md-icon" aria-label="Clear" data-md-component="search-reset" tabindex="-1">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" /></svg>
-      </button>
-    </form>
-    <div class="md-search__output">
-      <div class="md-search__scrollwrap" data-md-scrollfix>
-        <div class="md-search-result" data-md-component="search-result">
-          <div class="md-search-result__meta">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" data-md-state="active" name="query" placeholder="Search" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</label>
+<button aria-label="Clear" class="md-search__icon md-icon" data-md-component="search-reset" tabindex="-1" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>
+</button>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
             Type to start searching
           </div>
-          <ol class="md-search-result__list"></ol>
-        </div>
-      </div>
-    </div>
-  </div>
+<ol class="md-search-result__list"></ol>
 </div>
-    
-    
-      <div class="md-header-nav__source">
-        
-<a href="https://github.com/intrahealth/client-registry/" title="Go to repository" class="md-source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
-  </div>
-  <div class="md-source__repository">
+</div>
+</div>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/intrahealth/client-registry/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
     intrahealth/client-registry
   </div>
 </a>
-      </div>
-    
-  </nav>
+</div>
+</nav>
 </header>
-    
-    <div class="md-container" data-md-component="container">
-      
-        
-      
-      
-        
-          
-
-  
-
-<nav class="md-tabs md-tabs--active" aria-label="Tabs" data-md-component="tabs">
-  <div class="md-tabs__inner md-grid">
-    <ul class="md-tabs__list">
-      
-        
-  
-  
-    <li class="md-tabs__item">
-      
-        <a href="../.." class="md-tabs__link">
+<div class="md-container" data-md-component="container">
+<nav aria-label="Tabs" class="md-tabs md-tabs--active" data-md-component="tabs">
+<div class="md-tabs__inner md-grid">
+<ul class="md-tabs__list">
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../..">
           Overview
         </a>
-      
-    </li>
-  
-
-      
-        
-  
-  
-    <li class="md-tabs__item">
-      
-        <a href="../../user/introduction/" class="md-tabs__link">
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../../user/introduction/">
           User Manual
         </a>
-      
-    </li>
-  
-
-      
-        
-  
-  
-    
-    
-  
-  
-    <li class="md-tabs__item">
-      
-        <a href="../proficiencies/" class="md-tabs__link">
+</li>
+<li class="md-tabs__item">
+<a class="md-tabs__link" href="../proficiencies/">
           Developer Manual
         </a>
-      
-    </li>
-  
-
-  
-
-      
-    </ul>
-  </div>
+</li>
+</ul>
+</div>
 </nav>
-        
-      
-      <main class="md-main" data-md-component="main">
-        <div class="md-main__inner md-grid">
-          
-            
-              <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
-  <label class="md-nav__title" for="__drawer">
-    <a href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation" class="md-nav__button md-logo" aria-label="OpenCR Documentation">
-      
-  
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z" /></svg>
-
-    </a>
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="OpenCR Documentation" class="md-nav__button md-logo" href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z"></path></svg>
+</a>
     OpenCR Documentation
   </label>
-  
-    <div class="md-nav__source">
-      
-<a href="https://github.com/intrahealth/client-registry/" title="Go to repository" class="md-source">
-  <div class="md-source__icon md-icon">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
-  </div>
-  <div class="md-source__repository">
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/intrahealth/client-registry/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
     intrahealth/client-registry
   </div>
 </a>
-    </div>
-  
-  <ul class="md-nav__list" data-md-scrollfix>
-    
-      
-      
-      
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-1" type="checkbox" id="nav-1">
-    
-    <label class="md-nav__link" for="nav-1">
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-1" id="nav-1" type="checkbox"/>
+<label class="md-nav__link" for="nav-1">
       Overview
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Overview" data-md-level="1">
-      <label class="md-nav__title" for="nav-1">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Overview" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-1">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Overview
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../.." title="Welcome" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../.." title="Welcome">
       Welcome
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../process/" title="Matching Process" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../process/" title="Matching Process">
       Matching Process
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../usecases/" title="Use Cases" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../usecases/" title="Use Cases">
       Use Cases
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../openmrs/" title="OpenMRS MPI Client" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../openmrs/" title="OpenMRS MPI Client">
       OpenMRS MPI Client
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../cruid/" title="Unique Identifiers" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../cruid/" title="Unique Identifiers">
       Unique Identifiers
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../algos/" title="Intro to Algorithms" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../algos/" title="Intro to Algorithms">
       Intro to Algorithms
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../supported/" title="Supported Algorithms" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../supported/" title="Supported Algorithms">
       Supported Algorithms
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../architecture/" title="Architecture" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../architecture/" title="Architecture">
       Architecture
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-    
-      
-      
-      
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" type="checkbox" id="nav-2">
-    
-    <label class="md-nav__link" for="nav-2">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" id="nav-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-2">
       User Manual
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="User Manual" data-md-level="1">
-      <label class="md-nav__title" for="nav-2">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="User Manual" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-2">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         User Manual
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/introduction/" title="Introduction" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/introduction/" title="Introduction">
       Introduction
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/process/" title="Record Linkage Process" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/process/" title="Record Linkage Process">
       Record Linkage Process
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/ui/" title="User Interface (CRUX)" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/ui/" title="User Interface (CRUX)">
       User Interface (CRUX)
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/guide/" title="OpenHIE Implementation Guide" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/guide/" title="OpenHIE Implementation Guide">
       OpenHIE Implementation Guide
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/roles/" title="Roles and Responsibilities" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/roles/" title="Roles and Responsibilities">
       Roles and Responsibilities
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../user/resources/" title="Additional Resources" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/resources/" title="Additional Resources">
       Additional Resources
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-    
-      
-      
-      
-
-  
-
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" type="checkbox" id="nav-3" checked>
-    
-    <label class="md-nav__link" for="nav-3">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-3" id="nav-3" type="checkbox"/>
+<label class="md-nav__link" for="nav-3">
       Developer Manual
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Developer Manual" data-md-level="1">
-      <label class="md-nav__title" for="nav-3">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Developer Manual" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-3">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Developer Manual
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-1" type="checkbox" id="nav-3-1">
-    
-    <label class="md-nav__link" for="nav-3-1">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-1" id="nav-3-1" type="checkbox"/>
+<label class="md-nav__link" for="nav-3-1">
       Introduction
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Introduction" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-1">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Introduction" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-3-1">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Introduction
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../proficiencies/" title="Proficiencies" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../proficiencies/" title="Proficiencies">
       Proficiencies
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../internals/" title="Internals" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../internals/" title="Internals">
       Internals
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-2" type="checkbox" id="nav-3-2">
-    
-    <label class="md-nav__link" for="nav-3-2">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-2" id="nav-3-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-3-2">
       Getting Started (Docker)
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Getting Started (Docker)" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-2">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Getting Started (Docker)" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-3-2">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Getting Started (Docker)
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../docker/" title="Local Installation using Docker" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../docker/" title="Local Installation using Docker">
       Local Installation using Docker
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../queries/" title="Example API Query (cURL)" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../queries/" title="Example API Query (cURL)">
       Example API Query (cURL)
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../notebooks/basic_query_in_python/" title="Basic query in python" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../notebooks/basic_query_in_python/" title="Basic query in python">
       Basic query in python
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../decision_rules/" title="Decision Rules" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../decision_rules/" title="Decision Rules">
       Decision Rules
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-        
-          
-          
-          
-
-  
-
-
-  <li class="md-nav__item md-nav__item--active md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-3" type="checkbox" id="nav-3-3" checked>
-    
-    <label class="md-nav__link" for="nav-3-3">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-3-3" id="nav-3-3" type="checkbox"/>
+<label class="md-nav__link" for="nav-3-3">
       Installation
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Installation" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-3">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Installation" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-3-3">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Installation
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../requirements/" title="System Requirements" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../requirements/" title="System Requirements">
       System Requirements
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../method/" title="Choosing a Method" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../method/" title="Choosing a Method">
       Choosing a Method
     </a>
-  </li>
-
-        
-          
-          
-          
-
-  
-
-
-  <li class="md-nav__item md-nav__item--active">
-    
-    <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
-    
-      
-    
-    
-    <a href="./" title="Configuration" class="md-nav__link md-nav__link--active">
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<a class="md-nav__link md-nav__link--active" href="./" title="Configuration">
       Configuration
     </a>
-    
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../installation/" title="Local Installation" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../installation/" title="Local Installation">
       Local Installation
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../installation_full/" title="Server Installation" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../installation_full/" title="Server Installation">
       Server Installation
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../ansible/" title="Ansible" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../ansible/" title="Ansible">
       Ansible
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-4" type="checkbox" id="nav-3-4">
-    
-    <label class="md-nav__link" for="nav-3-4">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-4" id="nav-3-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-3-4">
       Load Bulk Data
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Load Bulk Data" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-4">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Load Bulk Data" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-3-4">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Load Bulk Data
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../loadjs/" title="Load Demo Data (JavaScript)" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../loadjs/" title="Load Demo Data (JavaScript)">
       Load Demo Data (JavaScript)
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../../notebooks/load_bulk_data_in_python/" title="Load bulk data in python" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../notebooks/load_bulk_data_in_python/" title="Load bulk data in python">
       Load bulk data in python
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item md-nav__item--nested">
-    
-      <input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-5" type="checkbox" id="nav-3-5">
-    
-    <label class="md-nav__link" for="nav-3-5">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-3-5" id="nav-3-5" type="checkbox"/>
+<label class="md-nav__link" for="nav-3-5">
       Production Considerations
       <span class="md-nav__icon md-icon">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>
-      </span>
-    </label>
-    <nav class="md-nav" aria-label="Production Considerations" data-md-level="2">
-      <label class="md-nav__title" for="nav-3-5">
-        <span class="md-nav__icon md-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-        </span>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+</span>
+</label>
+<nav aria-label="Production Considerations" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-3-5">
+<span class="md-nav__icon md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</span>
         Production Considerations
       </label>
-      <ul class="md-nav__list" data-md-scrollfix>
-        
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../security/" title="Security" class="md-nav__link">
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../security/" title="Security">
       Security
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../backup/" title="Backup and Recovery" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../backup/" title="Backup and Recovery">
       Backup and Recovery
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../troubleshooting/" title="Troubleshooting" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../troubleshooting/" title="Troubleshooting">
       Troubleshooting
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../docs/" title="Building Documentation" class="md-nav__link">
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../addalgos/" title="Add Algorithms">
+      Add Algorithms
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../docs/" title="Building Documentation">
       Building Documentation
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../license/" title="License" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../license/" title="License">
       License
     </a>
-  </li>
-
-        
-          
-          
-          
-
-
-  <li class="md-nav__item">
-    <a href="../contributing/" title="Contributing" class="md-nav__link">
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../contributing/" title="Contributing">
       Contributing
     </a>
-  </li>
-
-        
-      </ul>
-    </nav>
-  </li>
-
-    
-  </ul>
+</li>
+</ul>
 </nav>
-                  </div>
-                </div>
-              </div>
-            
-            
-              <div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
-                <div class="md-sidebar__scrollwrap">
-                  <div class="md-sidebar__inner">
-                    
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-    
-  
-  
+</li>
+</ul>
 </nav>
-                  </div>
-                </div>
-              </div>
-            
-          
-          <div class="md-content">
-            <article class="md-content__inner md-typeset">
-              
-                
-                  <a href="https://github.com/intrahealth/client-registry/edit/master/docs/dev/configuration.md" title="Edit this page" class="md-content__button md-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" /></svg>
-                  </a>
-                
-                
-                  
-                
-                
-                <h1 id="configuration">Configuration</h1>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset"><a class="md-icon md-content__icon" download href="../../pdf/combined.pdf" title="PDF Export"></a>
+<a class="md-content__button md-icon" href="https://github.com/intrahealth/client-registry/edit/master/docs/dev/configuration.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>
+</a>
+<h1 id="configuration">Configuration</h1>
 <p>Often there are many records of the same person but in many people in different systems. The purpose of the Client Registry is to link patients in different systems, but not to transfer any data, neither clinical records nor demographic data. </p>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
@@ -983,62 +523,60 @@
 <p><a href="https://github.com/openhie/client-registry/blob/master/server/config/config_development_template.json">Link to file</a></p>
 <p>Contents of <code>server/config/config_development_template.json</code></p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;app&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;port&quot;</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
-    <span class="nt">&quot;installed&quot;</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="nt">"app"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"port"</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
+    <span class="nt">"installed"</span><span class="p">:</span> <span class="kc">false</span>
   <span class="p">},</span>
-  <span class="nt">&quot;mediator&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;api&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;root@openhim.org&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;openhim-password&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;apiURL&quot;</span><span class="p">:</span> <span class="s2">&quot;https://localhost:8080&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;trustSelfSigned&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-      <span class="nt">&quot;urn&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+  <span class="nt">"mediator"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"api"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"username"</span><span class="p">:</span> <span class="s2">"root@openhim.org"</span><span class="p">,</span>
+      <span class="nt">"password"</span><span class="p">:</span> <span class="s2">"openhim-password"</span><span class="p">,</span>
+      <span class="nt">"apiURL"</span><span class="p">:</span> <span class="s2">"https://localhost:8080"</span><span class="p">,</span>
+      <span class="nt">"trustSelfSigned"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+      <span class="nt">"urn"</span><span class="p">:</span> <span class="s2">""</span>
     <span class="p">},</span>
-    <span class="nt">&quot;register&quot;</span><span class="p">:</span> <span class="kc">false</span>
+    <span class="nt">"register"</span><span class="p">:</span> <span class="kc">false</span>
   <span class="p">},</span>
-  <span class="nt">&quot;fhirServer&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;baseURL&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8080/clientregistry/fhir&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;hapi&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;hapi&quot;</span>
+  <span class="nt">"fhirServer"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"baseURL"</span><span class="p">:</span> <span class="s2">"http://localhost:8080/clientregistry/fhir"</span><span class="p">,</span>
+    <span class="nt">"username"</span><span class="p">:</span> <span class="s2">"hapi"</span><span class="p">,</span>
+    <span class="nt">"password"</span><span class="p">:</span> <span class="s2">"hapi"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;elastic&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;server&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:9200&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;max_compilations_rate&quot;</span><span class="p">:</span> <span class="s2">&quot;10000/1m&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;index&quot;</span><span class="p">:</span> <span class="s2">&quot;patients&quot;</span>
+  <span class="nt">"elastic"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"server"</span><span class="p">:</span> <span class="s2">"http://localhost:9200"</span><span class="p">,</span>
+    <span class="nt">"username"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="nt">"password"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+    <span class="nt">"max_compilations_rate"</span><span class="p">:</span> <span class="s2">"10000/1m"</span><span class="p">,</span>
+    <span class="nt">"index"</span><span class="p">:</span> <span class="s2">"patients"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;structureDefinition&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;reportRelationship&quot;</span><span class="p">:</span> <span class="s2">&quot;patientreport&quot;</span>
+  <span class="nt">"structureDefinition"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"reportRelationship"</span><span class="p">:</span> <span class="s2">"patientreport"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;matching&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;mediator&quot;</span>
+  <span class="nt">"matching"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"tool"</span><span class="p">:</span> <span class="s2">"mediator"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;systems&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;openmrs&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://clientregistry.org/openmrs&quot;</span>
+  <span class="nt">"systems"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"openmrs"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"uri"</span><span class="p">:</span> <span class="s2">"http://clientregistry.org/openmrs"</span>
     <span class="p">},</span>
-    <span class="nt">&quot;dhis2&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://clientregistry.org/dhis2&quot;</span>
+    <span class="nt">"dhis2"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"uri"</span><span class="p">:</span> <span class="s2">"http://clientregistry.org/dhis2"</span>
     <span class="p">},</span>
-    <span class="nt">&quot;lims&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://clientregistry.org/lims&quot;</span>
+    <span class="nt">"lims"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"uri"</span><span class="p">:</span> <span class="s2">"http://clientregistry.org/lims"</span>
     <span class="p">},</span>
-    <span class="nt">&quot;brokenMatch&quot;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&quot;uri&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/CR/brokenMatch&quot;</span>
+    <span class="nt">"brokenMatch"</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">"uri"</span><span class="p">:</span> <span class="s2">"http://ihris.org/CR/brokenMatch"</span>
     <span class="p">}</span>
   <span class="p">},</span>
-  <span class="nt">&quot;sync&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;lastFHIR2ESSync&quot;</span><span class="p">:</span> <span class="s2">&quot;1970-01-01T00:00:06&quot;</span>
+  <span class="nt">"sync"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"lastFHIR2ESSync"</span><span class="p">:</span> <span class="s2">"1970-01-01T00:00:06"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;__comments&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;matching.tool&quot;</span><span class="p">:</span> <span class="s2">&quot;this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch&quot;</span>
+  <span class="nt">"__comments"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"matching.tool"</span><span class="p">:</span> <span class="s2">"this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-
 <h3>General App Configuration</h3>
 <p><code>app.port</code> is the port the application will run on. </p>
 <p><code>app.installed</code> can be left to True. This tells the Client Registry Service to load structure definitions into HAPI FHIR Server, otherwise it will not.</p>
@@ -1057,352 +595,320 @@
 <p><a href="https://github.com/intrahealth/client-registry/blob/master/resources/Relationships/PatientRelationship.json">Link to file</a></p>
 <p>Contents of <code>resources/Relationships/PatientRelationship.json</code></p>
 <div class="codehilite"><pre><span></span><code><span class="p">{</span>
-  <span class="nt">&quot;resourceType&quot;</span><span class="p">:</span> <span class="s2">&quot;Basic&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;patientreport&quot;</span><span class="p">,</span>
-  <span class="nt">&quot;meta&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;versionId&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2019-07-30T07:34:24.098+00:00&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;profile&quot;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISRelationship&quot;</span>
+  <span class="nt">"resourceType"</span><span class="p">:</span> <span class="s2">"Basic"</span><span class="p">,</span>
+  <span class="nt">"id"</span><span class="p">:</span> <span class="s2">"patientreport"</span><span class="p">,</span>
+  <span class="nt">"meta"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"versionId"</span><span class="p">:</span> <span class="s2">"1"</span><span class="p">,</span>
+    <span class="nt">"lastUpdated"</span><span class="p">:</span> <span class="s2">"2019-07-30T07:34:24.098+00:00"</span><span class="p">,</span>
+    <span class="nt">"profile"</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISRelationship"</span>
     <span class="p">]</span>
   <span class="p">},</span>
-  <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-    <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportDetails&quot;</span><span class="p">,</span>
-    <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;Patient Report&quot;</span>
+  <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+    <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportDetails"</span><span class="p">,</span>
+    <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+      <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"Patient Report"</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;patients&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+      <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"patients"</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;gender&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"gender"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;gender&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"gender"</span>
       <span class="p">}]</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;birthDate&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"birthDate"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;birthDate&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"birthDate"</span>
       <span class="p">}]</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;given&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"given"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;name.where(use=&#39;official&#39;).last().given&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"name.where(use='official').last().given"</span>
       <span class="p">}]</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;family&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"family"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;name.where(use=&#39;official&#39;).last().family&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"name.where(use='official').last().family"</span>
       <span class="p">}]</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;fullname&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"fullname"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;name.where(use=&#39;official&#39;).last().text&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"name.where(use='official').last().text"</span>
       <span class="p">}]</span>
     <span class="p">},</span> <span class="p">{</span>
-      <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/StructureDefinition/iHRISReportElement&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;extension&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;label&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;phone&quot;</span>
+      <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/StructureDefinition/iHRISReportElement"</span><span class="p">,</span>
+      <span class="nt">"extension"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"label"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"phone"</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;url&quot;</span><span class="p">:</span> <span class="s2">&quot;name&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;valueString&quot;</span><span class="p">:</span> <span class="s2">&quot;telecom.where(system=&#39;phone&#39;).value&quot;</span>
+        <span class="nt">"url"</span><span class="p">:</span> <span class="s2">"name"</span><span class="p">,</span>
+        <span class="nt">"valueString"</span><span class="p">:</span> <span class="s2">"telecom.where(system='phone').value"</span>
       <span class="p">}]</span>
     <span class="p">}]</span>
   <span class="p">}],</span>
-  <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;coding&quot;</span><span class="p">:</span> <span class="p">[{</span>
-      <span class="nt">&quot;system&quot;</span><span class="p">:</span> <span class="s2">&quot;http://ihris.org/fhir/ValueSet/ihris-resource&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;code&quot;</span><span class="p">:</span> <span class="s2">&quot;iHRISRelationship&quot;</span>
+  <span class="nt">"code"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"coding"</span><span class="p">:</span> <span class="p">[{</span>
+      <span class="nt">"system"</span><span class="p">:</span> <span class="s2">"http://ihris.org/fhir/ValueSet/ihris-resource"</span><span class="p">,</span>
+      <span class="nt">"code"</span><span class="p">:</span> <span class="s2">"iHRISRelationship"</span>
     <span class="p">}],</span>
-    <span class="nt">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;iHRISRelationship&quot;</span>
+    <span class="nt">"text"</span><span class="p">:</span> <span class="s2">"iHRISRelationship"</span>
   <span class="p">},</span>
-  <span class="nt">&quot;subject&quot;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&quot;reference&quot;</span><span class="p">:</span> <span class="s2">&quot;StructureDefinition/Patient&quot;</span>
+  <span class="nt">"subject"</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">"reference"</span><span class="p">:</span> <span class="s2">"StructureDefinition/Patient"</span>
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
-
 <h3>OpenHIM Mediator JSON Configuration</h3>
 <p>If using OpenHIM, it must be configured for proper clients and roles to accept and forward requests from the Client Registry. An example export of a working JSON configuration that can be imported for development purposes is available.</p>
 <p><a href="https://github.com/openhie/client-registry/blob/master/server/config/mediator.json">Link to file</a></p>
 <p>Contents of <code>server/config/mediator.json</code></p>
 <div class="codehilite"><pre><span></span><code>    <span class="p">{</span>
-      <span class="nt">&quot;urn&quot;</span><span class="p">:</span> <span class="s2">&quot;urn:uuid:4bc42b2f-b5a8-473d-8207-5dd5c61f0c4a&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="s2">&quot;0.0.1&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Client Registry&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Uganda Client Registry&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&quot;fhirServer&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;hapi&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;hapi&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;baseURL&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:8080/hapi/fhir&quot;</span>
+      <span class="nt">"urn"</span><span class="p">:</span> <span class="s2">"urn:uuid:4bc42b2f-b5a8-473d-8207-5dd5c61f0c4a"</span><span class="p">,</span>
+      <span class="nt">"version"</span><span class="p">:</span> <span class="s2">"0.0.1"</span><span class="p">,</span>
+      <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"Client Registry"</span><span class="p">,</span>
+      <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Uganda Client Registry"</span><span class="p">,</span>
+      <span class="nt">"config"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">"fhirServer"</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">"username"</span><span class="p">:</span> <span class="s2">"hapi"</span><span class="p">,</span>
+          <span class="nt">"password"</span><span class="p">:</span> <span class="s2">"hapi"</span><span class="p">,</span>
+          <span class="nt">"baseURL"</span><span class="p">:</span> <span class="s2">"http://localhost:8080/hapi/fhir"</span>
         <span class="p">},</span>
-        <span class="nt">&quot;elastic&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&quot;server&quot;</span><span class="p">:</span> <span class="s2">&quot;http://localhost:9200&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;max_compilations_rate&quot;</span><span class="p">:</span> <span class="s2">&quot;10000/1m&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;index&quot;</span><span class="p">:</span> <span class="s2">&quot;patients&quot;</span>
+        <span class="nt">"elastic"</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">"server"</span><span class="p">:</span> <span class="s2">"http://localhost:9200"</span><span class="p">,</span>
+          <span class="nt">"username"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+          <span class="nt">"password"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+          <span class="nt">"max_compilations_rate"</span><span class="p">:</span> <span class="s2">"10000/1m"</span><span class="p">,</span>
+          <span class="nt">"index"</span><span class="p">:</span> <span class="s2">"patients"</span>
         <span class="p">},</span>
-        <span class="nt">&quot;matching&quot;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;elasticsearch&quot;</span>
+        <span class="nt">"matching"</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">"tool"</span><span class="p">:</span> <span class="s2">"elasticsearch"</span>
         <span class="p">}</span>
       <span class="p">},</span>
-      <span class="nt">&quot;configDefs&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;fhirServer&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;FHIR Server&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;FHIR Server Configuration Details&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;struct&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;template&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The base URL (e.g. http://localhost:8080/hapi/fhir)&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Base URL&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;baseURL&quot;</span>
+      <span class="nt">"configDefs"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"fhirServer"</span><span class="p">,</span>
+        <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"FHIR Server"</span><span class="p">,</span>
+        <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"FHIR Server Configuration Details"</span><span class="p">,</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"struct"</span><span class="p">,</span>
+        <span class="nt">"template"</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"The base URL (e.g. http://localhost:8080/hapi/fhir)"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Base URL"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"baseURL"</span>
           <span class="p">},</span>
           <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Username required to access FHIR server&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Username&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;username&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Username required to access FHIR server"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Username"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"username"</span>
           <span class="p">},</span>
           <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Password required to access FHIR server&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Password&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;password&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"password"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Password required to access FHIR server"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Password"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"password"</span>
           <span class="p">}</span>
         <span class="p">],</span>
-        <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="nt">"values"</span><span class="p">:</span> <span class="p">[]</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;elastic&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Elasticsearch Server&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Elasticsearch Server Configuration Details&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;struct&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;template&quot;</span><span class="p">:</span> <span class="p">[{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;The base URL (e.g. http://localhost:9200)&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Base URL&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;server&quot;</span>
+        <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"elastic"</span><span class="p">,</span>
+        <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Elasticsearch Server"</span><span class="p">,</span>
+        <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Elasticsearch Server Configuration Details"</span><span class="p">,</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"struct"</span><span class="p">,</span>
+        <span class="nt">"template"</span><span class="p">:</span> <span class="p">[{</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"The base URL (e.g. http://localhost:9200)"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Base URL"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"server"</span>
           <span class="p">},</span>
           <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Username required to access elasticsearch server&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Username&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;username&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Username required to access elasticsearch server"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Username"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"username"</span>
           <span class="p">},</span>
           <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;password&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Password required to access elasticsearch server&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Password&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;password&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"password"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Password required to access elasticsearch server"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Password"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"password"</span>
           <span class="p">},</span> <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Number of requests to compile per minute&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Maximum Compilations Rate&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;max_compilations_rate&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Number of requests to compile per minute"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Maximum Compilations Rate"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"max_compilations_rate"</span>
           <span class="p">},</span> <span class="p">{</span>
-            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;index to use for data storage&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Index Name&quot;</span><span class="p">,</span>
-            <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;index&quot;</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"string"</span><span class="p">,</span>
+            <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"index to use for data storage"</span><span class="p">,</span>
+            <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Index Name"</span><span class="p">,</span>
+            <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"index"</span>
           <span class="p">}</span>
         <span class="p">],</span>
-        <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="nt">"values"</span><span class="p">:</span> <span class="p">[]</span>
       <span class="p">},</span> <span class="p">{</span>
-        <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;matching&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;FHIR Server&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;FHIR Server Configuration Details&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;struct&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;template&quot;</span><span class="p">:</span> <span class="p">[{</span>
-          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;option&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;mediator&quot;</span><span class="p">,</span> <span class="s2">&quot;elasticsearch&quot;</span><span class="p">],</span>
-          <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Tool to Use for Matching&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;displayName&quot;</span><span class="p">:</span> <span class="s2">&quot;Tool to Use for Matching&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;param&quot;</span><span class="p">:</span> <span class="s2">&quot;tool&quot;</span>
+        <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"matching"</span><span class="p">,</span>
+        <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"FHIR Server"</span><span class="p">,</span>
+        <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"FHIR Server Configuration Details"</span><span class="p">,</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"struct"</span><span class="p">,</span>
+        <span class="nt">"template"</span><span class="p">:</span> <span class="p">[{</span>
+          <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"option"</span><span class="p">,</span>
+          <span class="nt">"values"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"mediator"</span><span class="p">,</span> <span class="s2">"elasticsearch"</span><span class="p">],</span>
+          <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Tool to Use for Matching"</span><span class="p">,</span>
+          <span class="nt">"displayName"</span><span class="p">:</span> <span class="s2">"Tool to Use for Matching"</span><span class="p">,</span>
+          <span class="nt">"param"</span><span class="p">:</span> <span class="s2">"tool"</span>
         <span class="p">}],</span>
-        <span class="nt">&quot;values&quot;</span><span class="p">:</span> <span class="p">[]</span>
+        <span class="nt">"values"</span><span class="p">:</span> <span class="p">[]</span>
       <span class="p">}],</span>
-      <span class="nt">&quot;defaultChannelConfig&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;requestBody&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="nt">&quot;responseBody&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Add Patients&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Post a new patient into the client registry&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;urlPattern&quot;</span><span class="p">:</span> <span class="s2">&quot;/addPatient&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;matchContentRegex&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;matchContentXpath&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;matchContentValue&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;matchContentJson&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;pollingSchedule&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;tcpHost&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;tcpPort&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
-        <span class="nt">&quot;autoRetryPeriodMinutes&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
-        <span class="nt">&quot;autoRetryEnabled&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-        <span class="nt">&quot;rewriteUrlsConfig&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;addAutoRewriteRules&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="nt">&quot;rewriteUrls&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;alerts&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;txRerunAcl&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;txViewFullAcl&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;txViewAcl&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;matchContentTypes&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;routes&quot;</span><span class="p">:</span> <span class="p">[{</span>
-          <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Add Patient&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;secured&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-          <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;port&quot;</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
-          <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/addPatient&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;pathTransform&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;primary&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-          <span class="nt">&quot;username&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;password&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;forwardAuthHeader&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-          <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
-          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http&quot;</span>
+      <span class="nt">"defaultChannelConfig"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"requestBody"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">"responseBody"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"Add Patients"</span><span class="p">,</span>
+        <span class="nt">"description"</span><span class="p">:</span> <span class="s2">"Post a new patient into the client registry"</span><span class="p">,</span>
+        <span class="nt">"urlPattern"</span><span class="p">:</span> <span class="s2">"/addPatient"</span><span class="p">,</span>
+        <span class="nt">"matchContentRegex"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"matchContentXpath"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"matchContentValue"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"matchContentJson"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"pollingSchedule"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"tcpHost"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"tcpPort"</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">"autoRetryPeriodMinutes"</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+        <span class="nt">"autoRetryEnabled"</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">"rewriteUrlsConfig"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"addAutoRewriteRules"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">"rewriteUrls"</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">"status"</span><span class="p">:</span> <span class="s2">"enabled"</span><span class="p">,</span>
+        <span class="nt">"alerts"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"txRerunAcl"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"txViewFullAcl"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"txViewAcl"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"properties"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"matchContentTypes"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"routes"</span><span class="p">:</span> <span class="p">[{</span>
+          <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"Add Patient"</span><span class="p">,</span>
+          <span class="nt">"secured"</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+          <span class="nt">"host"</span><span class="p">:</span> <span class="s2">"localhost"</span><span class="p">,</span>
+          <span class="nt">"port"</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
+          <span class="nt">"path"</span><span class="p">:</span> <span class="s2">"/addPatient"</span><span class="p">,</span>
+          <span class="nt">"pathTransform"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+          <span class="nt">"primary"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+          <span class="nt">"username"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+          <span class="nt">"password"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+          <span class="nt">"forwardAuthHeader"</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+          <span class="nt">"status"</span><span class="p">:</span> <span class="s2">"enabled"</span><span class="p">,</span>
+          <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"http"</span>
         <span class="p">}],</span>
-        <span class="nt">&quot;authType&quot;</span><span class="p">:</span> <span class="s2">&quot;public&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;whitelist&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;allow&quot;</span><span class="p">:</span> <span class="p">[],</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;methods&quot;</span><span class="p">:</span> <span class="p">[</span>
-          <span class="s2">&quot;POST&quot;</span>
+        <span class="nt">"authType"</span><span class="p">:</span> <span class="s2">"public"</span><span class="p">,</span>
+        <span class="nt">"whitelist"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"allow"</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"http"</span><span class="p">,</span>
+        <span class="nt">"methods"</span><span class="p">:</span> <span class="p">[</span>
+          <span class="s2">"POST"</span>
         <span class="p">]</span>
       <span class="p">}],</span>
-      <span class="nt">&quot;endpoints&quot;</span><span class="p">:</span> <span class="p">[{</span>
-        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Activate Client Registry&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;path&quot;</span><span class="p">:</span> <span class="s2">&quot;/addPatient&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;port&quot;</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
-        <span class="nt">&quot;primary&quot;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-        <span class="nt">&quot;forwardAuthHeader&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
-        <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
-        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;http&quot;</span>
+      <span class="nt">"endpoints"</span><span class="p">:</span> <span class="p">[{</span>
+        <span class="nt">"name"</span><span class="p">:</span> <span class="s2">"Activate Client Registry"</span><span class="p">,</span>
+        <span class="nt">"host"</span><span class="p">:</span> <span class="s2">"localhost"</span><span class="p">,</span>
+        <span class="nt">"path"</span><span class="p">:</span> <span class="s2">"/addPatient"</span><span class="p">,</span>
+        <span class="nt">"port"</span><span class="p">:</span> <span class="mi">3000</span><span class="p">,</span>
+        <span class="nt">"primary"</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
+        <span class="nt">"forwardAuthHeader"</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+        <span class="nt">"status"</span><span class="p">:</span> <span class="s2">"enabled"</span><span class="p">,</span>
+        <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"http"</span>
       <span class="p">}],</span>
-      <span class="nt">&quot;_uptime&quot;</span><span class="p">:</span> <span class="mf">2201.945</span><span class="p">,</span>
-      <span class="nt">&quot;_lastHeartbeat&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-12-15T03:47:03.365Z&quot;</span><span class="p">,</span>
-      <span class="nt">&quot;_configModifiedTS&quot;</span><span class="p">:</span> <span class="s2">&quot;2017-12-15T02:52:49.054Z&quot;</span>
+      <span class="nt">"_uptime"</span><span class="p">:</span> <span class="mf">2201.945</span><span class="p">,</span>
+      <span class="nt">"_lastHeartbeat"</span><span class="p">:</span> <span class="s2">"2017-12-15T03:47:03.365Z"</span><span class="p">,</span>
+      <span class="nt">"_configModifiedTS"</span><span class="p">:</span> <span class="s2">"2017-12-15T02:52:49.054Z"</span>
     <span class="p">}</span>
 </code></pre></div>
-                
-                  
-                    
-
-<hr>
+<hr/>
 <div class="md-source-date">
-  <small>
+<small>
     
       Last update: April 13, 2020
     
   </small>
 </div>
-                  
-                
-              
-              
-                
-
-
-              
-            </article>
-          </div>
-        </div>
-      </main>
-      
-        
+</article>
+</div>
+</div>
+</main>
 <footer class="md-footer">
-  
-    <div class="md-footer-nav">
-      <nav class="md-footer-nav__inner md-grid" aria-label="Footer">
-        
-          <a href="../method/" title="Choosing a Method" class="md-footer-nav__link md-footer-nav__link--prev" rel="prev">
-            <div class="md-footer-nav__button md-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z" /></svg>
-            </div>
-            <div class="md-footer-nav__title">
-              <div class="md-ellipsis">
-                <span class="md-footer-nav__direction">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../method/" rel="prev" title="Choosing a Method">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
                   Previous
                 </span>
                 Choosing a Method
               </div>
-            </div>
-          </a>
-        
-        
-          <a href="../installation/" title="Local Installation" class="md-footer-nav__link md-footer-nav__link--next" rel="next">
-            <div class="md-footer-nav__title">
-              <div class="md-ellipsis">
-                <span class="md-footer-nav__direction">
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../installation/" rel="next" title="Local Installation">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
                   Next
                 </span>
                 Local Installation
               </div>
-            </div>
-            <div class="md-footer-nav__button md-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z" /></svg>
-            </div>
-          </a>
-        
-      </nav>
-    </div>
-  
-  <div class="md-footer-meta md-typeset">
-    <div class="md-footer-meta__inner md-grid">
-      <div class="md-footer-copyright">
-        
-          <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2020 IntraHealth International
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+<div class="md-footer-copyright__highlight">
+            Copyright © 2020 IntraHealth International
           </div>
         
         Made with
-        <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
           Material for MkDocs
         </a>
-      </div>
-      
-  <div class="md-footer-social">
-    
-      
-      
-      <a href="https://github.com/intrahealth/client-registry" target="_blank" rel="noopener" title="github.com" class="md-footer-social__link">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
-      </a>
-    
-  </div>
-
-    </div>
-  </div>
+</div>
+<div class="md-footer-social">
+<a class="md-footer-social__link" href="https://github.com/intrahealth/client-registry" rel="noopener" target="_blank" title="github.com">
+<svg viewbox="0 0 496 512" xmlns="http://www.w3.org/2000/svg"><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path></svg>
+</a>
+</div>
+</div>
+</div>
 </footer>
-      
-    </div>
-    
-      <script src="../../assets/javascripts/vendor.c51dfa35.min.js"></script>
-      <script src="../../assets/javascripts/bundle.eaaa3931.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
-      
-      <script>
+</div>
+<script src="../../assets/javascripts/vendor.c51dfa35.min.js"></script>
+<script src="../../assets/javascripts/bundle.eaaa3931.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
         app = initialize({
           base: "../..",
           features: ["tabs"],
@@ -1411,7 +917,5 @@
           }, typeof search !== "undefined" && search)
         })
       </script>
-      
-    
-  </body>
+</body>
 </html>

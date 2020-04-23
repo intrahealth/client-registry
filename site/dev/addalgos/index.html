@@ -6,11 +6,11 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1" name="viewport"/>
 <meta content="Technical documentation for the Open Client Registry" name="description"/>
-<link href="https://github.com/intrahealth/client-registry/user/process/" rel="canonical"/>
+<link href="https://github.com/intrahealth/client-registry/dev/addalgos/" rel="canonical"/>
 <meta content="IntraHealth" name="author"/>
 <link href="../../assets/images/favicon.png" rel="shortcut icon"/>
 <meta content="mkdocs-1.1, mkdocs-material-5.1.1" name="generator"/>
-<title>Record Linkage Process - OpenCR Documentation</title>
+<title>Add Algorithms - OpenCR Documentation</title>
 <link href="../../assets/stylesheets/main.a676eddb.min.css" rel="stylesheet"/>
 <link href="../../assets/stylesheets/palette.b302131d.min.css" rel="stylesheet"/>
 <meta content="#546e7a" name="theme-color"/>
@@ -26,7 +26,7 @@
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
 <div data-md-component="skip">
-<a class="md-skip" href="#record-linkage-process">
+<a class="md-skip" href="#add-algorithms">
           Skip to content
         </a>
 </div>
@@ -47,7 +47,7 @@
           </span>
 <span class="md-header-nav__topic md-ellipsis">
             
-              Record Linkage Process
+              Add Algorithms
             
           </span>
 </div>
@@ -102,12 +102,12 @@
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link md-tabs__link--active" href="../introduction/">
+<a class="md-tabs__link" href="../../user/introduction/">
           User Manual
         </a>
 </li>
 <li class="md-tabs__item">
-<a class="md-tabs__link" href="../../dev/proficiencies/">
+<a class="md-tabs__link" href="../proficiencies/">
           Developer Manual
         </a>
 </li>
@@ -196,8 +196,8 @@
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--active md-nav__item--nested">
-<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-2" id="nav-2" type="checkbox"/>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-2" id="nav-2" type="checkbox"/>
 <label class="md-nav__link" for="nav-2">
       User Manual
       <span class="md-nav__icon md-icon">
@@ -213,41 +213,40 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../introduction/" title="Introduction">
+<a class="md-nav__link" href="../../user/introduction/" title="Introduction">
       Introduction
     </a>
 </li>
-<li class="md-nav__item md-nav__item--active">
-<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
-<a class="md-nav__link md-nav__link--active" href="./" title="Record Linkage Process">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../user/process/" title="Record Linkage Process">
       Record Linkage Process
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../ui/" title="User Interface (CRUX)">
+<a class="md-nav__link" href="../../user/ui/" title="User Interface (CRUX)">
       User Interface (CRUX)
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../guide/" title="OpenHIE Implementation Guide">
+<a class="md-nav__link" href="../../user/guide/" title="OpenHIE Implementation Guide">
       OpenHIE Implementation Guide
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../roles/" title="Roles and Responsibilities">
+<a class="md-nav__link" href="../../user/roles/" title="Roles and Responsibilities">
       Roles and Responsibilities
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../resources/" title="Additional Resources">
+<a class="md-nav__link" href="../../user/resources/" title="Additional Resources">
       Additional Resources
     </a>
 </li>
 </ul>
 </nav>
 </li>
-<li class="md-nav__item md-nav__item--nested">
-<input class="md-nav__toggle md-toggle" data-md-toggle="nav-3" id="nav-3" type="checkbox"/>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-3" id="nav-3" type="checkbox"/>
 <label class="md-nav__link" for="nav-3">
       Developer Manual
       <span class="md-nav__icon md-icon">
@@ -279,12 +278,12 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/proficiencies/" title="Proficiencies">
+<a class="md-nav__link" href="../proficiencies/" title="Proficiencies">
       Proficiencies
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/internals/" title="Internals">
+<a class="md-nav__link" href="../internals/" title="Internals">
       Internals
     </a>
 </li>
@@ -308,12 +307,12 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/docker/" title="Local Installation using Docker">
+<a class="md-nav__link" href="../docker/" title="Local Installation using Docker">
       Local Installation using Docker
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/queries/" title="Example API Query (cURL)">
+<a class="md-nav__link" href="../queries/" title="Example API Query (cURL)">
       Example API Query (cURL)
     </a>
 </li>
@@ -323,7 +322,7 @@
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/decision_rules/" title="Decision Rules">
+<a class="md-nav__link" href="../decision_rules/" title="Decision Rules">
       Decision Rules
     </a>
 </li>
@@ -347,32 +346,32 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/requirements/" title="System Requirements">
+<a class="md-nav__link" href="../requirements/" title="System Requirements">
       System Requirements
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/method/" title="Choosing a Method">
+<a class="md-nav__link" href="../method/" title="Choosing a Method">
       Choosing a Method
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/configuration/" title="Configuration">
+<a class="md-nav__link" href="../configuration/" title="Configuration">
       Configuration
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/installation/" title="Local Installation">
+<a class="md-nav__link" href="../installation/" title="Local Installation">
       Local Installation
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/installation_full/" title="Server Installation">
+<a class="md-nav__link" href="../installation_full/" title="Server Installation">
       Server Installation
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/ansible/" title="Ansible">
+<a class="md-nav__link" href="../ansible/" title="Ansible">
       Ansible
     </a>
 </li>
@@ -396,7 +395,7 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/loadjs/" title="Load Demo Data (JavaScript)">
+<a class="md-nav__link" href="../loadjs/" title="Load Demo Data (JavaScript)">
       Load Demo Data (JavaScript)
     </a>
 </li>
@@ -425,40 +424,41 @@
       </label>
 <ul class="md-nav__list" data-md-scrollfix="">
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/security/" title="Security">
+<a class="md-nav__link" href="../security/" title="Security">
       Security
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/backup/" title="Backup and Recovery">
+<a class="md-nav__link" href="../backup/" title="Backup and Recovery">
       Backup and Recovery
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/troubleshooting/" title="Troubleshooting">
+<a class="md-nav__link" href="../troubleshooting/" title="Troubleshooting">
       Troubleshooting
     </a>
 </li>
 </ul>
 </nav>
 </li>
-<li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/addalgos/" title="Add Algorithms">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<a class="md-nav__link md-nav__link--active" href="./" title="Add Algorithms">
       Add Algorithms
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/docs/" title="Building Documentation">
+<a class="md-nav__link" href="../docs/" title="Building Documentation">
       Building Documentation
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/license/" title="License">
+<a class="md-nav__link" href="../license/" title="License">
       License
     </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="../../dev/contributing/" title="Contributing">
+<a class="md-nav__link" href="../contributing/" title="Contributing">
       Contributing
     </a>
 </li>
@@ -480,27 +480,23 @@
 </div>
 <div class="md-content">
 <article class="md-content__inner md-typeset"><a class="md-icon md-content__icon" download href="../../pdf/combined.pdf" title="PDF Export"></a>
-<a class="md-content__button md-icon" href="https://github.com/intrahealth/client-registry/edit/master/docs/user/process.md" title="Edit this page">
+<a class="md-content__button md-icon" href="https://github.com/intrahealth/client-registry/edit/master/docs/dev/addalgos.md" title="Edit this page">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>
 </a>
-<h1 id="record-linkage-process">Record Linkage Process</h1>
-<p>The below diagram shows how OpenCR performs record linkage after the matching process. The diagram begins with a source system submitting a request with patient demographic data in a FHIR message, as indicated by the circle on the left.</p>
-<p><img alt="Matching Process" src="../../images/matching.png"/></p>
-<p>After requests are submitted with demographic data, OpenCR reads the submitting system's ID of that patient. The Client Registry searches for that source system's ID in its records. This happens regardless if it is a new patient or update of existing patient.</p>
-<p>When the submitting system's ID matches an existing record, the Client Registry updates the patient demographic information of that record with changes submitted. Once the update is complete, the existing record linkages may affected. This is because algorithms may not continue to link records as before because details have changed. Therefore, the Client Registry will pool all patients that were previously matched and break all the matches. The Client Registry will rerun matching algorithms again to see what matches are currently true matches of the patient. Then the Client Registry will be updated with the true matches given the changes in demographic data.</p>
-<p>Another scenario is when the Client Registry searches and doesn't find anyone already with same submitting system's ID.
-If there is not existing match, the Client Registry runs the matching algorithms for existing patients who matches that patient and will provide record linkages with other records.</p>
-<h2>Requirements</h2>
-<p>In order for this process to work as expected, there are some requirements:</p>
+<h1 id="add-algorithms">Add Algorithms</h1>
+<p>25 types and variations of the most common algorithms are supported by OpenCR, including those through the ElasticSearch plugins: <a href="https://www.elastic.co/guide/en/elasticsearch/plugins/current/analysis-phonetic.html">analysis-phonetic</a> and <a href="https://github.com/intrahealth/similarity-scoring">string-similarity</a></p>
+<p>If more are required or revisions needed, the recommended approach is to: </p>
 <ul>
-<li>Requests sent to the Client Registry must be made of FHIR messages. FHIR is a popular specification for accessing an API for providing data in health systems. Messages must support FHIR R4.</li>
-<li>Requests can only be received from trusted systems. See the <a href="../../dev/security/">security page</a> in the Developers Manual for mode detail.</li>
+<li>Write and test the primary algorithm code as an ElasticSearch plugin. This ensures performance, usage in the broader ElasticSearch community, and a platform to test for accuracy.</li>
+<li>Add hooks into the OpenCR Service to support the algorithm. </li>
+<li>Add a decision rules template to show how to use the plugin for end users.</li>
+<li>Determine if the plugin is required. If so, see the code in this <a href="https://github.com/intrahealth/client-registry/blob/master/server/lib/prerequisites.js">config</a></li>
 </ul>
 <hr/>
 <div class="md-source-date">
 <small>
     
-      Last update: April 13, 2020
+      Last update: April 23, 2020
     
   </small>
 </div>
@@ -511,7 +507,7 @@ If there is not existing match, the Client Registry runs the matching algorithms
 <footer class="md-footer">
 <div class="md-footer-nav">
 <nav aria-label="Footer" class="md-footer-nav__inner md-grid">
-<a class="md-footer-nav__link md-footer-nav__link--prev" href="../introduction/" rel="prev" title="Introduction">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../troubleshooting/" rel="prev" title="Troubleshooting">
 <div class="md-footer-nav__button md-icon">
 <svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
 </div>
@@ -520,17 +516,17 @@ If there is not existing match, the Client Registry runs the matching algorithms
 <span class="md-footer-nav__direction">
                   Previous
                 </span>
-                Introduction
+                Troubleshooting
               </div>
 </div>
 </a>
-<a class="md-footer-nav__link md-footer-nav__link--next" href="../ui/" rel="next" title="User Interface (CRUX)">
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../docs/" rel="next" title="Building Documentation">
 <div class="md-footer-nav__title">
 <div class="md-ellipsis">
 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                User Interface (CRUX)
+                Building Documentation
               </div>
 </div>
 <div class="md-footer-nav__button md-icon">
