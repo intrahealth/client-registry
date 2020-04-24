@@ -42,13 +42,13 @@ HAPI FHIR must use a database backend in production. HAPI FHIR stores the patien
 * Follow the instructions for [installation](https://www.elastic.co/guide/en/elasticsearch/reference/current/deb.html)
 * Systemd is the preferred system and service manager. There are commands to initiate systemd and journalctl.
 * The phonetic analysis package must be installed.
-
 ```
 /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 ```
+* The string similarity plugin must be installed. See: https://github.com/intrahealth/similarity-scoring
 
 !!! caution
-    ES is not production-ready when run one a single node. It is recommended to run ES on several nodes. Those nodes can also run followers of Postgres.
+    ES is not production-ready when run as one single node. It is recommended to run ES on several nodes. Those nodes can also run followers of Postgres.
 
 ## OpenCR Service and UI
 

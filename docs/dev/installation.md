@@ -42,12 +42,15 @@ curl -X GET "localhost:8080/baseR4/Patient?"
 
 Install and start ES for the intended OS. See the [ES install instructions](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html)
 
-The required version is >=7.5.
+The required version is >=7.6.
 
 The phonetic analysis package must be installed. For example:
 ```
 /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 ```
+
+The string similarity plugin must be installed. See: https://github.com/intrahealth/similarity-scoring
+
 
 Once installed and started, ensure that ES is up and running:
 ```sh
