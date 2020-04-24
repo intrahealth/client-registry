@@ -17,13 +17,13 @@
 # elasticsearch
   - name: Download file with checksum url (sha512)
     get_url:
-      url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm
+      url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-x86_64.rpm
       dest: /home/opencr/
-      checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.1-x86_64.rpm.sha512
+      checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-x86_64.rpm.sha512
 
   - name: install es rpm from a local file
     yum:
-      name: elasticsearch-7.6.1-x86_64.rpm
+      name: elasticsearch-7.6.2-x86_64.rpm
       state: present
 
 # es plugin

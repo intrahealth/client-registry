@@ -4,4 +4,4 @@
 # localhost ansible_connection=local
 
 [server]
-172.16.168.172
+172.16.168.174
