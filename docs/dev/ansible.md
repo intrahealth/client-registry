@@ -64,6 +64,11 @@ ansible-playbook -i hosts hapi.yaml -e user=opencr
 ansible-playbook -i hosts opencr.yaml -e user=opencr
 ```
 
+An optional step but recommeded is to check the logs for services running after installation:
+```
+ansible-playbook -i hosts troubleshoot.yaml -e user=opencr
+```
+
 OpenCR is now running. It will only allow requests from localhost (from the same server it is installed on).
 
 Visit: https://ipaddress:3000/crux
@@ -74,6 +79,17 @@ HTTPS must be used.
     If not running localhost, follow the next steps to create self-signed server and client certs, and copy them onto the server using an Ansible script below.
 
 ### Certificates (Required if not using localhost)
+
+!!! note
+    These steps are automated in the certs.sh script, but please read through the steps to understand what is happening.
+    To use:
+    ```
+    bash certs.sh <ip address or domain>
+    ```
+    Then run the ansible script to replace it on the server:
+    ```
+    ansible-playbook -i hosts servercerts.yaml -e user=opencr
+    ```
 
 Two certificate pairs are required, one pair for the server and one for the client generated from the server's. The existing self-signed server certs use localhost as the CN. This can be seen with the following for any cert:
 ```sh
@@ -99,7 +115,7 @@ openssl x509 -in server_cert.pem -text
 
 Now it is necessary to create new a new client cert based on the server cert. A key is first created, then the certificate, and they are packaged together in a p12 file.
 ```sh
-openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -days 365 -subj "/CN=ansible"
+openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -subj "/CN=ansible"
 openssl x509 -req -in ansible_csr.pem -CA server_cert.pem -CAkey server_key.pem -out ansible_cert.pem -set_serial 01 -days 36500
 # requires specifying an export key
 openssl pkcs12 -export -in ansible_cert.pem -inkey ansible_key.pem -out ansible.p12
