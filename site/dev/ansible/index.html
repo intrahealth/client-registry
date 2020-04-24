@@ -526,6 +526,9 @@ ansible-playbook -i hosts postgres.yaml -e <span class="nv">user</span><span cla
 ansible-playbook -i hosts hapi.yaml -e <span class="nv">user</span><span class="o">=</span>opencr
 ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class="o">=</span>opencr
 </code></pre></div>
+<p>An optional step but recommeded is to check the logs for services running after installation:</p>
+<div class="codehilite"><pre><span></span><code>ansible-playbook -i hosts troubleshoot.yaml -e user=opencr
+</code></pre></div>
 <p>OpenCR is now running. It will only allow requests from localhost (from the same server it is installed on).</p>
 <p>Visit: https://ipaddress:3000/crux</p>
 <p>HTTPS must be used.</p>
@@ -534,6 +537,14 @@ ansible-playbook -i hosts opencr.yaml -e <span class="nv">user</span><span class
 <p>If not running localhost, follow the next steps to create self-signed server and client certs, and copy them onto the server using an Ansible script below.</p>
 </div>
 <h3>Certificates (Required if not using localhost)</h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>These steps are automated in the certs.sh script, but please read through the steps to understand what is happening.
+To use:
+<code>bash certs.sh &lt;ip address or domain&gt;</code>
+Then run the ansible script to replace it on the server:
+<code>ansible-playbook -i hosts servercerts.yaml -e user=opencr</code></p>
+</div>
 <p>Two certificate pairs are required, one pair for the server and one for the client generated from the server's. The existing self-signed server certs use localhost as the CN. This can be seen with the following for any cert:</p>
 <div class="codehilite"><pre><span></span><code>$ openssl x509 -in ../../server/certificates/server_cert.pem -text
 ...
@@ -553,7 +564,7 @@ openssl req -x509 -newkey rsa:4096 -keyout server_key.pem -out server_cert.pem -
 openssl x509 -in server_cert.pem -text
 </code></pre></div>
 <p>Now it is necessary to create new a new client cert based on the server cert. A key is first created, then the certificate, and they are packaged together in a p12 file.</p>
-<div class="codehilite"><pre><span></span><code>openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -days <span class="m">365</span> -subj <span class="s2">"/CN=ansible"</span>
+<div class="codehilite"><pre><span></span><code>openssl req -newkey rsa:4096 -keyout ansible_key.pem -out ansible_csr.pem -nodes -subj <span class="s2">"/CN=ansible"</span>
 openssl x509 -req -in ansible_csr.pem -CA server_cert.pem -CAkey server_key.pem -out ansible_cert.pem -set_serial <span class="m">01</span> -days <span class="m">36500</span>
 <span class="c1"># requires specifying an export key</span>
 openssl pkcs12 -export -in ansible_cert.pem -inkey ansible_key.pem -out ansible.p12
@@ -589,7 +600,7 @@ curl --cert ansible.p12 --cert-type p12 --cacert server_cert.pem -d @/Users/rich
 <div class="md-source-date">
 <small>
     
-      Last update: April 21, 2020
+      Last update: April 24, 2020
     
   </small>
 </div>
