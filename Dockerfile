@@ -1,9 +1,11 @@
-FROM node:dubnium
+FROM node:erbium
 
 RUN mkdir -p /var/log
 COPY . /src/
 WORKDIR /src/server
 RUN npm install
+
+RUN cp /src/server/config/config_docker_template.json /src/server/config/config_docker.json
 
 ARG NODE_ENV=docker
 

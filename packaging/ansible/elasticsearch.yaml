@@ -18,18 +18,34 @@
   - name: Download file with checksum url (sha512)
     get_url:
       url: https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-x86_64.rpm
-      dest: /home/opencr/
+      dest: /home/{{ user }}
       checksum: sha512:https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-7.6.2-x86_64.rpm.sha512
+
 
   - name: install es rpm from a local file
     yum:
       name: elasticsearch-7.6.2-x86_64.rpm
       state: present
 
+
 # es plugin
   - elasticsearch_plugin:
       name: analysis-phonetic
       state: present
+
+
+  - name: download string similarity plugin and rename
+    get_url:
+      url: https://github.com/intrahealth/client-registry/blob/master/tools/string-similarity-scoring-0.0.5-es7.6.2.zip?raw=true
+      dest: /home/{{ user }}/string-similarity-scoring-0.0.5-es7.6.2.zip
+      mode: '0640'
+
+
+  - elasticsearch_plugin:
+      name: string-similarity-scoring
+      src: file:///home/{{ user }}/string-similarity-scoring-0.0.5-es7.6.2.zip
+      state: present
+
 
 # this es-provided script also increases memory for es, no need to do separately
   - name: systemctl elasticsearch builtin
@@ -61,3 +77,13 @@
       msg: "{{ status }}"
 
 
+# plugins
+  - name: show es plugins
+    uri:
+      url: "http://localhost:9200/_cat/plugins?v&s=component&h=name,component,version,description&pretty"
+      method: GET
+      return_content: yes
+    register: status1
+
+  - debug:
+      msg: "{{ status1 }}"
