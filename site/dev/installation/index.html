@@ -517,10 +517,11 @@
 </code></pre></div>
 <h2>ElasticSearch</h2>
 <p>Install and start ES for the intended OS. See the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html">ES install instructions</a></p>
-<p>The required version is &gt;=7.5.</p>
+<p>The required version is &gt;=7.6.</p>
 <p>The phonetic analysis package must be installed. For example:</p>
 <div class="codehilite"><pre><span></span><code>/usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 </code></pre></div>
+<p>The string similarity plugin must be installed. See: https://github.com/intrahealth/similarity-scoring</p>
 <p>Once installed and started, ensure that ES is up and running:</p>
 <div class="codehilite"><pre><span></span><code>curl -X GET <span class="s2">"localhost:9200/_cat/health?v&amp;pretty"</span>
 </code></pre></div>
@@ -558,7 +559,7 @@ sudo NODE_ENV=development node lib/app.js
 <div class="md-source-date">
 <small>
     
-      Last update: April 13, 2020
+      Last update: April 24, 2020
     
   </small>
 </div>

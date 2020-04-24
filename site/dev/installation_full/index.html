@@ -527,9 +527,12 @@
 </ul>
 <div class="codehilite"><pre><span></span><code>/usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 </code></pre></div>
+<ul>
+<li>The string similarity plugin must be installed. See: https://github.com/intrahealth/similarity-scoring</li>
+</ul>
 <div class="admonition caution">
 <p class="admonition-title">Caution</p>
-<p>ES is not production-ready when run one a single node. It is recommended to run ES on several nodes. Those nodes can also run followers of Postgres.</p>
+<p>ES is not production-ready when run as one single node. It is recommended to run ES on several nodes. Those nodes can also run followers of Postgres.</p>
 </div>
 <h2>OpenCR Service and UI</h2>
 <p>Clone the repository into a directory of choice.</p>
@@ -563,7 +566,7 @@ npm install
 <div class="md-source-date">
 <small>
     
-      Last update: April 13, 2020
+      Last update: April 24, 2020
     
   </small>
 </div>
