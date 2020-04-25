@@ -2,13 +2,26 @@ version: '3'
 
 services:
 
+  opencr:
+    image: intrahealth/opencr
+    ports:
+      - "3000:3000"
+    depends_on:
+      - fhir
+      - es
+    restart: on-failure
+    environment:
+      - NODE_ENV=cicd
+    # networks: 
+    #   - opencr
+
   fhir:
     container_name: hapi-fhir
     image: hapiproject/hapi:4.1
     ports:
       - "8080:8080"
-    networks:
-      - opencr
+    # networks:
+    #   - opencr
 
   es:
     build:
@@ -28,14 +41,14 @@ services:
       - data01:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    networks:
-      - opencr
+    # networks:
+    #   - opencr
 
 
 volumes:
   data01:
     driver: local
 
-networks:
-  opencr:
-    driver: bridge
+# networks:
+#   opencr:
+#     driver: bridge

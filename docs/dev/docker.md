@@ -39,7 +39,7 @@ docker --version
 * Start ElasticSearch and HAPI FHIR Server using Docker. 
 
 !!! warning 
-    You cannot use the existing hosted ElasticSearch image because OpenCR requires a plugin to be installed. The docker-compose file provided uses the Dockerfile-es which builds an ES image with the plugin.
+    You cannot use the existing hosted ElasticSearch image because OpenCR requires two plugins to be installed. The docker-compose file provided uses the Dockerfile-es which builds an ES image with the plugins.
 ```
 docker-compose up fhir es
 ```
