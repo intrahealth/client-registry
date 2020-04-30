@@ -1791,12 +1791,6 @@ function reloadConfig(data, callback) {
 }
 
 function start(callback) {
-  if (config.get("matching:tool") === "elasticsearch") {
-    const runsLastSync = config.get("sync:lastFHIR2ESSync");
-    cacheFHIR.fhir2ES({
-      lastSync: runsLastSync
-    }, (err) => {});
-  }
   if (config.get('mediator:register')) {
     logger.info('Running client registry as a mediator');
     medUtils.registerMediator(config.get('mediator:api'), mediatorConfig, err => {
@@ -1823,6 +1817,12 @@ function start(callback) {
             if (err) {
               process.exit();
             }
+            if (config.get("matching:tool") === "elasticsearch") {
+              const runsLastSync = config.get("sync:lastFHIR2ESSync");
+              cacheFHIR.fhir2ES({
+                lastSync: runsLastSync
+              }, (err) => {});
+            }
           });
           const app = appRoutes();
           const server = app.listen(config.get('app:port'), () => {
@@ -1834,6 +1834,12 @@ function start(callback) {
                 prerequisites.init((err) => {
                   if (err) {
                     process.exit();
+                  }
+                  if (config.get("matching:tool") === "elasticsearch") {
+                    const runsLastSync = config.get("sync:lastFHIR2ESSync");
+                    cacheFHIR.fhir2ES({
+                      lastSync: runsLastSync
+                    }, (err) => {});
                   }
                 });
                 config.set('mediator:api:urn', mediatorConfig.urn);
@@ -1851,6 +1857,12 @@ function start(callback) {
       prerequisites.init((err) => {
         if (err) {
           process.exit();
+        }
+        if (config.get("matching:tool") === "elasticsearch") {
+          const runsLastSync = config.get("sync:lastFHIR2ESSync");
+          cacheFHIR.fhir2ES({
+            lastSync: runsLastSync
+          }, (err) => {});
         }
       });
       callback(server);
