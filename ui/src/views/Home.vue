@@ -1,7 +1,6 @@
 <template>
   <v-card>
     <v-card-title>
-      Client Registry
       <v-spacer />
       <v-text-field
         v-model="search_family"
@@ -30,6 +29,18 @@
         clearable
         @change="searchData()"
       />
+      <v-autocomplete
+        v-model="pos"
+        :items="$store.state.clients"
+        item-text="displayName"
+        item-value="id"
+        clearable
+        label="Point of Service"
+        hide-details
+        outlined
+        shaped
+        @change="searchData()"
+      />
     </v-card-title>
     <v-data-table
       style="cursor: pointer"
@@ -46,14 +57,12 @@
 </template>
 
 <script>
-// @ is an alias to /src
-//import HelloWorld from "@/components/HelloWorld.vue";
-
 export default {
   name: "Home",
   data() {
     return {
       debug: "",
+      pos: "",
       search_family: "",
       search_given: "",
       search_uid: "",
@@ -108,8 +117,11 @@ export default {
   },
   methods: {
     clickIt: function(client) {
-      this.$router.push({ name: "client", params: { clientId: client.id } });
-      //alert(patient.nin)
+      this.$router.push({
+        name: "client",
+        params: { clientId: client.id },
+        query: { pos: this.pos }
+      });
     },
     searchData() {
       this.search_terms = [];
@@ -125,6 +137,14 @@ export default {
       }
       if (this.search_uid) {
         this.search_terms.push("link=" + encodeURIComponent(this.search_uid));
+      }
+      if (this.pos) {
+        this.search_terms.push(
+          "_tag=" +
+            encodeURIComponent(
+              "http://openclientregistry.org/fhir/clientid|" + this.pos
+            )
+        );
       }
       this.getData(true);
     },
@@ -169,22 +189,26 @@ export default {
         if (response.data.total > 0) {
           this.link = response.data.link;
           for (let entry of response.data.entry) {
-            if(!entry.resource.link ||
-            (entry.resource.link && Array.isArray(entry.resource.link) && entry.resource.link.length === 0) ||
-            entry.resource.link && !Array.isArray(entry.resource.link)) {
+            if (
+              !entry.resource.link ||
+              (entry.resource.link &&
+                Array.isArray(entry.resource.link) &&
+                entry.resource.link.length === 0) ||
+              (entry.resource.link && !Array.isArray(entry.resource.link))
+            ) {
               continue;
             }
-            let name = entry.resource.name && entry.resource.name.find(
-              name => name.use === "official"
-            );
-            if(!name) {
-              name = {}
+            let name =
+              entry.resource.name &&
+              entry.resource.name.find(name => name.use === "official");
+            if (!name) {
+              name = {};
             }
             let nin = entry.resource.identifier.find(
               id => id.system === process.env.VUE_APP_SYSTEM_NIN
             );
-            if(!nin) {
-              nin = {}
+            if (!nin) {
+              nin = {};
             }
             this.patients.push({
               id: entry.resource.id,
@@ -205,8 +229,5 @@ export default {
       });
     }
   }
-  //components: {
-  //HelloWorld
-  //}
 };
 </script>

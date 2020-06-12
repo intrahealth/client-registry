@@ -4,11 +4,7 @@
   "meta": {
     "versionId": "2",
     "lastUpdated": "2020-02-25T17:48:18.028+03:00",
-    "source": "#5YskPxdp2NQaRit7",
-    "tag": [{
-      "code": "clientid",
-      "display": "openmrs"
-    }]
+    "source": "#5YskPxdp2NQaRit7"
   },
   "identifier": [{
     "type": {
@@ -19,26 +15,19 @@
       }]
     },
     "system": "http://openmrs.org/openmrs2",
-    "value": "1110PJHHJJ"
+    "value": "gtcvdtrdr5"
   }],
   "name": [{
     "use": "official",
-    "family": "Namalwa",
+    "family": "amalwa",
     "given": [
-      "Emmanuel",
-      "Jakob"
+      "Emmmanuel"
     ]
   }],
-  "gender": "male",
-  "birthDate": "2020-01-02",
   "telecom": [{
     "system": "phone",
     "value": "774 232423"
   }],
-  "link": [{
-    "other": {
-      "reference": "Patient/c20a8c2e-2e59-4f55-b0e3-78a43981aec0"
-    },
-    "type": "refer"
-  }]
+  "gender": "male",
+  "birthDate": "2020-01-02"
 }

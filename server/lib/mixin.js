@@ -1,3 +1,5 @@
+'use strict';
+/*global process, __dirname*/
 const fs = require('fs');
 const logger = require('./winston');
 const config = require('./config');

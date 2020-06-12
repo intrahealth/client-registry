@@ -101,9 +101,10 @@
 import { required } from "vuelidate/lib/validators";
 import axios from "axios";
 import VueCookies from "vue-cookies";
-const backendServer = process.env.VUE_APP_BACKEND_SERVER;
+import { generalMixin } from "@/mixins/generalMixin";
 
 export default {
+  mixins: [generalMixin],
   validations: {
     username: { required },
     password: { required }
@@ -127,6 +128,7 @@ export default {
         params
       })
         .then(authResp => {
+          this.getClients();
           this.$store.state.auth.token = authResp.data.token;
           this.$store.state.auth.username = this.username;
           this.$store.state.auth.userID = authResp.data.userID;
@@ -150,7 +152,7 @@ export default {
         })
         .catch(err => {
           if (err.hasOwnProperty("response")) {
-            console.log(err.response.data.error);
+            throw err;
           }
         });
     }

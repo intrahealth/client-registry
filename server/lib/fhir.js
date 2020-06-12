@@ -1,3 +1,4 @@
+'use strict';
 const request = require('request');
 const URI = require('urijs');
 const async = require('async');

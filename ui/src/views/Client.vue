@@ -1,3 +1,4 @@
+
 <template>
   <v-container>
     <v-row>
@@ -271,7 +272,11 @@
                     </v-card>
                   </v-col>
                   <v-col cols="4">
-                    <v-card elevation="12" color="red" hover>
+                    <v-card
+                      elevation="12"
+                      color="red"
+                      hover
+                    >
                       <v-card-text class="white--text">
                         Reverting From <br>
                         <b>
@@ -294,7 +299,7 @@
                       hover
                     >
                       <v-card-title primary-title>
-                        Decision Rule {{ ++j }} => Matching Type:  &nbsp; <b> {{ detail.matchingType }}</b>
+                        Decision Rule {{ ++j }} => Matching Type: &nbsp; <b> {{ detail.matchingType }}</b>
                       </v-card-title>
                       <v-card-text>
                         <v-data-table
@@ -340,9 +345,7 @@
                       </v-card-text>
                     </v-card>
                   </v-col>
-                  <v-col
-                    cols="6"
-                  >
+                  <v-col cols="6">
                     <v-switch
                       v-model="advancedView"
                       label="View Advanced Details"
@@ -384,8 +387,7 @@
 
 
 <script>
-import { generalMixin } from '../mixins/generalMixin'
-import VueMoment from 'vue-moment'
+import { generalMixin } from "@/mixins/generalMixin";
 export default {
   mixins: [generalMixin],
   name: "Client",
@@ -393,10 +395,10 @@ export default {
     return {
       advancedView: false,
       outcomes: {
-        0: 'Success',
-        4: 'Minor Failure - Client Error',
-        8: 'Serious Failure - Server Error',
-        12: 'Major Failure - Server Crashed'
+        0: "Success",
+        4: "Minor Failure - Client Error",
+        8: "Serious Failure - Server Error",
+        12: "Major Failure - Server Crashed"
       },
       selected: "",
       matchEvents: [],
@@ -408,13 +410,16 @@ export default {
       uid: "",
       breaks: [],
       unbreaks: [],
-      matchRuleHeaders: [{
-        text: 'Field',
-        value: 'name'
-      }, {
-        text: 'Field Details',
-        value: 'details'
-      }],
+      matchRuleHeaders: [
+        {
+          text: "Field",
+          value: "name"
+        },
+        {
+          text: "Field Details",
+          value: "details"
+        }
+      ],
       match_headers: [
         {
           text: "Submitting System",
@@ -446,8 +451,8 @@ export default {
     };
   },
   mounted() {
-    this.getPatient()
-    this.getAuditEvents()
+    this.getPatient();
+    this.getAuditEvents();
   },
   methods: {
     getPatient() {
@@ -456,174 +461,225 @@ export default {
       this.break_items = [];
       this.match_count = 0;
       this.$http
-      .get(
-        "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
-          this.$route.params.clientId
-      )
-      .then(response => {
-        let uid = response.data.entry[0].resource.link[0].other.reference
-          .split("/")
-          .pop();
-        let resource = response.data.entry[0].resource;
-        let brokenList = [];
-        if (resource.extension) {
-          for (let ext of resource.extension) {
-            if (ext.url === process.env.VUE_APP_BROKEN_MATCH_URL) {
-              brokenList.push(ext.valueReference.reference.split("/").pop());
+        .get(
+          "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
+            this.$route.params.clientId
+        )
+        .then(response => {
+          let uid = response.data.entry[0].resource.link[0].other.reference
+            .split("/")
+            .pop();
+          let resource = response.data.entry[0].resource;
+          let brokenList = [];
+          if (resource.extension) {
+            for (let ext of resource.extension) {
+              if (ext.url === process.env.VUE_APP_BROKEN_MATCH_URL) {
+                brokenList.push(ext.valueReference.reference.split("/").pop());
+              }
             }
           }
-        }
-        if (brokenList.length > 0) {
-          brokenList = brokenList.join(",");
-          this.$http.get("/ocrux/fhir/Patient?_id=" + brokenList).then(resp => {
-            for (let entry of resp.data.entry) {
-              let patient = entry.resource;
-              let recordId, systemName, nin, art, name, phone;
-              let clientUserId
-              if(patient.meta && patient.meta.tag) {
-                for(let tag of patient.meta.tag) {
-                  if(tag.code === 'clientid') {
-                    clientUserId = tag.display
-                  }
-                }
-              }
-              systemName = this.getClientDisplayName(clientUserId)
-              let identifiers = [];
-              if (patient.identifier) {
-                for (let id of patient.identifier) {
-                  let displName = this.getSystemURIDisplayName(id.system)
-                  if(displName) {
-                    if(displName.id === 'internalid') {
-                      recordId = id.value;
-                    }
-                    identifiers.push({
-                      name: displName.name,
-                      value: id.value
-                    })
-                  } else {
-                    identifiers.push({
-                      name: id.system,
-                      value: id.value
-                    })
-                  }
-                }
-              }
-              try {
-                name = patient.name.find(name => name.use === "official");
-              } catch (err) {
-                name = { family: "", given: [] };
-              }
-              try {
-                phone = patient.telecom.find(phone => (phone.system = "phone"))
-                  .value;
-              } catch (err) {
-                phone = "";
-              }
-              this.break_items.push({
-                fid: patient.id,
-                system: systemName,
-                id: recordId,
-                gender: patient.gender,
-                birthdate: patient.birthDate,
-                name: patient.name,
-                telecom: patient.telecom,
-                identifier: identifiers,
-                family: name.family,
-                given: name.given.join(" "),
-                phone: phone,
-              });
-            }
-          });
-        }
-        this.$http
-          .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
-          .then(resp => {
-            for (let entry of resp.data.entry) {
-              let patient = entry.resource;
-              if (
-                patient.meta.tag &&
-                patient.meta.tag.find(
-                  tag => tag.code === process.env.VUE_APP_CRUID_TAG
-                ) !== undefined
-              ) {
-                this.uid = patient.id;
-              } else {
-                if (patient.id === this.$route.params.clientId)
-                  this.selected = this.match_count;
-                let recordId, systemName, nin, art, name, phone;
-                let clientUserId
-                if(patient.meta && patient.meta.tag) {
-                  for(let tag of patient.meta.tag) {
-                    if(tag.code === 'clientid') {
-                      clientUserId = tag.display
-                    }
-                  }
-                }
-                systemName = this.getClientDisplayName(clientUserId)
-                let identifiers = [];
-                if (patient.identifier) {
-                  for (let id of patient.identifier) {
-                    let displName = this.getSystemURIDisplayName(id.system)
-                    if(displName && displName.name) {
-                      if(displName.id === 'internalid') {
-                        recordId = id.value;
+          if (brokenList.length > 0) {
+            brokenList = brokenList.join(",");
+            this.$http
+              .get("/ocrux/fhir/Patient?_id=" + brokenList)
+              .then(resp => {
+                for (let entry of resp.data.entry) {
+                  let patient = entry.resource;
+                  let recordId, systemName, name, phone;
+                  let clientUserId;
+                  if (patient.meta && patient.meta.tag) {
+                    for (let tag of patient.meta.tag) {
+                      if (
+                        tag.system ===
+                        "http://openclientregistry.org/fhir/clientid"
+                      ) {
+                        clientUserId = tag.code;
                       }
-                      identifiers.push({
-                        name: displName.name,
-                        value: id.value
-                      })
-                    } else {
-                      identifiers.push({
-                        name: id.system,
-                        value: id.value
-                      })
                     }
                   }
+                  systemName = this.getClientDisplayName(clientUserId);
+                  let identifiers = [];
+                  if (patient.identifier) {
+                    for (let id of patient.identifier) {
+                      let displName = this.getSystemURIDisplayName(id.system);
+                      if (displName) {
+                        if (displName.id === "internalid") {
+                          recordId = id.value;
+                        }
+                        identifiers.push({
+                          name: displName.name,
+                          value: id.value
+                        });
+                      } else {
+                        identifiers.push({
+                          name: id.system,
+                          value: id.value
+                        });
+                      }
+                    }
+                  }
+                  try {
+                    name = patient.name.find(name => name.use === "official");
+                  } catch (err) {
+                    name = { family: "", given: [] };
+                  }
+                  try {
+                    phone = patient.telecom.find(
+                      phone => (phone.system = "phone")
+                    ).value;
+                  } catch (err) {
+                    phone = "";
+                  }
+                  if (
+                    this.$route.query.pos &&
+                    this.$route.query.pos === clientUserId
+                  ) {
+                    this.break_items.unshift({
+                      fid: patient.id,
+                      system: systemName,
+                      id: recordId,
+                      gender: patient.gender,
+                      birthdate: patient.birthDate,
+                      name: patient.name,
+                      telecom: patient.telecom,
+                      identifier: identifiers,
+                      family: name.family,
+                      given: name.given.join(" "),
+                      phone: phone
+                    });
+                  } else {
+                    this.break_items.push({
+                      fid: patient.id,
+                      system: systemName,
+                      id: recordId,
+                      gender: patient.gender,
+                      birthdate: patient.birthDate,
+                      name: patient.name,
+                      telecom: patient.telecom,
+                      identifier: identifiers,
+                      family: name.family,
+                      given: name.given.join(" "),
+                      phone: phone
+                    });
+                  }
                 }
-                try {
-                  name = patient.name.find(name => name.use === "official");
-                } catch (err) {
-                  name = { family: "", given: [] };
+              });
+          }
+          this.$http
+            .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
+            .then(resp => {
+              for (let entry of resp.data.entry) {
+                let patient = entry.resource;
+                if (
+                  patient.meta.tag &&
+                  patient.meta.tag.find(
+                    tag => tag.code === process.env.VUE_APP_CRUID_TAG
+                  ) !== undefined
+                ) {
+                  this.uid = patient.id;
+                } else {
+                  if (patient.id === this.$route.params.clientId)
+                    this.selected = this.match_count;
+                  let recordId, systemName, name, phone;
+                  let clientUserId;
+                  if (patient.meta && patient.meta.tag) {
+                    for (let tag of patient.meta.tag) {
+                      if (
+                        tag.system ===
+                        "http://openclientregistry.org/fhir/clientid"
+                      ) {
+                        clientUserId = tag.code;
+                      }
+                    }
+                  }
+                  systemName = this.getClientDisplayName(clientUserId);
+                  let identifiers = [];
+                  if (patient.identifier) {
+                    for (let id of patient.identifier) {
+                      let displName = this.getSystemURIDisplayName(id.system);
+                      if (displName && displName.name) {
+                        if (displName.id === "internalid") {
+                          recordId = id.value;
+                        }
+                        identifiers.push({
+                          name: displName.name,
+                          value: id.value
+                        });
+                      } else {
+                        identifiers.push({
+                          name: id.system,
+                          value: id.value
+                        });
+                      }
+                    }
+                  }
+                  try {
+                    name = patient.name.find(name => name.use === "official");
+                  } catch (err) {
+                    name = { family: "", given: [] };
+                  }
+                  try {
+                    phone = patient.telecom.find(
+                      phone => (phone.system = "phone")
+                    ).value;
+                  } catch (err) {
+                    phone = "";
+                  }
+                  if (
+                    this.$route.query.pos &&
+                    this.$route.query.pos === clientUserId
+                  ) {
+                    this.match_items.unshift({
+                      fid: patient.id,
+                      selectIdx: this.match_count,
+                      system: systemName,
+                      id: recordId,
+                      gender: patient.gender,
+                      birthdate: patient.birthDate,
+                      name: patient.name,
+                      telecom: patient.telecom,
+                      identifier: identifiers,
+                      family: name.family,
+                      given: name.given.join(" "),
+                      phone: phone
+                    });
+                  } else {
+                    this.match_items.push({
+                      fid: patient.id,
+                      selectIdx: this.match_count,
+                      system: systemName,
+                      id: recordId,
+                      gender: patient.gender,
+                      birthdate: patient.birthDate,
+                      name: patient.name,
+                      telecom: patient.telecom,
+                      identifier: identifiers,
+                      family: name.family,
+                      given: name.given.join(" "),
+                      phone: phone
+                    });
+                  }
+                  this.match_count++;
                 }
-                try {
-                  phone = patient.telecom.find(
-                    phone => (phone.system = "phone")
-                  ).value;
-                } catch (err) {
-                  phone = "";
-                }
-                this.match_items.push({
-                  fid: patient.id,
-                  selectIdx: this.match_count,
-                  system: systemName,
-                  id: recordId,
-                  gender: patient.gender,
-                  birthdate: patient.birthDate,
-                  name: patient.name,
-                  telecom: patient.telecom,
-                  identifier: identifiers,
-                  family: name.family,
-                  given: name.given.join(" "),
-                  phone: phone,
-                });
-                this.match_count++;
               }
-            }
-          });
-      });
+            });
+        });
     },
     selectPatient(patient) {
       this.selected = patient.selectIdx;
     },
     breakMatch() {
       if (this.breaks.length > 0) {
-        let username = this.$store.state.auth.username
+        this.$store.state.progress.enable = true;
+        this.$store.state.progress.title = "Breaing Match";
+        let username = this.$store.state.auth.username;
         let url = `/ocrux/breakMatch?username=${username}`;
         let ids = [];
         for (let breakIt of this.breaks) {
           ids.push("Patient/" + breakIt.fid);
         }
-        this.$http.post(url, ids).then(response => {
+        this.$http.post(url, ids).then(() => {
+          this.$store.state.progress.enable = false;
           this.getPatient();
           this.getAuditEvents();
         });
@@ -631,109 +687,117 @@ export default {
     },
     revertBreak() {
       if (this.unbreaks.length > 0) {
-        let username = this.$store.state.auth.username
+        this.$store.state.progress.enable = true;
+        this.$store.state.progress.title = "UnBreaing Match";
+        let username = this.$store.state.auth.username;
         let url = `/ocrux/unBreakMatch?username=${username}`;
         let ids = [];
         for (let unBreak of this.unbreaks) {
-          for(let match of this.match_items) {
+          for (let match of this.match_items) {
             ids.push({
               id2: "Patient/" + match.fid,
               id1: "Patient/" + unBreak.fid
             });
           }
         }
-        this.$http.post(url, ids).then(response => {
+        this.$http.post(url, ids).then(() => {
+          this.$store.state.progress.enable = false;
           this.getPatient();
           this.getAuditEvents();
         });
       }
     },
     getAuditEvents() {
-      this.matchEvents = []
-      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`
+      this.matchEvents = [];
+      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`;
       this.$http.get(url).then(response => {
-        this.auditEvent = response.data
-        for(let event of response.data.entry) {
-          let modifiedEvent = {matchData: []}
-          modifiedEvent.recorded = event.resource.recorded
-          let isBreakEvent = event.resource.entity.find((entity) => {
-            return entity.name === 'break' || entity.name === 'breakFrom'
-          })
-          let isUnBreakEvent = event.resource.entity.find((entity) => {
-            return entity.name === 'unBreak' || entity.name === 'unBreakFromResource'
-          })
-          let operation
-          for(let subtype of event.resource.subtype) {
-            if(subtype.system === 'http://hl7.org/fhir/restful-interaction') {
-              operation = subtype.code
+        this.auditEvent = response.data;
+        for (let event of response.data.entry) {
+          let modifiedEvent = { matchData: [] };
+          modifiedEvent.recorded = event.resource.recorded;
+          let isBreakEvent = event.resource.entity.find(entity => {
+            return entity.name === "break" || entity.name === "breakFrom";
+          });
+          let isUnBreakEvent = event.resource.entity.find(entity => {
+            return (
+              entity.name === "unBreak" || entity.name === "unBreakFromResource"
+            );
+          });
+          let operation;
+          for (let subtype of event.resource.subtype) {
+            if (subtype.system === "http://hl7.org/fhir/restful-interaction") {
+              operation = subtype.code;
             }
           }
-          modifiedEvent.operation = operation
-          modifiedEvent.outcomeCode = event.resource.outcome
-          modifiedEvent.outcome = this.outcomes[event.resource.outcome]
-          modifiedEvent.outcomeDesc = event.resource.outcomeDesc
-          if(event.resource.agent && Array.isArray(event.resource.agent)) {
-            for(let agent of event.resource.agent) {
-              if(agent.altId) {
-                modifiedEvent.username = agent.altId
+          modifiedEvent.operation = operation;
+          modifiedEvent.outcomeCode = event.resource.outcome;
+          modifiedEvent.outcome = this.outcomes[event.resource.outcome];
+          modifiedEvent.outcomeDesc = event.resource.outcomeDesc;
+          if (event.resource.agent && Array.isArray(event.resource.agent)) {
+            for (let agent of event.resource.agent) {
+              if (agent.altId) {
+                modifiedEvent.username = agent.altId;
               }
-              if(agent.network) {
-                modifiedEvent.ipaddress = agent.network.address
+              if (agent.network) {
+                modifiedEvent.ipaddress = agent.network.address;
               }
             }
           }
-          if(isBreakEvent) {
-            modifiedEvent.breakFrom = []
-            modifiedEvent.type = 'breakMatch'
-            for(let entity of event.resource.entity) {
-              if(entity.name === 'break') {
-                modifiedEvent.break = entity.what.reference
+          if (isBreakEvent) {
+            modifiedEvent.breakFrom = [];
+            modifiedEvent.type = "breakMatch";
+            for (let entity of event.resource.entity) {
+              if (entity.name === "break") {
+                modifiedEvent.break = entity.what.reference;
               }
-              if(entity.name === 'oldCRUID') {
-                modifiedEvent.CRUID = entity.what.reference
+              if (entity.name === "oldCRUID") {
+                modifiedEvent.CRUID = entity.what.reference;
               }
-              if(entity.name === 'breakFrom') {
+              if (entity.name === "breakFrom") {
                 modifiedEvent.breakFrom.push(entity.what.reference);
               }
             }
-            this.matchEvents.push(modifiedEvent)
+            this.matchEvents.push(modifiedEvent);
             continue;
           }
-          if(isUnBreakEvent) {
-            modifiedEvent.unBreakFrom = []
-            modifiedEvent.type = 'unBreak'
-            for(let entity of event.resource.entity) {
-              if(entity.name === 'unBreak') {
-                modifiedEvent.unBreak = entity.what.reference
+          if (isUnBreakEvent) {
+            modifiedEvent.unBreakFrom = [];
+            modifiedEvent.type = "unBreak";
+            for (let entity of event.resource.entity) {
+              if (entity.name === "unBreak") {
+                modifiedEvent.unBreak = entity.what.reference;
               }
-              if(entity.name === 'unBreakFromCRUID') {
-                modifiedEvent.unBreakFromCRUID = entity.what.reference
+              if (entity.name === "unBreakFromCRUID") {
+                modifiedEvent.unBreakFromCRUID = entity.what.reference;
               }
-              if(entity.name === 'unBreakFromResource') {
+              if (entity.name === "unBreakFromResource") {
                 modifiedEvent.unBreakFrom.push(entity.what.reference);
               }
             }
-            this.matchEvents.push(modifiedEvent)
+            this.matchEvents.push(modifiedEvent);
             continue;
           }
-          for(let entity of event.resource.entity) {
-            if(entity.name === 'submittedResource') {
-              modifiedEvent.type = 'submittedResource'
-              modifiedEvent.submittedResource = entity.what.reference
-              for(let detail of entity.detail) {
-                if(detail.type === 'resource') {
-                  modifiedEvent.submittedResourceData = detail.valueString
-                } else if(detail.type === 'match') {
-                  let matches = new Buffer.from(detail.valueBase64Binary, 'base64').toString('ascii')
-                  matches = JSON.parse(matches)
+          for (let entity of event.resource.entity) {
+            if (entity.name === "submittedResource") {
+              modifiedEvent.type = "submittedResource";
+              modifiedEvent.submittedResource = entity.what.reference;
+              for (let detail of entity.detail) {
+                if (detail.type === "resource") {
+                  modifiedEvent.submittedResourceData = detail.valueString;
+                } else if (detail.type === "match") {
+                  let matches = new Buffer.from(
+                    detail.valueBase64Binary,
+                    "base64"
+                  ).toString("ascii");
+                  matches = JSON.parse(matches);
                   let decRule = [];
-                  for(let field in matches.rule.fields) {
-                    let fieldDet = matches.rule.fields[field]
+                  for (let field in matches.rule.fields) {
+                    let fieldDet = matches.rule.fields[field];
                     decRule.push({
                       name: field,
                       id: field,
                       details: fieldDet
-                    })
+                    });
                   }
                   modifiedEvent.matchData.push({
                     decisionRule: decRule,
@@ -741,12 +805,12 @@ export default {
                     filters: matches.rule.filters,
                     match: JSON.stringify(matches.match, 0, 2),
                     query: JSON.stringify(matches.query, 0, 2)
-                  })
+                  });
                 }
               }
             }
           }
-          this.matchEvents.push(modifiedEvent)
+          this.matchEvents.push(modifiedEvent);
         }
       });
     }

@@ -24,6 +24,11 @@ export const store = new Vuex.Store({
       dismisible: true,
       transition: 'scale-transition'
     },
+    progress: {
+      enable: false,
+      width: "300",
+      title: ''
+    },
     denyAccess: true,
     dialogError: false,
     errorTitle: '',

@@ -45,38 +45,53 @@
           {{ $store.state.alert.msg }}
         </v-alert>
       </center>
+      <v-dialog
+        v-model="$store.state.progress.enable"
+        persistent
+        :width="$store.state.progress.width"
+      >
+        <v-card
+          color="primary"
+          dark
+        >
+          <v-card-text>
+            {{$store.state.progress.title}}
+            <v-progress-linear
+              indeterminate
+              color="white"
+              class="mb-0"
+            ></v-progress-linear>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
       <router-view />
     </v-content>
   </v-app>
 </template>
 
 <script>
-const backendServer = process.env.VUE_APP_BACKEND_SERVER;
 import VueCookies from "vue-cookies";
 import axios from "axios";
+import { generalMixin } from "@/mixins/generalMixin";
 export default {
   name: "App",
-
-  data: () => ({
-    //
-  }),
+  mixins: [generalMixin],
   created() {
     if (VueCookies.get("token") && VueCookies.get("userID")) {
       this.$store.state.auth.token = VueCookies.get("token");
       this.$store.state.auth.userID = VueCookies.get("userID");
       this.$store.state.auth.username = VueCookies.get("username");
-      axios.get("/ocrux/isTokenActive/").then(response => {
+      axios.get("/ocrux/isTokenActive/").then(() => {
         this.$store.state.denyAccess = false;
-        axios.get("/ocrux/getURI").then((response) => {
-          this.$store.state.systemURI = response.data
-        }).catch((err) => {
-          console.log(err);
-        })
-        axios.get("/ocrux/getClients").then((response) => {
-          this.$store.state.clients = response.data
-        }).catch((err) => {
-          console.log(err);
-        })
+        axios
+          .get("/ocrux/getURI")
+          .then(response => {
+            this.$store.state.systemURI = response.data;
+          })
+          .catch(err => {
+            throw err;
+          });
+        this.getClients();
       });
     }
   }

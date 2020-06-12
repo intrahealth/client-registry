@@ -121,7 +121,7 @@ router.post("/authenticate", function (req, res, next) {
     if (!isJSON(body)) {
       logger.error(options);
       logger.error(body);
-      logger.error('Non JSON has been returned while getting data for resource ' + resource);
+      logger.error('Non JSON has been returned while getting user information for user ' + req.query.username);
       return res.status(401).json(body);
     }
     body = JSON.parse(body);

@@ -1,4 +1,5 @@
 'use strict';
+/*global process, __dirname*/
 const express = require('express');
 const bodyParser = require('body-parser');
 const moment = require('moment');
@@ -15,7 +16,6 @@ const fhirWrapper = require('./fhir')();
 const medMatching = require('./medMatching')();
 const esMatching = require('./esMatching');
 const cacheFHIR = require('./tools/cacheFHIR');
-const mixin = require('./mixin');
 const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
@@ -468,6 +468,14 @@ function appRoutes() {
       logger.error('No client ID found, cant add patient');
       return callback(true, responseBundle, operationSummary);
     }
+    let clientName = '';
+    let clients = config.get('clients');
+    let clientDetails = clients.find((client) => {
+      return client.id === clientID;
+    });
+    if (clientDetails) {
+      clientName = clientDetails.displayName;
+    }
     logger.info('Running match for system ' + clientID);
 
     const addLinks = (patient, goldenRecord) => {
@@ -762,7 +770,7 @@ function appRoutes() {
 
       // Tag this patient with an ID of the system that submitted
       const tagExist = newPatient.resource.meta && newPatient.resource.meta.tag && newPatient.resource.meta.tag.find((tag) => {
-        return tag.code === 'clientid';
+        return tag.system === URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
       });
       if (!tagExist) {
         if (!newPatient.resource.meta) {
@@ -774,9 +782,9 @@ function appRoutes() {
           newPatient.resource.meta.tag = [];
         }
         newPatient.resource.meta.tag.push({
-          system: clientID,
-          code: 'clientid',
-          display: clientID
+          system: URI(config.get("systems:CRBaseURI")).segment('clientid').toString(),
+          code: clientID,
+          display: clientName
         });
       }
       const internalIdURI = config.get("systems:internalid:uri");
@@ -1056,13 +1064,13 @@ function appRoutes() {
             return entry.resource.id === id1.split('/').pop();
           });
           const clientIdTag1 = resource1.resource.meta && resource1.resource.meta.tag && resource1.resource.meta.tag.find((tag) => {
-            return tag.code === 'clientid';
+            return tag.system === URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
           });
           const resource2 = resourceData.entry.find((entry) => {
             return entry.resource.id === id2.split('/').pop();
           });
           const clientIdTag2 = resource2.resource.meta && resource2.resource.meta.tag && resource2.resource.meta.tag.find((tag) => {
-            return tag.code === 'clientid';
+            return tag.system === URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
           });
           if (!clientIdTag1) {
             logger.error('Client ID tag is missing, unbreak match failed');
@@ -1147,10 +1155,10 @@ function appRoutes() {
               logger.info('Rematching ' + entry.resource.id);
               let clientID;
               const clientIdTag = entry.resource.meta && entry.resource.meta.tag && entry.resource.meta.tag.find((tag) => {
-                return tag.code === 'clientid';
+                return tag.system === URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
               });
               if (clientIdTag) {
-                clientID = clientIdTag.display;
+                clientID = clientIdTag.code;
               }
               if (clientID) {
                 const patientsBundle = {
