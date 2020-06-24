@@ -24,10 +24,8 @@ services:
     #   - opencr
 
   es:
-    build:
-      dockerfile: Dockerfile-es
-      context: ./
     container_name: es
+    image: intrahealth/elasticsearch:latest
     environment:
       - node.name=es01
       - discovery.type=single-node

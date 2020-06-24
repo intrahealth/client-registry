@@ -1,7 +1,7 @@
 FROM node:erbium-slim
 
 RUN mkdir -p /var/log
-COPY . /src/
+COPY ../ /src/
 WORKDIR /src/server
 RUN npm install
 
