@@ -3,6 +3,7 @@ version: '3'
 services:
 
   opencr:
+    container_name: opencr
     image: intrahealth/opencr
     ports:
       - "3000:3000"
