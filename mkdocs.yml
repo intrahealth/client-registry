@@ -18,8 +18,8 @@ theme:
     primary: "blue grey"
     accent: "indigo"
   language: "en"
-  features:
-    - tabs
+  # features:
+  #   - tabs
   font:
     text: "Roboto"
     code: "Roboto Mono"
