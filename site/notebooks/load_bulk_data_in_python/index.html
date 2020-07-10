@@ -9,10 +9,10 @@
 <link href="https://github.com/intrahealth/client-registry/notebooks/load_bulk_data_in_python/" rel="canonical"/>
 <meta content="IntraHealth" name="author"/>
 <link href="../../assets/images/favicon.png" rel="shortcut icon"/>
-<meta content="mkdocs-1.1, mkdocs-material-5.1.1" name="generator"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.4.0" name="generator"/>
 <title>Load bulk data in python - OpenCR Documentation</title>
-<link href="../../assets/stylesheets/main.a676eddb.min.css" rel="stylesheet"/>
-<link href="../../assets/stylesheets/palette.b302131d.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/main.fe0cca5b.min.css" rel="stylesheet"/>
+<link href="../../assets/stylesheets/palette.a46bcfb3.min.css" rel="stylesheet"/>
 <meta content="#546e7a" name="theme-color"/>
 <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
@@ -21,7 +21,7 @@
 <link href="../../css/jupyter-cells.css" rel="stylesheet"/>
 <link href="../../css/pandas-dataframe.css" rel="stylesheet"/>
 </head>
-<body data-md-color-accent="indigo" data-md-color-primary="blue-grey" dir="ltr">
+<body data-md-color-accent="indigo" data-md-color-primary="blue-grey" data-md-color-scheme="" dir="ltr">
 <input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
 <input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
 <label class="md-overlay" for="__drawer"></label>
@@ -35,10 +35,10 @@
 <header class="md-header" data-md-component="header">
 <nav aria-label="Header" class="md-header-nav md-grid">
 <a aria-label="OpenCR Documentation" class="md-header-nav__button md-logo" href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
 </a>
 <label class="md-header-nav__button md-icon" for="__drawer">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
 </label>
 <div class="md-header-nav__title" data-md-component="header-title">
 <div class="md-header-nav__ellipsis">
@@ -53,7 +53,7 @@
 </div>
 </div>
 <label class="md-header-nav__button md-icon" for="__search">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
 </label>
 <div class="md-search" data-md-component="search" role="dialog">
 <label class="md-search__overlay" for="__search"></label>
@@ -61,18 +61,18 @@
 <form class="md-search__form" name="search">
 <input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" data-md-state="active" name="query" placeholder="Search" spellcheck="false" type="text"/>
 <label class="md-search__icon md-icon" for="__search">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z"></path></svg>
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </label>
 <button aria-label="Clear" class="md-search__icon md-icon" data-md-component="search-reset" tabindex="-1" type="reset">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
 </button>
 </form>
 <div class="md-search__output">
 <div class="md-search__scrollwrap" data-md-scrollfix="">
 <div class="md-search-result" data-md-component="search-result">
 <div class="md-search-result__meta">
-            Type to start searching
+            Initializing search
           </div>
 <ol class="md-search-result__list"></ol>
 </div>
@@ -83,7 +83,7 @@
 <div class="md-header-nav__source">
 <a class="md-source" href="https://github.com/intrahealth/client-registry/" title="Go to repository">
 <div class="md-source__icon md-icon">
-<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
 </div>
 <div class="md-source__repository">
     intrahealth/client-registry
@@ -93,27 +93,6 @@
 </nav>
 </header>
 <div class="md-container" data-md-component="container">
-<nav aria-label="Tabs" class="md-tabs md-tabs--active" data-md-component="tabs">
-<div class="md-tabs__inner md-grid">
-<ul class="md-tabs__list">
-<li class="md-tabs__item">
-<a class="md-tabs__link" href="../..">
-          Overview
-        </a>
-</li>
-<li class="md-tabs__item">
-<a class="md-tabs__link" href="../../user/introduction/">
-          User Manual
-        </a>
-</li>
-<li class="md-tabs__item">
-<a class="md-tabs__link" href="../../dev/proficiencies/">
-          Developer Manual
-        </a>
-</li>
-</ul>
-</div>
-</nav>
 <main class="md-main" data-md-component="main">
 <div class="md-main__inner md-grid">
 <div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
@@ -122,14 +101,14 @@
 <nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
 <label class="md-nav__title" for="__drawer">
 <a aria-label="OpenCR Documentation" class="md-nav__button md-logo" href="https://github.com/intrahealth/client-registry" title="OpenCR Documentation">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,8A3,3 0 0,0 15,5A3,3 0 0,0 12,2A3,3 0 0,0 9,5A3,3 0 0,0 12,8M12,11.54C9.64,9.35 6.5,8 3,8V19C6.5,19 9.64,20.35 12,22.54C14.36,20.35 17.5,19 21,19V8C17.5,8 14.36,9.35 12,11.54Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
 </a>
     OpenCR Documentation
   </label>
 <div class="md-nav__source">
 <a class="md-source" href="https://github.com/intrahealth/client-registry/" title="Go to repository">
 <div class="md-source__icon md-icon">
-<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
 </div>
 <div class="md-source__repository">
     intrahealth/client-registry
@@ -142,13 +121,13 @@
 <label class="md-nav__link" for="nav-1">
       Overview
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Overview" class="md-nav" data-md-level="1">
 <label class="md-nav__title" for="nav-1">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Overview
       </label>
@@ -201,13 +180,13 @@
 <label class="md-nav__link" for="nav-2">
       User Manual
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="User Manual" class="md-nav" data-md-level="1">
 <label class="md-nav__title" for="nav-2">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         User Manual
       </label>
@@ -250,13 +229,13 @@
 <label class="md-nav__link" for="nav-3">
       Developer Manual
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Developer Manual" class="md-nav" data-md-level="1">
 <label class="md-nav__title" for="nav-3">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Developer Manual
       </label>
@@ -266,13 +245,13 @@
 <label class="md-nav__link" for="nav-3-1">
       Introduction
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Introduction" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="nav-3-1">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Introduction
       </label>
@@ -295,13 +274,13 @@
 <label class="md-nav__link" for="nav-3-2">
       Getting Started (Docker)
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Getting Started (Docker)" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="nav-3-2">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Getting Started (Docker)
       </label>
@@ -334,13 +313,13 @@
 <label class="md-nav__link" for="nav-3-3">
       Installation
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Installation" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="nav-3-3">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Installation
       </label>
@@ -383,13 +362,13 @@
 <label class="md-nav__link" for="nav-3-4">
       Load Bulk Data
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Load Bulk Data" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="nav-3-4">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Load Bulk Data
       </label>
@@ -413,13 +392,13 @@
 <label class="md-nav__link" for="nav-3-5">
       Production Considerations
       <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M8.59 16.58L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.42z"></path></svg>
 </span>
 </label>
 <nav aria-label="Production Considerations" class="md-nav" data-md-level="2">
 <label class="md-nav__title" for="nav-3-5">
 <span class="md-nav__icon md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </span>
         Production Considerations
       </label>
@@ -481,7 +460,7 @@
 <div class="md-content">
 <article class="md-content__inner md-typeset"><a class="md-icon md-content__icon" download href="../../pdf/combined.pdf" title="PDF Export"></a>
 <a class="md-content__button md-icon" href="https://github.com/intrahealth/client-registry/edit/master/docs/notebooks/load_bulk_data_in_python.ipynb" title="Edit this page">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
 </a>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -561,7 +540,7 @@
 
 Python Record Linkage version: 0.14 
 
-Numpy version: 1.18.2 
+Numpy version: 1.18.4 
 
 FHIR client version: 3.2.0 
 
@@ -646,10 +625,10 @@ FHIR client version: 3.2.0
 <pre>female    3224
            963
 male       809
-r            1
 d            1
-k            1
+r            1
 q            1
+k            1
 Name: sex, dtype: int64
          rec_id     sex date_of_birth given_name      surname phone_number  \
 0  rec-2762-org  female    1967-12-07     zuwena        acile   712 300633   
@@ -674,7 +653,7 @@ Name: sex, dtype: int64
 <div class="codehilite"><pre><span></span><code><span class="c1"># default server/path</span>
 <span class="n">server</span> <span class="o">=</span> <span class="s2">"https://localhost:3000/Patient"</span>
 <span class="c1"># 3 records, modify if more are required</span>
-<span class="n">limit</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">limit</span> <span class="o">=</span> <span class="mi">100</span>
 <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">itertools</span><span class="o">.</span><span class="n">islice</span><span class="p">(</span><span class="n">df_a</span><span class="o">.</span><span class="n">iterrows</span><span class="p">(),</span> <span class="n">limit</span><span class="p">):</span>
 <span class="c1"># for index, row in df_a.iterrows():</span>
     <span class="n">patient</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">Patient</span><span class="p">()</span> <span class="c1"># not using rec_id as pandas id, leaving empty</span>
@@ -716,9 +695,304 @@ Name: sex, dtype: int64
 <div class="output" markdown="1">
 <div class="output_area" markdown="1">
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>0 Patient/53eddeb0-2fb1-4494-8b51-d2e667b962f2  |  1.3 ms
-1 Patient/16e4cb00-847f-49af-b624-4b0357d6c897  |  1.5 ms
-2 Patient/dd4766a5-cfed-4914-b650-6b49a99ccc06  |  1.1 ms
+<pre>0 Patient/998bd085-8cac-4d80-a2dc-35dafad28140  |  2.1 ms
+1 Patient/7e5bfabb-c77d-403d-b583-14f9c04bcc4f  |  1.6 ms
+2 Patient/72a4ad32-4955-4ffc-9b6f-2ba849abcbcf  |  1.8 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>3 Patient/f372452d-d4e5-494d-b87b-da546e2908d7  |  1.3 ms
+4 Patient/7c743b88-04f0-4638-b12c-cb45a7604234  |  1.4 ms
+5 Patient/6299bc99-a6cf-4a37-8f31-08d7c954bcb6  |  1.5 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>6 Patient/b21337a7-72d2-43a7-8c4b-5c6ddc61e853  |  1.2 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>7 Patient/817c50fd-55fb-4bad-88ae-cfa32150cd72  |  1.4 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>8 Patient/ff310860-450d-49ac-9754-c4b52800258c  |  1.2 ms
+9 Patient/f21900bc-b0ac-4145-bfe5-5d2d111ac34c  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>10 Patient/2329cbf5-3bf5-44d2-87dd-a7b75dc083dd  |  1.3 ms
+11 Patient/b2f45d9a-be8a-4a98-ae0b-23bae838e2c9  |  1.1 ms
+12 Patient/4eec0f3b-39f0-43da-a68c-0f2c68b7c998  |  0.9 ms
+13 Patient/8fc2ab00-91dd-4b4b-81a8-25d7af976363  |  1.2 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>14 Patient/dfd9e992-92ba-4f80-839e-05e4f984a57d  |  1.0 ms
+15 Patient/c47e5989-166e-44fa-828c-837dfbd73789  |  1.0 ms
+16 Patient/cfe6500c-9ddf-466e-b14a-ba9f332ce53e  |  1.3 ms
+17 Patient/2e5ef1ad-4e46-4cd5-8af6-e4624e420a5b  |  1.1 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>18 Patient/3bc91e43-e4ae-4a7b-8b38-be31d98b5828  |  0.8 ms
+19 Patient/c18671b9-d986-4039-ab81-0a949b9a19a2  |  1.1 ms
+20 Patient/208a9966-94c0-4955-8d5c-11b7e22e7289  |  1.0 ms
+21 Patient/c21bc854-c1db-4ab3-a189-5d4459c5294e  |  0.8 ms
+22 Patient/dc255b83-ca8d-42c9-bc2d-3c6c5b9d0561  |  0.8 ms
+23 Patient/dc255b83-ca8d-42c9-bc2d-3c6c5b9d0561  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>24 Patient/85299742-df8a-4917-a16a-d466495b0a78  |  1.0 ms
+25 Patient/5411a1bd-2ed8-49e6-bdbf-305d36361cf6  |  1.1 ms
+26 Patient/def894a2-f86d-48da-9d1e-a37a0f88d55f  |  1.1 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>27 Patient/1844e0a4-8748-40dd-9914-603d5ef8a065  |  0.9 ms
+28 Patient/03ab3f55-c854-42dd-ac2f-458eedadc317  |  0.9 ms
+29 Patient/a7bc6c0c-b2a9-4a93-b445-246135c3457c  |  1.2 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>30 Patient/02312cad-0fcf-4af0-b256-0878bbbc8791  |  0.9 ms
+31 Patient/70540ad6-f642-4800-9bba-49fe2f723a4d  |  1.2 ms
+32 Patient/9507e691-b1c0-48a7-8997-197c40c4129a  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>33 Patient/0c816ae3-a880-4d9e-bbd9-265a6c5ac422  |  0.8 ms
+34 Patient/b5e969be-5e18-4316-b59d-3c43bd7fdf85  |  0.8 ms
+35 Patient/69901b11-cafc-4311-aa04-9c9a3c9654b7  |  1.1 ms
+36 Patient/4973cb93-3111-4d6e-9a10-ce2c6f36e4da  |  1.0 ms
+37 Patient/a5996f64-54a7-45a3-9c73-288809305413  |  0.8 ms
+38 Patient/731be98f-9cab-40cf-9897-e2a220d95eab  |  1.1 ms
+39 Patient/738b656d-1654-4341-893b-ce8743240974  |  0.9 ms
+40 Patient/478d11de-006e-43ce-aadc-b2a55e6f7e96  |  1.1 ms
+41 Patient/d88cb8fa-4055-4215-8f88-36a65ae41f87  |  0.9 ms
+42 Patient/44b448f1-6765-477d-b2f7-3556fb57fc7a  |  0.9 ms
+43 Patient/8e42ebd7-3037-4c1a-9bb3-278c70b2dde0  |  1.0 ms
+44 Patient/8c97acdb-ccd1-4ccd-a8c8-ed8f827d6dd7  |  1.2 ms
+45 Patient/b6c88343-822c-4443-91c1-0f45e5eb3906  |  0.7 ms
+46 Patient/cd88762c-e116-472d-b05e-8ba7d6d7c81c  |  0.9 ms
+47 Patient/11603220-0e66-4b0e-a5ff-a4635a91f16d  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>48 Patient/b3322a33-3374-486b-96b5-9a88883d4515  |  0.9 ms
+49 Patient/a16d8e5d-7304-4b3b-8462-548efc1faac4  |  1.1 ms
+50 Patient/92720ee1-2e2e-49c6-a971-1a9bcc669902  |  1.1 ms
+51 Patient/30c9d4e9-dd00-476e-beb0-4f4ba95f7cd9  |  0.9 ms
+52 Patient/92720ee1-2e2e-49c6-a971-1a9bcc669902  |  0.7 ms
+53 Patient/3f399446-e624-4e89-94ac-1f46e2a612c1  |  1.1 ms
+54 Patient/e4f323cd-3c01-4b5e-b612-a2bbe188d865  |  0.8 ms
+55 Patient/c23c89db-5660-4839-840b-eb0a77e2f49d  |  1.0 ms
+56 Patient/d2393b8d-ed7a-4eb9-b1ab-c70460146a4f  |  1.2 ms
+57 Patient/b6010023-5162-473c-a4e1-56e1b348087e  |  1.0 ms
+58 Patient/3843a23b-4ae7-4592-9b4a-a966e22d8fc9  |  0.9 ms
+59 Patient/7212d479-d306-4568-8013-e59ee8913dd7  |  1.1 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>60 Patient/6ff08c0c-d0fb-4eda-96ad-91ece4f207ca  |  0.8 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>61 Patient/f3f62e4d-1b4d-453d-9ea3-c66ce2ad1f20  |  0.9 ms
+62 Patient/e321c2dd-96e7-4c6d-ba36-6fa71b63ae0a  |  1.1 ms
+63 Patient/92b9eb21-0b30-4b49-b611-a3830c233612  |  0.9 ms
+64 Patient/92b9eb21-0b30-4b49-b611-a3830c233612  |  0.7 ms
+65 Patient/47318447-2d0a-473d-a31e-6cf92619a4e6  |  1.0 ms
+66 Patient/acd8f41e-3285-447d-a4d0-af6a440b329e  |  1.0 ms
+67 Patient/4b2414e5-177a-45dd-9820-e0208212b517  |  0.8 ms
+68 Patient/2f6365b6-861e-411e-b429-2d579ab5bd04  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>69 Patient/2f6365b6-861e-411e-b429-2d579ab5bd04  |  1.0 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>70 Patient/213c6b3d-5d13-4ad9-b6b4-ab2ceaee324a  |  0.8 ms
+71 Patient/3576d266-c676-43ea-9023-bb11c11b2b6b  |  0.9 ms
+72 Patient/59369ae7-a50f-4c88-8fa0-7cd30e317d7e  |  0.9 ms
+73 Patient/d78ca73d-e8ff-4bd6-a505-ef929161fda6  |  0.7 ms
+74 Patient/70277660-d1ec-4fe2-9853-50ad88cc5f7a  |  0.8 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>75 Patient/59369ae7-a50f-4c88-8fa0-7cd30e317d7e  |  0.7 ms
+76 Patient/70277660-d1ec-4fe2-9853-50ad88cc5f7a  |  1.2 ms
+77 Patient/1261bb98-582e-45cc-8a19-ec172c6c6f4f  |  1.3 ms
+78 Patient/9c912e01-5e34-471a-b6c1-b650cc6c2601  |  1.2 ms
+79 Patient/d6bc698f-6af2-4578-ad12-ba0bd9d14ed4  |  0.8 ms
+80 Patient/1261bb98-582e-45cc-8a19-ec172c6c6f4f  |  1.2 ms
+81 Patient/e5426498-f107-447c-ab01-b0b4008732aa  |  0.9 ms
+82 Patient/3f6ddd3e-f4fd-45f6-9c60-c16904d9f0aa  |  0.7 ms
+83 Patient/a933a54d-e34e-485e-9c95-6cb54f4f2533  |  1.5 ms
+84 Patient/609660b5-c1aa-409f-bd9a-cc3d7dac6384  |  1.2 ms
+85 Patient/c622e666-fdf6-4d61-a853-3e33d49e2d11  |  0.9 ms
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>Failed to initialize FHIRDate from "": Unrecognised ISO 8601 date format: ''
+</pre>
+</div>
+</div>
+<div class="output_area" markdown="1">
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>86 Patient/86b01ded-7acd-49d8-90e0-63e25662188a  |  1.1 ms
+87 Patient/6672ce4d-190a-4be0-9afa-11340b34f9c7  |  1.8 ms
+88 Patient/50f359c6-cb99-4a7e-a466-ec97b80225fc  |  0.8 ms
+89 Patient/2cf7014c-6a88-42d0-951f-f24375e9c249  |  0.9 ms
+90 Patient/f60e5b30-921d-4ca9-b5a8-c00574049ae3  |  1.0 ms
+91 Patient/b9e04ae8-0ca2-4c50-b122-5e57448e0d38  |  1.1 ms
+92 Patient/4bf4445a-8026-432f-a6ca-f9d277ff7d11  |  1.0 ms
+93 Patient/d34127e7-cc18-43df-b45b-12679c286d5d  |  0.8 ms
+94 Patient/4bf4445a-8026-432f-a6ca-f9d277ff7d11  |  1.2 ms
+95 Patient/a2ed2adf-bb3f-40e5-a05d-c99c89eb3ed5  |  0.9 ms
+96 Patient/7fbe823f-5a44-4ef8-9728-98e27f00d038  |  0.8 ms
+97 Patient/7506a352-2486-452d-be15-25a40838a48e  |  0.7 ms
+98 Patient/54309891-fa19-489e-bb0f-e95360bb7ee0  |  0.8 ms
+99 Patient/71e25c0b-1eb3-4739-9264-80e2971dc581  |  0.7 ms
 </pre>
 </div>
 </div>
@@ -734,9 +1008,8 @@ Name: sex, dtype: int64
 <div class="md-source-date">
 <small>
     
-      Last update: April 21, 2020
-    
-  </small>
+      Last update: <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-date">June 24, 2020</span>
+</small>
 </div>
 
 
@@ -747,7 +1020,7 @@ Name: sex, dtype: int64
 <nav aria-label="Footer" class="md-footer-nav__inner md-grid">
 <a class="md-footer-nav__link md-footer-nav__link--prev" href="../../dev/loadjs/" rel="prev" title="Load Demo Data (JavaScript)">
 <div class="md-footer-nav__button md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20,11V13H8L13.5,18.5L12.08,19.92L4.16,12L12.08,4.08L13.5,5.5L8,11H20Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
 </div>
 <div class="md-footer-nav__title">
 <div class="md-ellipsis">
@@ -768,7 +1041,7 @@ Name: sex, dtype: int64
               </div>
 </div>
 <div class="md-footer-nav__button md-icon">
-<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
 </div>
 </a>
 </nav>
@@ -794,14 +1067,14 @@ Name: sex, dtype: int64
 </div>
 </footer>
 
-<script src="../../assets/javascripts/vendor.c51dfa35.min.js"></script>
-<script src="../../assets/javascripts/bundle.eaaa3931.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script src="../../assets/javascripts/vendor.d710d30a.min.js"></script>
+<script src="../../assets/javascripts/bundle.b39636ac.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
 <script>
         app = initialize({
           base: "../..",
-          features: ["tabs"],
+          features: [],
           search: Object.assign({
-            worker: "../../assets/javascripts/worker/search.58d22e8e.min.js"
+            worker: "../../assets/javascripts/worker/search.a68abb33.min.js"
           }, typeof search !== "undefined" && search)
         })
       </script>
