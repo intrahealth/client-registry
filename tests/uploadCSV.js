@@ -1,9 +1,12 @@
-const fs = require('fs');
+'use strict'
+
 const async = require('async');
 const csv = require('fast-csv');
+const fs = require('fs');
+const moment = require('moment');
 const path = require('path');
 const request = require('request');
-const moment = require('moment');
+
 const uploadResults = require('./uploadResults');
 const logger = require('../server/lib/winston');
 
