@@ -7,6 +7,67 @@ const moment = require('moment');
 const uploadResults = require('./uploadResults');
 const logger = require('../server/lib/winston');
 
+function createFhirPatient (inputData) {
+  const sex = inputData.sex ? inputData.sex.trim() : null;
+  const given = inputData.given_name ? inputData.given_name.trim() : null;
+  const surname = inputData.surname ? inputData.surname.trim() : null;
+  const phone = inputData.phone_number ? inputData.phone_number.trim() : null;
+  const nationalID = inputData.uganda_nin ? inputData.uganda_nin.trim() : null;
+  const ARTNumb = inputData.art_number ? inputData.art_number.trim() : null;
+  const birthDate = inputData.date_of_birth ? inputData.date_of_birth.trim() : null;
+
+  const resource = {
+    resourceType: "Patient",
+    identifier: [
+      {
+        system: "http://clientregistry.org/openmrs",
+        value: inputData.rec_id.trim(),
+      },
+    ],
+  };
+
+  if (sex == "f") {
+    resource.gender = "female";
+  } else if (sex == "m") {
+    resource.gender = "male";
+  }
+  if (birthDate.match(/\d{8,8}/)) {
+    let birthMoment = moment(birthDate);
+    if (birthMoment.isValid()) {
+      resource.birthDate = birthMoment.format("YYYY-MM-DD");
+    }
+  }
+  if (nationalID) {
+    resource.identifier.push({
+      system: "http://clientregistry.org/nationalid",
+      value: nationalID,
+    });
+  }
+  if (ARTNumb) {
+    resource.identifier.push({
+      system: "http://clientregistry.org/artnumber",
+      value: ARTNumb,
+    });
+  }
+  if (phone) {
+    resource.telecom = [];
+    resource.telecom.push({
+      system: "phone",
+      value: phone,
+    });
+  }
+  let aName = {};
+  if (given) {
+    aName.given = [given];
+  }
+  if (surname) {
+    aName.family = surname;
+  }
+  aName.use = "official";
+  resource.name = [aName];
+  return resource
+}
+
 if (!process.argv[2]) {
   logger.error('Please specify path to a CSV file');
   process.exit();
@@ -56,85 +117,11 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
   )
   .on('error', error => console.error(error))
   .on('data', row => {
+    const fhirPatient = createFhirPatient(row)
     promises.push(
       new Promise((resolve, reject) => {
-        let sex = row['sex'];
-        let given = row['given_name'];
-        let surname = row['surname'];
-        let phone = row['phone_number'];
-        let nationalID = row['uganda_nin'];
-        let ARTNumb = row['art_number'];
-        let birthDate = row['date_of_birth'];
-        if (sex) {
-          sex = sex.trim();
-        }
-        if (given) {
-          given = given.trim();
-        }
-        if (surname) {
-          surname = surname.trim();
-        }
-        if (phone) {
-          phone = phone.trim();
-        }
-        if (nationalID) {
-          nationalID = nationalID.trim();
-        }
-        if (ARTNumb) {
-          ARTNumb = ARTNumb.trim();
-        }
-        if (birthDate) {
-          birthDate = birthDate.trim();
-        }
-        let resource = {};
-        resource.resourceType = 'Patient';
-        if (sex == 'f') {
-          resource.gender = 'female';
-        } else if (sex == 'm') {
-          resource.gender = 'male';
-        }
-        if ( birthDate.match( /\d{8,8}/ ) ) {
-          let birthMoment = moment( birthDate );
-          if ( birthMoment.isValid() ) {
-            resource.birthDate = birthMoment.format("YYYY-MM-DD")
-          }
-        }
-        resource.identifier = [
-          {
-            system: 'http://clientregistry.org/openmrs',
-            value: row['rec_id'].trim(),
-          },
-        ];
-        if (nationalID) {
-          resource.identifier.push({
-            system: 'http://clientregistry.org/nationalid',
-            value: nationalID,
-          });
-        }
-        if (ARTNumb) {
-          resource.identifier.push({
-            system: 'http://clientregistry.org/artnumber',
-            value: ARTNumb,
-          });
-        }
-        if (phone) {
-          resource.telecom = [];
-          resource.telecom.push({
-            system: 'phone',
-            value: phone,
-          });
-        }
-        let name = {};
-        if (given) {
-          name.given = [given];
-        }
-        if (surname) {
-          name.family = surname;
-        }
-        name.use = 'official';
-        resource.name = [name];
         bundle.entry.push({
-          resource,
+          resource: fhirPatient,
         });
         if (bundle.entry.length === 250) {
           totalRecords += 250;
