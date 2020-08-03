@@ -186,7 +186,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               };
               request.post(options, (err, res, body) => {
                 if(err) {
-                  logger.error('An error has occured');
+                  logger.error('An error has occurred');
                   logger.error(err);
                   return nxtEntry();
                 }
