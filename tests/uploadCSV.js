@@ -71,6 +71,18 @@ function createFhirPatient (inputData) {
   return resource
 }
 
+let userCertificate;
+let certificateKey;
+let certificateAuthority;
+
+try {
+  userCertificate = fs.readFileSync('../server/sampleclientcertificates/openmrs_cert.pem');
+  certificateKey = fs.readFileSync('../server/sampleclientcertificates/openmrs_key.pem');
+  certificateAuthority = fs.readFileSync('../server/certificates/server_cert.pem');
+} catch (error) {
+  throw new Error(`Missing certificate file: ${error.message}`);
+}
+
 if (!process.argv[2]) {
   throw new Error('Please specify path to a CSV file');
 }
@@ -155,14 +167,11 @@ fs.createReadStream(path.resolve(__dirname, '', csvFilePath))
               console.time('Processing Took')
               console.log('Processing ' + count + ' of ' + totalRecords);
               let agentOptions = {
-                cert: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_cert.pem'
-                ),
-                key: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_key.pem'
-                ),
-                ca: fs.readFileSync('../server/certificates/server_cert.pem'),
-                securityOptions: 'SSL_OP_NO_SSLv3',
+                cert: userCertificate,
+                key: certificateKey,
+                ca: certificateAuthority,
+                securityOptions: "SSL_OP_NO_SSLv3",
+                rejectUnauthorized: false,
               }
               let auth = {
                 username: 'openmrs',
