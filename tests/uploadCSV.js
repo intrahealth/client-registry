@@ -103,10 +103,12 @@ if (extTrueLinks !== '.csv') {
 
 logger.info('Upload started ...');
 let bundles = [];
-let bundle = {};
-bundle.type = 'batch';
-bundle.resourceType = 'Bundle';
-bundle.entry = [];
+let bundle = {
+  type: 'batch',
+  resourceType: 'Bundle',
+  entry: []
+};
+
 const promises = [];
 let totalRecords = 0;
 fs.createReadStream(path.resolve(__dirname, '', csvFilePath))
