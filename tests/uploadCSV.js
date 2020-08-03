@@ -69,8 +69,7 @@ function createFhirPatient (inputData) {
 }
 
 if (!process.argv[2]) {
-  logger.error('Please specify path to a CSV file');
-  process.exit();
+  throw new Error('Please specify path to a CSV file');
 }
 const csvFilePath = process.argv[2];
 let csvTrueLinks = '';
@@ -80,8 +79,7 @@ if (process.argv[3]) {
 
 try {
   if (!fs.existsSync(csvFilePath)) {
-    logger.error(`Cant find file ${csvFilePath}`);
-    process.exit();
+    throw new Error(`Cant find file ${csvFilePath}`);
   }
   if (!fs.existsSync(csvTrueLinks)) {
     csvTrueLinks = '';
@@ -94,8 +92,7 @@ try {
 const ext = path.extname(csvFilePath);
 const extTrueLinks = path.extname(csvTrueLinks);
 if (ext !== '.csv') {
-  logger.error('File is not a CSV');
-  process.exit();
+  throw new Error('File is not a CSV');
 }
 if (extTrueLinks !== '.csv') {
   csvTrueLinks = '';
