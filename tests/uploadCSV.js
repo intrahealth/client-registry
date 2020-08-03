@@ -72,15 +72,15 @@ if (!process.argv[2]) {
   logger.error('Please specify path to a CSV file');
   process.exit();
 }
-const csvFile = process.argv[2];
+const csvFilePath = process.argv[2];
 let csvTrueLinks = '';
 if (process.argv[3]) {
   csvTrueLinks = process.argv[3];
 }
 
 try {
-  if (!fs.existsSync(csvFile)) {
-    logger.error(`Cant find file ${csvFile}`);
+  if (!fs.existsSync(csvFilePath)) {
+    logger.error(`Cant find file ${csvFilePath}`);
     process.exit();
   }
   if (!fs.existsSync(csvTrueLinks)) {
@@ -91,7 +91,7 @@ try {
   process.exit();
 }
 
-const ext = path.extname(csvFile);
+const ext = path.extname(csvFilePath);
 const extTrueLinks = path.extname(csvTrueLinks);
 if (ext !== '.csv') {
   logger.error('File is not a CSV');
@@ -109,7 +109,7 @@ bundle.resourceType = 'Bundle';
 bundle.entry = [];
 const promises = [];
 let totalRecords = 0;
-fs.createReadStream(path.resolve(__dirname, '', csvFile))
+fs.createReadStream(path.resolve(__dirname, '', csvFilePath))
   .pipe(
     csv.parse({
       headers: true,
