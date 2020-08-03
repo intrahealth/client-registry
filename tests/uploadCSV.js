@@ -11,22 +11,20 @@ const uploadResults = require('./uploadResults')
 const logger = require('../server/lib/winston')
 
 function createFhirPatient(inputData) {
-  const sex = inputData.sex ? inputData.sex.trim() : null
-  const given = inputData.given_name ? inputData.given_name.trim() : null
-  const surname = inputData.surname ? inputData.surname.trim() : null
-  const phone = inputData.phone_number ? inputData.phone_number.trim() : null
-  const nationalID = inputData.uganda_nin ? inputData.uganda_nin.trim() : null
-  const ARTNumb = inputData.art_number ? inputData.art_number.trim() : null
+  const sex = inputData.sex
+  const given = inputData.given_name
+  const surname = inputData.surname
+  const phone = inputData.phone_number
+  const nationalID = inputData.uganda_nin
+  const ARTNumb = inputData.art_number
   const birthDate = inputData.date_of_birth
-    ? inputData.date_of_birth.trim()
-    : null
 
   const resource = {
     resourceType: 'Patient',
     identifier: [
       {
         system: 'http://clientregistry.org/openmrs',
-        value: inputData.rec_id.trim()
+        value: inputData.rec_id
       }
     ]
   }
@@ -134,7 +132,8 @@ let totalRecords = 0
 fs.createReadStream(path.resolve(__dirname, '', csvFilePath))
   .pipe(
     csv.parse({
-      headers: true
+      headers: true,
+      trim: true
     })
   )
   .on('error', (error) => console.error(error))
