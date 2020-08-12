@@ -1,0 +1,223 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This documentation explains how to use openCR APIs to perform some operations",
+    "version": "1.0.5",
+    "title": "Open Client Registry",
+    "contact": {
+    "email": "informatics@intrahealth.org"
+    },
+    "license": {
+    "name": "Apache 2.0",
+    "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "servers": [{
+    "url": "http://localhost:8081/scratchpad"
+  }],
+  "paths": {
+    "/fhir/{ResourceType}/{id}": {
+      "get": {
+        "tags": [
+          "Get Resources"
+        ],
+        "summary": "Get all records of a specified resource type. If an ID is specified then returned records will be of the specified ID",
+        "operationId": "getResourceData",
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "name": "ResourceType",
+          "in": "path",
+          "description": "Resource Type to be returned",
+          "required": true,
+          "type": "string"
+        }, {
+          "name": "id",
+          "in": "path",
+          "description": "Resource ID, use $ihe-pix as an ID in order to make a PIXM query",
+          "required": false
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/Patient": {
+      "post": {
+        "tags": [
+          "Single Patient"
+        ],
+        "summary": "Submit patient information into the client registry",
+        "operationId": "submitPatient",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Patient demographics and other details",
+          "schema": {
+            "type": "object"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/": {
+      "post": {
+        "tags": [
+          "Patients Bundle"
+        ],
+        "summary": "Submit a bundle of patients into the client registry",
+        "operationId": "submitPatientsBundle",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "A bundle of patients demographics and other details",
+          "schema": {
+            "type": "object"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/breakMatch": {
+      "post": {
+        "tags": [
+          "Break Matches"
+        ],
+        "summary": "Submit an array of patients IDs to break their matches",
+        "operationId": "breakMatch",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "An array of patients IDs in the format [Patient/123]",
+          "schema": {
+            "type": "array"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/unBreakMatch": {
+      "post": {
+        "tags": [
+          "Un Break Matches"
+        ],
+        "summary": "Submit an array of patients IDs to undo the break match operation",
+        "operationId": "unBreakMatch",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "An array of patients IDs in the format [Patient/123]",
+          "schema": {
+            "type": "array"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/getClients": {
+      "get": {
+        "tags": [
+          "Get Clients"
+        ],
+        "summary": "Get every POS that is allowed to push patients into openCR",
+        "operationId": "getClients",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+  }
+}

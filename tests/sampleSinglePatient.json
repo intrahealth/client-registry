@@ -1,33 +1,37 @@
 {
   "resourceType": "Patient",
-  "id": "efa9af55-ed82-49e1-9c58-7a3b36155ffe",
-  "meta": {
-    "versionId": "2",
-    "lastUpdated": "2020-02-25T17:48:18.028+03:00",
-    "source": "#5YskPxdp2NQaRit7"
-  },
   "identifier": [{
-    "type": {
-      "coding": [{
-        "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-        "code": "PT",
-        "display": "Patient External Identifier"
-      }]
+      "system": "http://clientregistry.org/openmrs",
+      "value": "12341238"
     },
-    "system": "http://openmrs.org/openmrs2",
-    "value": "gtcvdtrdr5"
-  }],
+    {
+      "system": "http://health.go.ug/cr/nationalid",
+      "value": "228374844"
+    },
+    {
+      "system": "http://system1.org",
+      "value": "12347",
+      "period": {
+        "start": "2001-05-07"
+      },
+      "assigner": {
+        "display": "test Org"
+      }
+    }
+  ],
+  "active": true,
   "name": [{
     "use": "official",
-    "family": "amalwa",
+    "family": "Ussery",
     "given": [
-      "Emmmanuel"
+      "Gerald",
+      "Ligon"
     ]
   }],
   "telecom": [{
     "system": "phone",
-    "value": "774 232423"
+    "value": "678 5616008"
   }],
   "gender": "male",
-  "birthDate": "2020-01-02"
+  "birthDate": "1972-01-08"
 }

@@ -57,8 +57,10 @@
 </template>
 
 <script>
+import { generalMixin } from "@/mixins/generalMixin";
 export default {
   name: "Home",
+  mixins: [generalMixin],
   data() {
     return {
       debug: "",
@@ -99,6 +101,10 @@ export default {
           text: "CRUID",
           value: "uid",
           sortable: false
+        },
+        {
+          text: "Point of Service",
+          value: "pos"
         }
       ],
       patients: []
@@ -210,6 +216,17 @@ export default {
             if (!nin) {
               nin = {};
             }
+            let clientUserId;
+            if (entry.resource.meta && entry.resource.meta.tag) {
+              for (let tag of entry.resource.meta.tag) {
+                if (
+                  tag.system === "http://openclientregistry.org/fhir/clientid"
+                ) {
+                  clientUserId = tag.code;
+                }
+              }
+            }
+            let systemName = this.getClientDisplayName(clientUserId);
             this.patients.push({
               id: entry.resource.id,
               family: name.family,
@@ -220,7 +237,8 @@ export default {
               uid: entry.resource.link[0].other.reference.replace(
                 "Patient/",
                 ""
-              )
+              ),
+              pos: systemName
             });
           }
         }
