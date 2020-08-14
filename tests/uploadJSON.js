@@ -74,8 +74,9 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     password: 'openmrs'
   };
   const options = {
-    url: 'https://localhost:3000/fhir/' + entry.resource.resourceType,
+    url: 'http://localhost:3000/fhir/' + entry.resource.resourceType,
     agentOptions,
+    // auth,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {

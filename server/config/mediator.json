@@ -2,7 +2,7 @@
       "urn": "urn:uuid:4bc42b2f-b5a8-473d-8207-5dd5c61f0c4a",
       "version": "0.0.1",
       "name": "Client Registry",
-      "description": "Uganda Client Registry",
+      "description": "Open Client Registry",
       "config": {
         "fhirServer": {
           "username": "hapi",
@@ -97,9 +97,9 @@
       "defaultChannelConfig": [{
         "requestBody": true,
         "responseBody": true,
-        "name": "Add Patients",
-        "description": "Post a new patient into the client registry",
-        "urlPattern": "^/Patient$",
+        "name": "Add or Get Resource Data From/To openCR",
+        "description": "Add or Get Resource Data From/To openCR",
+        "urlPattern": "/fhir",
         "matchContentRegex": null,
         "matchContentXpath": null,
         "matchContentValue": null,
@@ -124,74 +124,7 @@
             "type": "http",
             "status": "enabled",
             "forwardAuthHeader": false,
-            "name": "Add Patient",
-            "secured": false,
-            "host": "localhost",
-            "port": 3000,
-            "path": "/Patient",
-            "pathTransform": "",
-            "primary": true,
-            "username": "",
-            "password": ""
-          }
-        ],
-        "authType": "private",
-        "whitelist": [],
-        "allow": [
-          "openmrs"
-        ],
-        "type": "http",
-        "methods": [
-          "POST"
-        ],
-        "updatedBy": {
-          "id": "5d5d94607329d74724442f67",
-          "name": "Super User"
-        }
-      },
-      {
-        "methods": [
-          "GET"
-        ],
-        "type": "http",
-        "allow": [
-          "openmrs"
-        ],
-        "whitelist": [],
-        "authType": "private",
-        "matchContentTypes": [],
-        "properties": [],
-        "txViewAcl": [],
-        "txViewFullAcl": [],
-        "txRerunAcl": [],
-        "status": "enabled",
-        "rewriteUrls": false,
-        "addAutoRewriteRules": true,
-        "autoRetryEnabled": false,
-        "autoRetryPeriodMinutes": 60,
-        "updatedBy": {
-          "id": "5d5d94607329d74724442f67",
-          "name": "Super User"
-        },
-        "requestBody": true,
-        "responseBody": true,
-        "description": "Get patient from the client registry",
-        "urlPattern": "^/fhir/",
-        "matchContentRegex": null,
-        "matchContentXpath": null,
-        "matchContentValue": null,
-        "matchContentJson": null,
-        "pollingSchedule": null,
-        "tcpHost": null,
-        "tcpPort": null,
-        "rewriteUrlsConfig": [],
-        "alerts": [],
-        "routes": [
-          {
-            "type": "http",
-            "status": "enabled",
-            "forwardAuthHeader": false,
-            "name": "Get Patients",
+            "name": "Add/Get Resources",
             "secured": false,
             "host": "localhost",
             "port": 3000,
@@ -202,12 +135,27 @@
             "password": ""
           }
         ],
-        "name": "Get Patients"
+        "authType": "private",
+        "whitelist": [],
+        "allow": [
+          "openmrs"
+        ],
+        "type": "http",
+        "methods": [
+          "GET",
+          "POST",
+          "PUT",
+          "DELETE"
+        ],
+        "updatedBy": {
+          "id": "5d5d94607329d74724442f67",
+          "name": "Super User"
+        }
       }],
       "endpoints": [{
         "name": "Activate Client Registry",
         "host": "localhost",
-        "path": "/Patient",
+        "path": "/fhir",
         "port": 3000,
         "primary": true,
         "forwardAuthHeader": false,

@@ -124,6 +124,7 @@ function appRoutes() {
       res.status(statusCode).json(resourceData);
     });
   });
+
   app.get('/fhir/:resource?/:id?', (req, res) => {
     const id = req.params.id;
     if (id === '$ihe-pix') {
@@ -274,6 +275,7 @@ function appRoutes() {
   }
 
   app.post('/fhir', (req, res) => {
+    logger.info('Received a request to add a bundle of resources');
     const resource = req.body;
     if (!resource.resourceType ||
       (resource.resourceType && resource.resourceType !== 'Bundle') ||
