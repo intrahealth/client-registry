@@ -52,10 +52,88 @@
         }
       }
     },
-    "/Patient": {
+    "/fhir": {
+      "post": {
+        "tags": [
+          "Patients Bundle"
+        ],
+        "summary": "Submit a bundle of patients and/or other resources into openCR",
+        "operationId": "submitPatientsBundle",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "A bundle of resources",
+          "schema": {
+            "type": "object"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/fhir/{ResourceType}": {
       "post": {
         "tags": [
           "Single Patient"
+        ],
+        "summary": "Submit patient or other resources into openCR",
+        "operationId": "fhirSubmitResource",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "produces": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "name": "ResourceType",
+          "in": "path",
+          "description": "Resource Type to be saved",
+          "required": true,
+          "type": "string"
+        }, {
+          "in": "body",
+          "name": "body",
+          "description": "Resource details",
+          "schema": {
+            "type": "object"
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/Patient": {
+      "post": {
+        "tags": [
+          "[Deprecated] Single Patient"
         ],
         "summary": "Submit patient information into the client registry",
         "operationId": "submitPatient",
@@ -91,7 +169,7 @@
     "/": {
       "post": {
         "tags": [
-          "Patients Bundle"
+          "[Deprecated] Patients Bundle"
         ],
         "summary": "Submit a bundle of patients into the client registry",
         "operationId": "submitPatientsBundle",
@@ -218,6 +296,6 @@
           }
         }
       }
-    },
+    }
   }
 }

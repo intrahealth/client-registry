@@ -273,6 +273,127 @@ function appRoutes() {
     };
   }
 
+  app.post('/fhir', (req, res) => {
+    const resource = req.body;
+    if (!resource.resourceType ||
+      (resource.resourceType && resource.resourceType !== 'Bundle') ||
+      !resource.entry || (resource.entry && resource.entry.length === 0)) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Invalid bundle submitted"
+        }],
+        response: {
+          status: 400
+        }
+      });
+    }
+    let patients = [];
+    for(let index in resource.entry) {
+      let entry = resource.entry[index];
+      if(entry.resource && entry.resource.resourceType === "Patient") {
+        patients.push(entry);
+        resource.entry.splice(index, 1);
+      }
+    }
+    async.parallel({
+      otherResources: (callback) => {
+        if(resource.entry.length === 0) {
+          return callback(null, {});
+        }
+        fhirWrapper.create(resource, (code, err, response, body) => {
+          return callback(null, {code, err, response, body});
+        });
+      },
+      patients: (callback) => {
+        if(patients.length === 0) {
+          return callback(null, {});
+        }
+        let patientsBundle = {
+          entry: patients
+        };
+        let clientID;
+        if (config.get('mediator:register')) {
+          clientID = req.headers['x-openhim-clientid'];
+        } else {
+          const cert = req.connection.getPeerCertificate();
+          clientID = cert.subject.CN;
+        }
+        addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+          if (err) {
+            return callback(null, {code: 500, err, response, body: operationSummary});
+          }
+          return callback(null, {code: 201, err, response, body: operationSummary});
+        });
+      }
+    }, (err, results) => {
+      let code;
+      if(results.patients.code > results.otherResources.code) {
+        code = results.patients.code;
+      } else {
+        code = results.otherResources.code;
+      }
+      if(!code) {
+        code = 500;
+      }
+      return res.status(code).json([results.patients.body, results.patients.body]);
+    });
+  });
+
+  app.post('/fhir/:resourceType', (req, res) => {
+    let resource = req.body;
+    let resourceType = req.params.resourceType;
+    logger.info('Received a request to add resource type ' + resourceType);
+    if(resourceType !== "Patient") {
+      fhirWrapper.create(resource, (code, err, response, body) => {
+        return res.status(code).send(body);
+      });
+    } else {
+      if(!resource.resourceType || !resource.identifier || (resource.identifier && resource.identifier.length === 0)) {
+        return res.status(400).json({
+          resourceType: "OperationOutcome",
+          issue: [{
+            severity: "error",
+            code: "processing",
+            diagnostics: "Invalid patient resource submitted"
+          }],
+          response: {
+            status: 400
+          }
+        });
+      }
+      const patientsBundle = {
+        entry: [{
+          resource
+        }]
+      };
+      let clientID;
+      if (config.get('mediator:register')) {
+        clientID = req.headers['x-openhim-clientid'];
+      } else {
+        const cert = req.connection.getPeerCertificate();
+        clientID = cert.subject.CN;
+      }
+      addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+        const auditBundle = createAddPatientAudEvent(operationSummary, req);
+        fhirWrapper.saveResource({
+          resourceData: auditBundle
+        }, () => {
+          logger.info('Audit saved successfully');
+          if (err) {
+            res.status(500).send();
+          } else {
+            res.setHeader('location', response.entry[0].response.location);
+            res.status(201).send();
+          }
+        });
+      });
+    }
+  });
+
+  //this API is deprecated, use /fhir/Patient
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
     const patient = req.body;
@@ -317,6 +438,7 @@ function appRoutes() {
     });
   });
 
+  //this API is deprecated, use /fhir
   app.post('/', (req, res) => {
     logger.info('Received a request to add new patients from a bundle');
     const patientsBundle = req.body;

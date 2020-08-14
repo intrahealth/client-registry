@@ -1,9 +1,9 @@
 {
   "resourceType": "Bundle",
+  "type": "batch",
   "entry": [{
     "resource": {
       "resourceType": "Patient",
-      "id": "efa9af55-ed82-49e1-9c58-7a3b36155ffe",
       "meta": {
         "versionId": "2",
         "lastUpdated": "2020-02-25T17:48:18.028+03:00",
@@ -34,27 +34,11 @@
       "telecom": [{
         "system": "phone",
         "value": "774 232423"
-      }],
-      "link": [{
-        "other": {
-          "reference": "Patient/c20a8c2e-2e59-4f55-b0e3-78a43981aec0"
-        },
-        "type": "refer"
       }]
     }
   }, {
     "resource": {
-      "resourceType": "Patient",
-      "id": "efa9af55-ed82-49e1-9c58-7a3b36155ffe",
-      "meta": {
-        "versionId": "2",
-        "lastUpdated": "2020-02-25T17:48:18.028+03:00",
-        "source": "#5YskPxdp2NQaRit7",
-        "tag": [{
-          "code": "clientid",
-          "display": "openmrs"
-        }]
-      },
+      "resourceType": "Practitioner",
       "identifier": [{
         "type": {
           "coding": [{
@@ -64,12 +48,39 @@
           }]
         },
         "system": "http://clientregistry.org/openmrs",
-        "value": "111TTTTZZJJMMHH"
+        "value": "1110PPPYYJJHHNN"
       }],
       "name": [{
         "use": "official",
-        "family": "Joshua",
-        "given": ["Emanuel"]
+        "family": "Ally",
+        "given": ["Muawiya"]
+      }],
+      "gender": "male",
+      "birthDate": "2020-01-02",
+      "telecom": [{
+        "system": "phone",
+        "value": "774 232423"
+      }]
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "efa9af55-ed82-49e1-9c58-7a3b36155ffe",
+      "identifier": [{
+        "type": {
+          "coding": [{
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "PT",
+            "display": "Patient External Identifier"
+          }]
+        },
+        "system": "http://clientregistry.org/openmrs",
+        "value": "45sdfs2324534"
+      }],
+      "name": [{
+        "use": "official",
+        "family": "Ally",
+        "given": ["Kawthar"]
       }],
       "gender": "male",
       "birthDate": "2020-01-02",

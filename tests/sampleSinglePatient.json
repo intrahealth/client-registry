@@ -2,7 +2,7 @@
   "resourceType": "Patient",
   "identifier": [{
       "system": "http://clientregistry.org/openmrs",
-      "value": "12341238"
+      "value": "7765925"
     },
     {
       "system": "http://health.go.ug/cr/nationalid",
@@ -22,10 +22,9 @@
   "active": true,
   "name": [{
     "use": "official",
-    "family": "Ussery",
+    "family": "Shaban",
     "given": [
-      "Gerald",
-      "Ligon"
+      "Ally"
     ]
   }],
   "telecom": [{
