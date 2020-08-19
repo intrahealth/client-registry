@@ -224,7 +224,7 @@ const loadESScripts = (callback) => {
       logger.error('An error has occured while adding pro;babilistic jaro winkler script for elasticsearch');
       return callback(err);
     } else {
-      logger.info('Jaro w;inkler loaded successfully');
+      logger.info('Jaro winkler loaded successfully');
       return callback();
     }
   });

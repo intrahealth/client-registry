@@ -127,6 +127,8 @@ module.exports = () => ({
             } else {
               resourceData.entry = resourceData.entry.concat(body.entry);
             }
+          } else {
+            resourceData = { ...body };
           }
           let next = body.link && body.link.find(link => link.relation === 'next');
 

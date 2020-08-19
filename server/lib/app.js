@@ -12,6 +12,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const URI = require('urijs');
 const https = require('https');
+const mixin = require('./mixin');
 const fhirWrapper = require('./fhir')();
 const medMatching = require('./medMatching')();
 const esMatching = require('./esMatching');
@@ -395,6 +396,371 @@ function appRoutes() {
     }
   });
 
+  app.get('/ocrux/countMatchIssues', (req, res) => {
+    const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      query: `_tag=${matchIssuesURI}|potentialMatches&_summary=count`
+    }, (issuesCount) => {
+      return res.status(200).json({total: issuesCount.total});
+    });
+  });
+
+  app.get('/ocrux/getMatchIssues', (req, res) => {
+    const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+    const clientIDURI = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      query: `_tag=${matchIssuesURI}|potentialMatches`
+    }, (issues) => {
+      const internalIdURI = config.get("systems:internalid:uri");
+      let reviews = [];
+      for(let entry of issues.entry) {
+        let name = entry.resource.name.find((name) => {
+          return name.use === 'official';
+        });
+        let given = '';
+        if(name && name.given) {
+          given = name.given.join(' ');
+        }
+        let link = '';
+        if(entry.resource.link) {
+          link = entry.resource.link[0].other.reference;
+        }
+        if(link) {
+          link = link.split('/')[1];
+        }
+        const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
+          return internalIdURI.includes(identifier.system) && identifier.value;
+        });
+        let matchTag = entry.resource.meta.tag.find((tag) => {
+          return tag.system === matchIssuesURI;
+        });
+        let clientsTag = entry.resource.meta.tag.find((tag) => {
+          return tag.system === clientIDURI;
+        });
+        let review = {
+          id: entry.resource.id,
+          gender: entry.resource.gender,
+          family: name.family,
+          given,
+          birthDate: entry.resource.birthDate,
+          uid: link,
+          source: clientsTag.code,
+          source_id: validSystem.value,
+          reason: matchTag.display
+        };
+        reviews.push(review);
+      }
+      return res.status(200).json(reviews);
+    });
+  });
+
+  app.get('/ocrux/potentialMatches/:id', (req, res) => {
+    let matchResults = [];
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      id: req.params.id
+    }, (patient) => {
+      generateScoreMatric(patient, () => {
+        return res.status(200).send(matchResults);
+      });
+    });
+
+    function matrixExist(sourceID) {
+      let found = false;
+      for(let matrix of matchResults) {
+        if(matrix.source_id === sourceID) {
+          found = true;
+          break;
+        }
+        if(found) {
+          break;
+        }
+      }
+      return found;
+    }
+
+    function generateScoreMatric(patient, callback) {
+      let matchingTool;
+      if (config.get("matching:tool") === "mediator") {
+        matchingTool = medMatching;
+      } else if (config.get("matching:tool") === "elasticsearch") {
+        matchingTool = esMatching;
+      }
+      matchingTool.performMatch({
+        sourceResource: patient,
+        ignoreList: [patient.id],
+      }, ({
+        error,
+        FHIRAutoMatched,
+        FHIRPotentialMatches,
+        FHIRConflictsMatches,
+        ESMatches
+      }) => {
+        let link = patient.link[0].other.reference;
+        let goldenLink = link.split('/')[1];
+        const validSystem = mixin.getClientIdentifier(patient);
+
+        let name = patient.name.find((name) => {
+          return name.use === 'official';
+        });
+        let given = '';
+        if(name && name.given) {
+          given = name.given.join(' ');
+        }
+        let primaryPatient = {
+          id: patient.id,
+          gender: patient.gender,
+          given,
+          family: name.family,
+          birthDate: patient.birthDate,
+          uid: goldenLink,
+          ouid: goldenLink,
+          source_id: validSystem.value,
+          source: validSystem.value,
+          scores: {}
+        };
+        populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
+        matchResults.push(primaryPatient);
+        async.parallel({
+          auto: (callback) => {
+            async.eachSeries(FHIRAutoMatched.entry, (autoMatched, nxtAutoMatched) => {
+              const validSystem = mixin.getClientIdentifier(autoMatched.resource);
+              if(matrixExist(validSystem.value)) {
+                return nxtAutoMatched();
+              }
+              generateScoreMatric(autoMatched.resource, () => {
+                return nxtAutoMatched();
+              });
+            }, () => {
+              return callback(null);
+            });
+          },
+          potential: (callback) => {
+            async.eachSeries(FHIRPotentialMatches.entry, (potentialMatch, nxtPotMatch) => {
+              const validSystem = mixin.getClientIdentifier(potentialMatch.resource);
+              if(matrixExist(validSystem.value)) {
+                return nxtPotMatch();
+              }
+              generateScoreMatric(potentialMatch.resource, () => {
+                return nxtPotMatch();
+              });
+            }, () => {
+              return callback(null);
+            });
+          },
+          conflicts: (callback) => {
+            async.eachSeries(FHIRConflictsMatches.entry, (conflictMatch, nxtConflictMatch) => {
+              const validSystem = mixin.getClientIdentifier(conflictMatch.resource);
+              if(matrixExist(validSystem.value)) {
+                return nxtConflictMatch();
+              }
+              generateScoreMatric(conflictMatch.resource, () => {
+                return nxtConflictMatch();
+              });
+            }, () => {
+              return callback(null);
+            });
+          }
+        }, () => {
+          return callback();
+        });
+      });
+    }
+    function populateScores(patient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches) {
+      for(let esmatch of ESMatches) {
+        for(let autoMatch of esmatch.autoMatchResults) {
+          let patResource = FHIRAutoMatched.entry.find((entry) => {
+            return entry.resource.id === autoMatch['_id'];
+          });
+          const validSystem = mixin.getClientIdentifier(patResource.resource);
+          patient.scores[validSystem.value] = autoMatch['_score'];
+        }
+        for(let potMatch of esmatch.potentialMatchResults) {
+          let patResource = FHIRPotentialMatches.entry.find((entry) => {
+            return entry.resource.id === potMatch['_id'];
+          });
+          const validSystem = mixin.getClientIdentifier(patResource.resource);
+          patient.scores[validSystem.value] = potMatch['_score'];
+        }
+        for(let conflMatch of esmatch.conflictsMatchResults) {
+          let patResource = FHIRConflictsMatches.entry.find((entry) => {
+            return entry.resource.id === conflMatch['_id'];
+          });
+          const validSystem = mixin.getClientIdentifier(patResource.resource);
+          patient.scores[validSystem.value] = conflMatch['_score'];
+        }
+      }
+    }
+  });
+
+  app.post('/ocrux/resolveMatchIssue', (req, res) => {
+    let resolves = req.body.resolves;
+    let resolvingFrom = req.body.resolvingFrom;
+    let resolvingFromResource = '';
+    let query = '';
+    for(let patient of resolves) {
+      if(patient.uid !== patient.ouid) {
+        if(!query) {
+          query = `_id=${patient.id},${patient.ouid},${patient.uid}`;
+          logger.error(query);
+        } else {
+          query += `,${patient.id},${patient.ouid},${patient.uid}`;
+        }
+      }
+    }
+    query += `,${resolvingFrom}`;
+    if(query) {
+      const bundle = {};
+      bundle.type = 'batch';
+      bundle.resourceType = 'Bundle';
+      bundle.entry = [];
+      fhirWrapper.getResource({
+        resource: 'Patient',
+        query,
+        noCaching: true
+      }, (resourceData) => {
+        resolvingFromResource = resourceData.entry.find((entry) => {
+          return entry.resource.id === resolvingFrom;
+        });
+        for(let patient of resolves) {
+          if(patient.uid !== patient.ouid) {
+            let patientResource = resourceData.entry.find((entry) => {
+              return entry.resource.id === patient.id;
+            });
+            let oldCRUID = resourceData.entry.find((entry) => {
+              return entry.resource.id === patient.ouid;
+            });
+            let newCRUID = resourceData.entry.find((entry) => {
+              return entry.resource.id === patient.uid;
+            });
+            if(patient.uid.startsWith('New CR ID')) {
+              newCRUID = {};
+              newCRUID.resource = fhirWrapper.createGoldenRecord();
+              newCRUID.resource.link = [];
+            }
+            // remove old CRUID  and add new CRUID from/to patient
+            for(let index in patientResource.resource.link) {
+              let linkID = patientResource.resource.link[index].other.reference.split('/')[1];
+              if(linkID === oldCRUID.resource.id) {
+                patientResource.resource.link.splice(index, 1);
+              }
+            }
+            patientResource.resource.link.push({
+              other: {
+                reference: 'Patient/' + newCRUID.resource.id
+              },
+              type: 'refer'
+            });
+            bundle.entry.push({
+              resource: patientResource.resource,
+              request: {
+                method: 'PUT',
+                url: 'Patient/' + patientResource.resource.id
+              }
+            });
+            // end of modifying patient
+
+            //remove patient from old CRUID
+            for(let index in oldCRUID.resource.link) {
+              let patientID = oldCRUID.resource.link[index].other.reference.split('/')[1];
+              if(patientID === patientResource.resource.id) {
+                oldCRUID.resource.link.splice(index, 1);
+              }
+            }
+            if(oldCRUID.resource.link.length === 0) {
+              oldCRUID.resource.link.push({
+                other: {
+                  reference: 'Patient/' + newCRUID.resource.id
+                },
+                type: 'replaced-by'
+              });
+            }
+            bundle.entry.push({
+              resource: oldCRUID.resource,
+              request: {
+                method: 'PUT',
+                url: 'Patient/' + oldCRUID.resource.id
+              }
+            });
+            // end of removing patient from old CRUID
+
+            //add patient into new CRUID
+            newCRUID.resource.link.push({
+              other: {
+                reference: 'Patient/' + patientResource.resource.id
+              },
+              type: 'seealso'
+            });
+            bundle.entry.push({
+              resource: newCRUID.resource,
+              request: {
+                method: 'PUT',
+                url: 'Patient/' + newCRUID.resource.id
+              }
+            });
+            //end of adding patient into new CRUID
+          }
+        }
+        fhirWrapper.saveResource({ resourceData: bundle}, (err) => {
+          if(err) {
+            return res.status(500).send();
+          }
+          let matchingTool;
+          if (config.get("matching:tool") === "mediator") {
+            matchingTool = medMatching;
+          } else if (config.get("matching:tool") === "elasticsearch") {
+            matchingTool = esMatching;
+          }
+          matchingTool.performMatch({
+            sourceResource: resolvingFromResource.resource,
+            ignoreList: [resolvingFromResource.resource.id],
+          }, ({
+            FHIRPotentialMatches,
+            FHIRConflictsMatches
+          }) => {
+            const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+            if(FHIRPotentialMatches.entry.length === 0) {
+              if(resolvingFromResource.resource.meta && resolvingFromResource.resource.meta.tag) {
+                for(let tagIndex in resolvingFromResource.resource.meta.tag) {
+                  let tag = resolvingFromResource.resource.meta.tag[tagIndex];
+                  if(tag.system === matchIssuesURI && tag.code === 'potentialMatches') {
+                    resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
+                  }
+                }
+              }
+            }
+            if(FHIRConflictsMatches.entry.length === 0) {
+              if(resolvingFromResource.resource.meta && resolvingFromResource.resource.meta.tag) {
+                for(let tagIndex in resolvingFromResource.resource.meta.tag) {
+                  let tag = resolvingFromResource.resource.meta.tag[tagIndex];
+                  if(tag.system === matchIssuesURI && tag.code === 'conflictMatches') {
+                    resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
+                  }
+                }
+              }
+            }
+            bundle.entry = [];
+            bundle.entry.push({
+              resource: resolvingFromResource.resource,
+              request: {
+                method: 'PUT',
+                url: 'Patient/' + resolvingFromResource.resource.id
+              }
+            });
+            fhirWrapper.saveResource({ resourceData: bundle}, (err) => {
+              if(err) {
+                return res.status(500).send();
+              }
+              return res.status(200).send();
+            });
+          });
+        });
+      });
+    }
+  });
+
   //this API is deprecated, use /fhir/Patient
   app.post('/Patient', (req, res) => {
     logger.info('Received a request to add new patient');
@@ -671,14 +1037,68 @@ function appRoutes() {
       matchingTool.performMatch({
         sourceResource: patient,
         ignoreList: [patient.id],
-      }, (err, matches, ESMatches, matchedGoldenRecords) => {
-        if (err) {
+      }, ({
+        error,
+        FHIRAutoMatched,
+        FHIRPotentialMatches,
+        FHIRConflictsMatches,
+        ESMatches,
+        matchedGoldenRecords
+      }) => {
+        if (error) {
           operSummary.outcome = '8';
           operSummary.outcomeDesc = 'An error occured while finding matches';
-          return callback(err, responseBundle, operationSummary);
+          return callback(error, responseBundle, operationSummary);
         }
         operSummary.ESMatches = ESMatches;
-        if (matches.entry && matches.entry.length === 0) {
+
+        // if there is potential matches or conflict matches then add a tag
+        const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+        if(FHIRPotentialMatches.entry.length > 0) {
+          if(!patient.meta) {
+            patient.meta = {};
+          }
+          if(!patient.meta.tag) {
+            patient.meta.tag = [];
+          }
+          patient.meta.tag.push({
+            system: matchIssuesURI,
+            code: 'potentialMatches',
+            display: 'Potential Matches Exists'
+          });
+        } else {
+          // remove the potential match tag
+          for(let tagIndex in patient.meta.tag) {
+            let tag = patient.meta.tag[tagIndex];
+            if(tag.system === matchIssuesURI && tag.code === 'potentialMatches') {
+              patient.meta.tag.splice(tagIndex, 1);
+            }
+          }
+        }
+
+        if(FHIRConflictsMatches.entry.length > 0) {
+          if(!patient.meta) {
+            patient.meta = {};
+          }
+          if(!patient.meta.tag) {
+            patient.meta.tag = [];
+          }
+          patient.meta.tag.push({
+            system: matchIssuesURI,
+            code: 'conflictMatches',
+            display: 'Conflict Matches Exists'
+          });
+        } else {
+          // remove the potential match tag
+          for(let tagIndex in patient.meta.tag) {
+            let tag = patient.meta.tag[tagIndex];
+            if(tag.system === matchIssuesURI && tag.code === 'conflictMatches') {
+              patient.meta.tag.splice(tagIndex, 1);
+            }
+          }
+        }
+        // end of tagging match issues
+        if (matchedGoldenRecords.entry && matchedGoldenRecords.entry.length === 0) {
           let goldenRecord;
           // check if this patient had a golden record and that golden record has one link which is this patient, then reuse
           const existLinkPromise = new Promise((resolve) => {
@@ -772,108 +1192,79 @@ function appRoutes() {
               return callback(err);
             });
           });
-        } else if (matches.entry && matches.entry.length > 0) {
-          const links = getLinksFromResources(matches);
-          if (links.length === 0) {
-            operSummary.outcome = '8';
-            operSummary.outcomeDesc = 'Matched resource(s) dont have CRUID';
-            logger.error('No links from resource');
-            return callback(true);
-          } else {
-            let query;
-            for (const link of links) {
-              const linkArr = link.split('/');
-              const [resourceName, id] = linkArr;
-              if (query) {
-                query += ',' + id;
-              } else {
-                query = '_id=' + id;
-              }
-            }
-            if (!query) {
-              operSummary.outcome = '8';
-              operSummary.outcomeDesc = 'Wasnt able to build queries for fetching CRUID in the database';
-              logger.error('Cant build query from resource id');
-              return callback(true);
-            }
-            if (!matchedGoldenRecords || !matchedGoldenRecords.entry || matchedGoldenRecords.entry.length === 0) {
-              operSummary.outcome = '8';
-              operSummary.outcomeDesc = 'Querying for CRUID details from FHIR Server returned nothing';
-              return callback(true);
-            }
-            if (currentLinks.length > 0) {
-              /**
-               * The purpose for this piece of code is to remove this patient from existing golden links
-               * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
-               * otherwise just remove the patient from this exisitng golden link
-               * It also remove the exisitng golden link from the patient
-               */
-              for (const currentLink of currentLinks) {
-                const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
-                  return link.other.reference === 'Patient/' + patient.id;
+        } else if (matchedGoldenRecords.entry && matchedGoldenRecords.entry.length > 0) {
+          if (currentLinks.length > 0) {
+            /**
+             * The purpose for this piece of code is to remove this patient from existing golden links
+             * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
+             * otherwise just remove the patient from this exisitng golden link
+             * It also remove the exisitng golden link from the patient
+             */
+            for (const currentLink of currentLinks) {
+              const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
+                return link.other.reference === 'Patient/' + patient.id;
+              });
+              let replacedByNewGolden = false;
+              if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
+                const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
+                  return entry.resource.id === currentLink.resource.id;
                 });
-                let replacedByNewGolden = false;
-                if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
-                  const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
-                    return entry.resource.id === currentLink.resource.id;
-                  });
-                  if (!inNewMatches) {
-                    replacedByNewGolden = true;
-                  }
+                if (!inNewMatches) {
+                  replacedByNewGolden = true;
                 }
-                for (const index in currentLink.resource.link) {
-                  if (currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
-                    // remove patient from golden link
-                    if (replacedByNewGolden) {
-                      currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
-                      currentLink.resource.link[index].type = 'replaced-by';
-                    } else {
-                      currentLink.resource.link.splice(index, 1);
-                    }
-                    // remove golden link from patient
-                    for (const index in patient.link) {
-                      if (patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
-                        patient.link.splice(index, 1);
-                      }
-                    }
-                    bundle.entry.push({
-                      resource: currentLink.resource,
-                      request: {
-                        method: 'PUT',
-                        url: `Patient/${currentLink.resource.id}`,
-                      },
-                    });
+              }
+              for (const index in currentLink.resource.link) {
+                if (currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
+                  // remove patient from golden link
+                  if (replacedByNewGolden) {
+                    currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
+                    currentLink.resource.link[index].type = 'replaced-by';
+                  } else {
+                    currentLink.resource.link.splice(index, 1);
                   }
+                  // remove golden link from patient
+                  for (const index in patient.link) {
+                    if (patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
+                      patient.link.splice(index, 1);
+                    }
+                  }
+                  bundle.entry.push({
+                    resource: currentLink.resource,
+                    request: {
+                      method: 'PUT',
+                      url: `Patient/${currentLink.resource.id}`,
+                    },
+                  });
                 }
               }
             }
-            // adding new links now to the patient
-            for (const goldenRecord of matchedGoldenRecords.entry) {
-              operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
-              responseBundle.entry.push({
-                response: {
-                  location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
-                }
-              });
-              addLinks(patient, goldenRecord.resource);
-              bundle.entry.push({
-                resource: patient,
-                request: {
-                  method: 'PUT',
-                  url: `Patient/${patient.id}`,
-                },
-              }, {
-                resource: goldenRecord.resource,
-                request: {
-                  method: 'PUT',
-                  url: `Patient/${goldenRecord.resource.id}`,
-                },
-              });
-            }
-            operSummary.FHIRMatches = matches.entry;
-            operSummary.ESMatches = ESMatches;
-            return callback();
           }
+          // adding new links now to the patient
+          for (const goldenRecord of matchedGoldenRecords.entry) {
+            operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
+            responseBundle.entry.push({
+              response: {
+                location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
+              }
+            });
+            addLinks(patient, goldenRecord.resource);
+            bundle.entry.push({
+              resource: patient,
+              request: {
+                method: 'PUT',
+                url: `Patient/${patient.id}`,
+              },
+            }, {
+              resource: goldenRecord.resource,
+              request: {
+                method: 'PUT',
+                url: `Patient/${goldenRecord.resource.id}`,
+              },
+            });
+          }
+          operSummary.FHIRMatches = FHIRAutoMatched.entry;
+          operSummary.ESMatches = ESMatches;
+          return callback();
         } else {
           operSummary.outcome = '8';
           operSummary.outcomeDesc = 'Invalid response returned when attempted to get matches';

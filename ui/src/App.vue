@@ -4,6 +4,7 @@
       app
       color="primary"
       dark
+      clipped-right
     >
       <v-toolbar-title class="display-1">Open Client Registry</v-toolbar-title>
       <v-spacer></v-spacer>
@@ -14,6 +15,15 @@
           v-if='!$store.state.denyAccess'
         >
           <v-icon>mdi-home</v-icon> Home
+        </v-btn>
+        <v-btn
+          color="primary"
+          to="/review"
+          v-if='!$store.state.denyAccess'
+        >
+          <v-badge color="error" :content="totalMatchIssues" >
+          <v-icon>mdi-alert</v-icon> Action Required
+          </v-badge>
         </v-btn>
         <v-btn
           color="primary"
@@ -33,7 +43,7 @@
       <v-spacer />
     </v-app-bar>
 
-    <v-content>
+    <v-main>
       <center>
         <v-alert
           :style="{width: $store.state.alert.width}"
@@ -65,7 +75,7 @@
         </v-card>
       </v-dialog>
       <router-view />
-    </v-content>
+    </v-main>
   </v-app>
 </template>
 
@@ -76,6 +86,20 @@ import { generalMixin } from "@/mixins/generalMixin";
 export default {
   name: "App",
   mixins: [generalMixin],
+  data() {
+    return {
+      totalMatchIssues: 0
+    }
+  },
+  methods: {
+    countMatchIssues() {
+      axios.get('/ocrux/countMatchIssues').then((response) => {
+        if(response.data && response.data.total) {
+          this.totalMatchIssues = response.data.total
+        }
+      })
+    }
+  },
   created() {
     if (VueCookies.get("token") && VueCookies.get("userID")) {
       this.$store.state.auth.token = VueCookies.get("token");
@@ -94,6 +118,7 @@ export default {
         this.getClients();
       });
     }
+    this.countMatchIssues();
   }
 };
 </script>

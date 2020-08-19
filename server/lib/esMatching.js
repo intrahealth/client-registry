@@ -43,7 +43,7 @@ const buildQuery = (sourceResource, decisionRule) => {
     },
     boost_mode: "sum",
     functions: [],
-    min_score: decisionRule.threshold
+    min_score: decisionRule.potentialMatchThreshold
   };
   let esfunction = {
     script_score: {
@@ -176,7 +176,13 @@ const performMatch = ({
   let maxScore;
   let resourceID; //ID of a matched resource that has the highest score
   const ESMatches = [];
-  const FHIRMatches = {
+  const FHIRPotentialMatches = {
+    entry: []
+  };
+  const FHIRAutoMatched = {
+    entry: []
+  };
+  const FHIRConflictsMatches = {
     entry: []
   };
   refreshIndex(() => {
@@ -207,7 +213,9 @@ const performMatch = ({
           logger.error(JSON.stringify(body, 0, 2));
           return nxtRule();
         }
-        const hits = [];
+        const potentialHits = [];
+        const autoHits = [];
+        const conflictsHits = []
         for (const hit of body.hits.hits) {
           const id = hit['_id'];
           if (ignoreList.includes(id)) {
@@ -217,60 +225,91 @@ const performMatch = ({
           if (isBroken) {
             continue;
           }
-          hits.push(hit);
+          const score = parseFloat(hit['_score']);
+          if(score < decisionRule.autoMatchThreshold) {
+            potentialHits.push(hit);
+          } else if(score >= decisionRule.autoMatchThreshold) {
+            autoHits.push(hit);
+          }
 
           // take the one with the highest score
-          const score = parseFloat(hit['_score']);
-          if (score > parseFloat(maxScore) || !maxScore) {
+          if (score > parseFloat(maxScore) || (!maxScore && score >= decisionRule.autoMatchThreshold)) {
             resourceID = id;
             maxScore = score;
           }
         }
         ESMatches.push({
           rule: decisionRule,
-          results: hits,
+          potentialMatchResults: potentialHits,
+          autoMatchResults: autoHits,
+          conflictsMatchResults: conflictsHits,
           query: esquery
         });
         return nxtRule();
       });
     }, () => {
-      if (resourceID) {
-        let query;
-        for (const esmatched of ESMatches) {
-          for (const res of esmatched.results) {
-            if (!query) {
-              query = '_id=' + res['_id'];
-            } else {
-              query += ',' + res['_id'];
+      const goldenRecords = {
+        entry: []
+      };
+      const fhirMatchResults = {
+        entry: []
+      };
+      async.parallel({
+        auto: (callback) => {
+          if(resourceID) {
+            let query;
+            for (const esmatched of ESMatches) {
+              for (const res of esmatched.autoMatchResults) {
+                if (!query) {
+                  query = '_id=' + res['_id'];
+                } else {
+                  query += ',' + res['_id'];
+                }
+              }
+            }
+            query += '&_include=Patient:link';
+            fhirWrapper.getResource({
+              resource: 'Patient',
+              query,
+              noCaching: true
+            }, (resourceData) => {
+              goldenRecords.entry = resourceData.entry.filter((entry) => {
+                return entry.search.mode === 'include';
+              });
+              fhirMatchResults.entry = resourceData.entry.filter((entry) => {
+                return entry.search.mode === 'match';
+              });
+              return callback(null);
+            });
+          } else {
+            return callback(null);
+          }
+        },
+        potential: (callback) => {
+          let query;
+          for (const esmatched of ESMatches) {
+            for (const res of esmatched.potentialMatchResults) {
+              if (!query) {
+                query = '_id=' + res['_id'];
+              } else {
+                query += ',' + res['_id'];
+              }
             }
           }
-        }
-        if (!query) {
-          logger.error('An expected error has occured, cant pull FHIR resources from ' + ESMatches);
-          error = true;
-          return callback(error);
-        }
-        query += '&_include=Patient:link';
-        fhirWrapper.getResource({
-          resource: 'Patient',
-          query,
-          noCaching: true
-        }, (resourceData) => {
-          const goldenRecords = {
-            entry: []
-          };
-          goldenRecords.entry = resourceData.entry.filter((entry) => {
-            return entry.search.mode === 'include';
+          fhirWrapper.getResource({
+            resource: 'Patient',
+            query,
+            noCaching: true
+          }, (resourceData) => {
+            FHIRPotentialMatches.entry = resourceData.entry;
+            return callback(null);
           });
-          const results = {
-            entry: []
-          };
-          results.entry = resourceData.entry.filter((entry) => {
-            return entry.search.mode === 'match';
-          });
+        }
+      }, () => {
+        if(resourceID) {
           // get golden id of the resource that had higher score
           let goldenID;
-          for (const entry of results.entry) {
+          for (const entry of fhirMatchResults.entry) {
             if (entry.resource.id === resourceID) {
               if (entry.resource.link && Array.isArray(entry.resource.link) && entry.resource.link.length > 0) {
                 goldenID = entry.resource.link[0].other.reference;
@@ -278,30 +317,85 @@ const performMatch = ({
             }
           }
           // remove any other matched resources that has different golden id than the one with highest score
-          FHIRMatches.entry = results.entry.filter((entry) => {
-            return entry.resource.link.find((link) => {
-              return link.other.reference === goldenID;
+          for(let fhirMatch of fhirMatchResults.entry) {
+            let sameGoldenID = fhirMatch.resource.link.find((link) => {
+              return link && link.other && link.other.reference === goldenID;
             });
-          });
+            if(sameGoldenID) {
+              FHIRAutoMatched.entry.push(fhirMatch);
+            } else {
+              FHIRConflictsMatches.entry.push(fhirMatch);
+            }
+          }
+
+          // remove any other matched ES resources that has different golden id than the one with highest score
+          for (const index in ESMatches) {
+            let deletedAutoIndex = 0;
+            let total = ESMatches[index].autoMatchResults.length;
+            for(let autoIndex = 0; autoIndex < total; autoIndex++) {
+              let autoMatch = ESMatches[index].autoMatchResults[autoIndex - deletedAutoIndex];
+              let exist = FHIRAutoMatched.entry.find((entry) => {
+                return entry.resource.id === autoMatch['_id'];
+              });
+              if(!exist) {
+                ESMatches[index].conflictsMatchResults.push(autoMatch);
+                ESMatches[index].autoMatchResults.splice(autoIndex - deletedAutoIndex, 1);
+                deletedAutoIndex++;
+              }
+            }
+          }
+
+          //move to automatch any potential match that has the same golden id as those on auto match
+          let deletedIndex = 0;
+          let total = FHIRPotentialMatches.entry.length;
+          for(let potentialIndex = 0; potentialIndex < total; potentialIndex++) {
+            let potentialMatch = FHIRPotentialMatches.entry[potentialIndex - deletedIndex].resource;
+            let sameGoldenID = potentialMatch.link.find((link) => {
+              return link && link.other && link.other.reference === goldenID;
+            });
+            if(sameGoldenID) {
+              FHIRPotentialMatches.entry.splice(potentialIndex - deletedIndex, 1);
+              deletedIndex++;
+              FHIRAutoMatched.entry.push(potentialMatch);
+              for(let esIndex in ESMatches) {
+                let esmatch = ESMatches[esIndex];
+                for(let esPotIndex in esmatch.potentialMatchResults) {
+                  let esPotMatch = esmatch.potentialMatchResults[esPotIndex];
+                  if(esPotMatch['_id'] === potentialMatch.id) {
+                    ESMatches[esIndex].potentialMatchResults.splice(esPotIndex, 1);
+                    ESMatches[esIndex].autoMatchResults.push(esPotMatch);
+                  }
+                }
+              }
+            }
+          }
+          // end of moving automatch
 
           goldenRecords.entry = goldenRecords.entry.filter((entry) => {
             return entry.resource.resourceType + '/' + entry.resource.id === goldenID;
           });
 
-          for (const index in ESMatches) {
-            ESMatches[index].results = ESMatches[index].results.filter((results) => {
-              return FHIRMatches.entry.find((entry) => {
-                return entry.resource.id === results['_id'];
-              });
-            });
-          }
           logger.info('Done matching');
-          return callback(error, FHIRMatches, ESMatches, goldenRecords);
-        });
-      } else {
-        logger.info('Done matching');
-        return callback(error, FHIRMatches, ESMatches, []);
-      }
+          return callback({
+            error,
+            FHIRAutoMatched,
+            FHIRPotentialMatches,
+            FHIRConflictsMatches,
+            ESMatches,
+            matchedGoldenRecords: goldenRecords
+          });
+        } else {
+          logger.info('Done matching');
+          return callback({
+            error,
+            FHIRAutoMatched,
+            FHIRPotentialMatches,
+            FHIRConflictsMatches,
+            ESMatches,
+            matchedGoldenRecords: { entry: [] }
+          });
+        }
+      });
     });
   });
 };

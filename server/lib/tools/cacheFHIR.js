@@ -563,8 +563,10 @@ const fhir2ES = ({
                     extraPath: ['_history'],
                     query: '_since=' + lastSync,
                   }, data => {
-                    data.entry = data.entry.reverse();
-                    resourceData = resourceData.concat(data.entry);
+                    if(data.entry) {
+                      data.entry = data.entry.reverse();
+                      resourceData = resourceData.concat(data.entry);
+                    }
                     resolve();
                   });
                 }

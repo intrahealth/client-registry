@@ -38,7 +38,8 @@
         "espath": "phone"
       }
     },
-    "threshold": 102,
+    "potentialMatchThreshold": 100,
+    "autoMatchThreshold": 102,
     "filters": {
       "gender": {
         "fhirpath": "gender",

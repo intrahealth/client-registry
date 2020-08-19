@@ -116,7 +116,6 @@
 import axios from "axios";
 import { required } from "vuelidate/lib/validators";
 
-const backendServer = process.env.BACKEND_SERVER;
 export default {
   validations: {
     userName: { required },
@@ -197,13 +196,12 @@ export default {
           this.$store.state.alert.type = "success";
           this.$refs.form.reset();
         })
-        .catch(err => {
+        .catch(() => {
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
           this.$store.state.alert.msg =
             "This user was not added, ensure userName is not used";
           this.$store.state.alert.type = "error";
-          console.log(err.response.data.error);
         });
     }
   }

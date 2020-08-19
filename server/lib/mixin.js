@@ -5,6 +5,13 @@ const logger = require('./winston');
 const config = require('./config');
 const env = process.env.NODE_ENV || 'development';
 
+const getClientIdentifier = (resource) => {
+  const internalIdURI = config.get("systems:internalid:uri");
+  const validSystem = resource.identifier && resource.identifier.find(identifier => {
+    return internalIdURI.includes(identifier.system) && identifier.value;
+  });
+  return validSystem;
+};
 const setNestedKey = (obj, path, value, callback) => {
   if (path.length === 1) {
     obj[path] = value;
@@ -60,5 +67,6 @@ const flattenComplex = extension => {
 
 module.exports = {
   updateConfigFile,
-  flattenComplex
+  flattenComplex,
+  getClientIdentifier
 };

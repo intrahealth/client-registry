@@ -19,7 +19,9 @@ module.exports = {
   plugins: [
     'vue',
   ],
-  rules: {},
+  rules: {
+    'no-console': 'off'
+  },
 };
 
 // module.exports = {
