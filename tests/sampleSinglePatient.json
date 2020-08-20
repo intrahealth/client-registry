@@ -2,7 +2,7 @@
   "resourceType": "Patient",
   "identifier": [{
       "system": "http://clientregistry.org/openmrs",
-      "value": "8664424499"
+      "value": "patient1"
     },
     {
       "system": "http://health.go.ug/cr/nationalid",

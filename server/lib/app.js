@@ -22,6 +22,7 @@ const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
 
 var userRouter = require('./user');
+const winston = require('winston/lib/winston/config');
 
 const serverOpts = {
   key: fs.readFileSync(`${__dirname}/../certificates/server_key.pem`),
@@ -604,12 +605,12 @@ function appRoutes() {
       if(patient.uid !== patient.ouid) {
         if(!query) {
           query = `_id=${patient.id},${patient.ouid},${patient.uid}`;
-          logger.error(query);
         } else {
           query += `,${patient.id},${patient.ouid},${patient.uid}`;
         }
       }
     }
+
     query += `,${resolvingFrom}`;
     if(query) {
       const bundle = {};
@@ -621,9 +622,6 @@ function appRoutes() {
         query,
         noCaching: true
       }, (resourceData) => {
-        resolvingFromResource = resourceData.entry.find((entry) => {
-          return entry.resource.id === resolvingFrom;
-        });
         for(let patient of resolves) {
           if(patient.uid !== patient.ouid) {
             let patientResource = resourceData.entry.find((entry) => {
@@ -703,7 +701,7 @@ function appRoutes() {
             //end of adding patient into new CRUID
           }
         }
-        fhirWrapper.saveResource({ resourceData: bundle}, (err) => {
+        fhirWrapper.saveResource({ resourceData: bundle }, (err) => {
           if(err) {
             return res.status(500).send();
           }
@@ -713,13 +711,56 @@ function appRoutes() {
           } else if (config.get("matching:tool") === "elasticsearch") {
             matchingTool = esMatching;
           }
+
+          resolvingFromResource = bundle.entry.find((entry) => {
+            return entry.resource.id === resolvingFrom;
+          });
+          if(!resolvingFromResource) {
+            resolvingFromResource = resourceData.entry.find((entry) => {
+              return entry.resource.id === resolvingFrom;
+            });
+          }
           matchingTool.performMatch({
             sourceResource: resolvingFromResource.resource,
             ignoreList: [resolvingFromResource.resource.id],
-          }, ({
+          }, async ({
             FHIRPotentialMatches,
             FHIRConflictsMatches
           }) => {
+            // remove any resolved conflicts
+            FHIRConflictsMatches.entry = FHIRConflictsMatches.entry.filter((entry) => {
+              let needsResolving = true;
+              let link;
+              if(entry.resource.link) {
+                link = entry.resource.link[0].split('/')[1];
+              }
+              for(let patient of resolves) {
+                if(patient.id === resolvingFrom && patient.uid === link) {
+                  needsResolving = false;
+                  break;
+                }
+              }
+              return needsResolving;
+            });
+            // end of removing resolved conflicts
+
+            // remove any resolved potential matches
+            FHIRPotentialMatches.entry = FHIRPotentialMatches.entry.filter((entry) => {
+              let needsResolving = true;
+              let link;
+              if(entry.resource.link) {
+                link = entry.resource.link[0].other.reference.split('/')[1];
+              }
+              for(let patient of resolves) {
+                if(patient.id === resolvingFrom && patient.uid === link) {
+                  needsResolving = false;
+                  break;
+                }
+              }
+              return needsResolving;
+            });
+            // end of removing any resolved potential matches
+
             const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
             if(FHIRPotentialMatches.entry.length === 0) {
               if(resolvingFromResource.resource.meta && resolvingFromResource.resource.meta.tag) {
@@ -729,6 +770,44 @@ function appRoutes() {
                     resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
                   }
                 }
+
+                let parameters = {
+                  resourceType: 'Parameters',
+                  parameter: [{
+                    name: 'meta',
+                    valueMeta: {
+                      tag: {
+                        system: 'http://openclientregistry.org/fhir/matchIssues',
+                        code: 'potentialMatches',
+                        display: 'Potential Matches'
+                      }
+                    }
+                  }]
+                };
+                logger.info('Removing potential match tag');
+                await fhirWrapper["$meta-delete"]({
+                  resourceParameters: parameters,
+                  resourceType: 'Patient',
+                  resourceID: resolvingFromResource.resource.id
+                });
+                logger.info('Potential match tag removed');
+              }
+            } else {
+              if(!resolvingFromResource.resource.meta) {
+                resolvingFromResource.resource.meta = {};
+              }
+              if(!resolvingFromResource.resource.meta.tag) {
+                resolvingFromResource.resource.meta.tag = [];
+              }
+              let tagExist = resolvingFromResource.resource.meta.tag.find((tag) => {
+                return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
+              });
+              if(!tagExist) {
+                resolvingFromResource.resource.meta.tag.push({
+                  system: 'http://openclientregistry.org/fhir/matchIssues',
+                  code: 'potentialMatches',
+                  display: 'Potential Matches'
+                });
               }
             }
             if(FHIRConflictsMatches.entry.length === 0) {
@@ -739,6 +818,42 @@ function appRoutes() {
                     resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
                   }
                 }
+
+                let parameters = {
+                  resourceType: 'Parameters',
+                  parameter: [{
+                    name: 'meta',
+                    valueMeta: {
+                      tag: {
+                        system: 'http://openclientregistry.org/fhir/matchIssues',
+                        code: 'conflictMatches',
+                        display: 'Conflict On Match'
+                      }
+                    }
+                  }]
+                };
+                await fhirWrapper["$meta-delete"]({
+                  resourceParameters: parameters,
+                  resourceType: 'Patient',
+                  resourceID: resolvingFromResource.resource.id
+                });
+              }
+            } else {
+              if(!resolvingFromResource.resource.meta) {
+                resolvingFromResource.resource.meta = {};
+              }
+              if(!resolvingFromResource.resource.meta.tag) {
+                resolvingFromResource.resource.meta.tag = [];
+              }
+              let tagExist = resolvingFromResource.resource.meta.tag.find((tag) => {
+                return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
+              });
+              if(!tagExist) {
+                resolvingFromResource.resource.meta.tag.push({
+                  system: 'http://openclientregistry.org/fhir/matchIssues',
+                  code: 'conflictMatches',
+                  display: 'Conflict On Match'
+                });
               }
             }
             bundle.entry = [];
@@ -1034,10 +1149,15 @@ function appRoutes() {
       } else if (config.get("matching:tool") === "elasticsearch") {
         matchingTool = esMatching;
       }
+      let currentGoldenLink = '';
+      if(currentLinks.length > 0) {
+        currentGoldenLink = currentLinks[0].resource.id;
+      }
       matchingTool.performMatch({
         sourceResource: patient,
         ignoreList: [patient.id],
-      }, ({
+        currentGoldenLink
+      }, async ({
         error,
         FHIRAutoMatched,
         FHIRPotentialMatches,
@@ -1064,7 +1184,7 @@ function appRoutes() {
           patient.meta.tag.push({
             system: matchIssuesURI,
             code: 'potentialMatches',
-            display: 'Potential Matches Exists'
+            display: 'Potential Matches'
           });
         } else {
           // remove the potential match tag
@@ -1074,8 +1194,26 @@ function appRoutes() {
               patient.meta.tag.splice(tagIndex, 1);
             }
           }
-        }
 
+          let parameters = {
+            resourceType: 'Parameters',
+            parameter: [{
+              name: 'meta',
+              valueMeta: {
+                tag: {
+                  system: 'http://openclientregistry.org/fhir/matchIssues',
+                  code: 'potentialMatches',
+                  display: 'Potential Matches'
+                }
+              }
+            }]
+          };
+          await fhirWrapper["$meta-delete"]({
+            resourceParameters: parameters,
+            resourceType: 'Patient',
+            resourceID: patient.id
+          });
+        }
         if(FHIRConflictsMatches.entry.length > 0) {
           if(!patient.meta) {
             patient.meta = {};
@@ -1086,7 +1224,7 @@ function appRoutes() {
           patient.meta.tag.push({
             system: matchIssuesURI,
             code: 'conflictMatches',
-            display: 'Conflict Matches Exists'
+            display: 'Conflict On Match'
           });
         } else {
           // remove the potential match tag
@@ -1096,6 +1234,25 @@ function appRoutes() {
               patient.meta.tag.splice(tagIndex, 1);
             }
           }
+
+          let parameters = {
+            resourceType: 'Parameters',
+            parameter: [{
+              name: 'meta',
+              valueMeta: {
+                tag: {
+                  system: 'http://openclientregistry.org/fhir/matchIssues',
+                  code: 'conflictMatches',
+                  display: 'Conflict On Match'
+                }
+              }
+            }]
+          };
+          await fhirWrapper["$meta-delete"]({
+            resourceParameters: parameters,
+            resourceType: 'Patient',
+            resourceID: patient.id
+          });
         }
         // end of tagging match issues
         if (matchedGoldenRecords.entry && matchedGoldenRecords.entry.length === 0) {

@@ -169,6 +169,7 @@ const buildQuery = (sourceResource, decisionRule) => {
 
 const performMatch = ({
   sourceResource,
+  currentGoldenLink,
   ignoreList
 }, callback) => {
   logger.info('Finding matches for patient ' + JSON.stringify(sourceResource.identifier, 0, 2));
@@ -215,7 +216,7 @@ const performMatch = ({
         }
         const potentialHits = [];
         const autoHits = [];
-        const conflictsHits = []
+        const conflictsHits = [];
         for (const hit of body.hits.hits) {
           const id = hit['_id'];
           if (ignoreList.includes(id)) {
@@ -267,6 +268,9 @@ const performMatch = ({
                 }
               }
             }
+            if(!query) {
+              return callback(null);
+            }
             query += '&_include=Patient:link';
             fhirWrapper.getResource({
               resource: 'Patient',
@@ -277,6 +281,21 @@ const performMatch = ({
                 return entry.search.mode === 'include';
               });
               fhirMatchResults.entry = resourceData.entry.filter((entry) => {
+                //find and use another match that has the same score as resourceID but is linked to the current golden ID of the submitted patient
+                if(entry.resource.link) {
+                  for(let link of entry.resource.link) {
+                    let sameScore = ESMatches.find((esmatch) => {
+                      return esmatch.autoMatchResults.find((autoM) => {
+                        return autoM['_score'] === maxScore && entry.resource.id === autoM['_id'] && autoM['_id'] !== resourceID;
+                      });
+                    });
+                    if(link.other.reference.split('/')[1] === currentGoldenLink && sameScore) {
+                      resourceID = entry.resource.id;
+                    }
+                  }
+                }
+                // end of finding another match
+
                 return entry.search.mode === 'match';
               });
               return callback(null);
@@ -295,6 +314,9 @@ const performMatch = ({
                 query += ',' + res['_id'];
               }
             }
+          }
+          if(!query) {
+            return callback(null);
           }
           fhirWrapper.getResource({
             resource: 'Patient',

@@ -94,7 +94,7 @@ export default {
   methods: {
     countMatchIssues() {
       axios.get('/ocrux/countMatchIssues').then((response) => {
-        if(response.data && response.data.total) {
+        if(response.data) {
           this.totalMatchIssues = response.data.total
         }
       })

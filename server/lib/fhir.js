@@ -129,6 +129,7 @@ module.exports = () => ({
             }
           } else {
             resourceData = { ...body };
+            resourceData.entry = [];
           }
           let next = body.link && body.link.find(link => link.relation === 'next');
 
@@ -246,6 +247,35 @@ module.exports = () => ({
         code = 500;
       }
       return callback(code, err, res, body);
+    });
+  },
+
+  '$meta-delete'({
+    resourceParameters,
+    resourceType,
+    resourceID
+  }) {
+    return new Promise((resolve) => {
+      const url = URI(config.get('fhirServer:baseURL'))
+        .segment(resourceType)
+        .segment(resourceID)
+        .segment('$meta-delete')
+        .toString();
+      const options = {
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+        auth: {
+          username: config.get('fhirServer:username'),
+          password: config.get('fhirServer:password'),
+        },
+        json: resourceParameters,
+      };
+      request.post(options, () => {
+        resolve();
+      });
     });
   },
 
