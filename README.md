@@ -1,4 +1,4 @@
-# Open Client Registry
+# Open Client Registry ![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg)
 
 Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.
 
