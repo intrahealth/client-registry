@@ -8,7 +8,7 @@ const doubleMetaphone = require('double-metaphone');
 const async = require('async');
 const logger = require('./winston');
 const config = require('./config');
-const matchingMixin = require('./matchingMixin');
+const generalMixin = require('./mixins/generalMixin');
 const fhirWrapper = require('./fhir')();
 const Fhir = require('fhir').Fhir;
 
@@ -61,7 +61,7 @@ module.exports = () => ({
     const promises = [];
     for (const targetResource of targetResources.entry) {
       promises.push(new Promise(resolve => {
-        const isBroken = matchingMixin.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id);
+        const isBroken = generalMixin.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id);
         if (isBroken) {
           return resolve();
         }

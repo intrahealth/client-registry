@@ -12,7 +12,7 @@ export const generalMixin = {
     },
     getClients() {
       axios
-        .get("/ocrux/getClients")
+        .get("/config/getClients")
         .then(response => {
           this.$store.state.clients = response.data;
         })

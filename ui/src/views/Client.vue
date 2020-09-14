@@ -475,7 +475,7 @@ export default {
       this.match_count = 0;
       this.$http
         .get(
-          "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
+          "/fhir/Patient?_elements=link,extension&_id=" +
             this.$route.params.clientId
         )
         .then(response => {
@@ -494,7 +494,7 @@ export default {
           if (brokenList.length > 0) {
             brokenList = brokenList.join(",");
             this.$http
-              .get("/ocrux/fhir/Patient?_id=" + brokenList)
+              .get("/fhir/Patient?_id=" + brokenList)
               .then(resp => {
                 for (let entry of resp.data.entry) {
                   let patient = entry.resource;
@@ -579,7 +579,7 @@ export default {
               });
           }
           this.$http
-            .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
+            .get("/fhir/Patient?_include=Patient:link&_id=" + uid)
             .then(resp => {
               for (let entry of resp.data.entry) {
                 let patient = entry.resource;
@@ -686,11 +686,12 @@ export default {
         this.$store.state.progress.enable = true;
         this.$store.state.progress.title = "Breaing Match";
         let username = this.$store.state.auth.username;
-        let url = `/ocrux/breakMatch?username=${username}`;
+        let url = `/match/break-match?username=${username}`;
         let ids = [];
         for (let breakIt of this.breaks) {
           ids.push("Patient/" + breakIt.fid);
         }
+        console.log(ids);
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.getPatient();
@@ -703,7 +704,7 @@ export default {
         this.$store.state.progress.enable = true;
         this.$store.state.progress.title = "UnBreaing Match";
         let username = this.$store.state.auth.username;
-        let url = `/ocrux/unBreakMatch?username=${username}`;
+        let url = `/match/unbreak-match?username=${username}`;
         let ids = [];
         for (let unBreak of this.unbreaks) {
           for (let match of this.match_items) {
@@ -722,7 +723,7 @@ export default {
     },
     getAuditEvents() {
       this.matchEvents = [];
-      let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`;
+      let url = `/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`;
       this.$http.get(url).then(response => {
         this.auditEvent = response.data;
         for (let event of response.data.entry) {

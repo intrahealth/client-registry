@@ -6,9 +6,8 @@ const jwt = require('jsonwebtoken');
 const formidable = require('formidable');
 const isJSON = require('is-json');
 const crypto = require("crypto");
-const fhirWrapper = require('./fhir')();
-const config = require('./config');
-const logger = require('./winston');
+const config = require('../config');
+const logger = require('../winston');
 
 /**
  * Add a new user

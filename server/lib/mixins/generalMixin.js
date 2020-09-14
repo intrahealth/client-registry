@@ -1,9 +1,16 @@
 'use strict';
 /*global process, __dirname*/
 const fs = require('fs');
-const logger = require('./winston');
-const config = require('./config');
+const logger = require('../winston');
+const config = require('../config');
 const env = process.env.NODE_ENV || 'development';
+
+const isMatchBroken = (resourceData, reference) => {
+  let isBroken = resourceData.extension && resourceData.extension.find((extension) => {
+    return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === reference;
+  });
+  return isBroken;
+};
 
 const getClientIdentifier = (resource) => {
   const internalIdURI = config.get("systems:internalid:uri");
@@ -26,7 +33,7 @@ const updateConfigFile = (path, newValue, callback) => {
   const pathString = path.join(':');
   config.set(pathString, newValue);
   logger.info('Updating config file');
-  const configFile = `${__dirname}/../config/config_${env}.json`;
+  const configFile = `${__dirname}/../../config/config_${env}.json`;
   const configData = require(configFile);
   setNestedKey(configData, path, newValue, () => {
     fs.writeFile(configFile, JSON.stringify(configData, 0, 2), (err) => {
@@ -68,5 +75,6 @@ const flattenComplex = extension => {
 module.exports = {
   updateConfigFile,
   flattenComplex,
-  getClientIdentifier
+  getClientIdentifier,
+  isMatchBroken
 };

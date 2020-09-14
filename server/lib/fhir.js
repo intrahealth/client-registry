@@ -6,6 +6,7 @@ const uuid4 = require('uuid/v4');
 const isJSON = require('is-json');
 const logger = require('./winston');
 const config = require('./config');
+const { reject } = require('lodash');
 
 class InvalidRequestError extends Error {
   constructor (message, status) {
@@ -68,7 +69,7 @@ module.exports = () => ({
           if (qrArr.length !== 2) {
             logger.error(qrArr);
             logger.error('Invalid query supplied, stop getting resources');
-            return callback(resourceData);
+            return callback(resourceData, 400);
           }
           url.addQuery(qrArr[0], qrArr[1]);
           if (qrArr[0] === '_count') {
@@ -273,8 +274,11 @@ module.exports = () => ({
         },
         json: resourceParameters,
       };
-      request.post(options, () => {
-        resolve();
+      request.post(options, (err, res, body) => {
+        if(err || !res.statusCode || (res.statusCode < 200 && res.statusCode > 299)) {
+          return reject();
+        }
+        return resolve();
       });
     });
   },

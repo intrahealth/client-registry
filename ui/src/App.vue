@@ -93,7 +93,7 @@ export default {
   },
   methods: {
     countMatchIssues() {
-      axios.get('/ocrux/countMatchIssues').then((response) => {
+      axios.get(`/match/count-match-issues`).then((response) => {
         if(response.data) {
           this.totalMatchIssues = response.data.total
         }
@@ -108,7 +108,7 @@ export default {
       axios.get("/ocrux/isTokenActive/").then(() => {
         this.$store.state.denyAccess = false;
         axios
-          .get("/ocrux/getURI")
+          .get("/config/getURI")
           .then(response => {
             this.$store.state.systemURI = response.data;
           })

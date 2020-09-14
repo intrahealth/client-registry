@@ -15,7 +15,7 @@
       @click:row="clickIt"
     >
       <template v-slot:item.uid="{ item }">
-        <router-link :to="'/resolve/'+item.id">{{ item.uid }}</router-link>
+        <router-link :to="'/resolve/'+item.id+'?flagType='+item.reasonCode">{{ item.uid }}</router-link>
       </template>
       <template v-slot:item.reason="{ item }">
         <span class="text-uppercase">{{ item.reason }}</span>
@@ -62,7 +62,7 @@ export default {
   },
   methods: {
     getReviews() {
-      axios.get('/ocrux/getMatchIssues').then((resp) => {
+      axios.get('/match/get-match-issues').then((resp) => {
         this.reviews = resp.data
       })
     },

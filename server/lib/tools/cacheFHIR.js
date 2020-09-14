@@ -1,9 +1,8 @@
 const axios = require('axios');
 const async = require('async');
 const URI = require('urijs');
-const _ = require('lodash');
 const moment = require('moment');
-const mixin = require('../mixin');
+const generalMixin = require('../mixins/generalMixin');
 const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('../fhir')();
 const structureDefinition = require('./structureDefinition');
@@ -725,7 +724,7 @@ const fhir2ES = ({
               ) {
                 return callback();
               } else {
-                mixin.updateConfigFile(['sync', 'lastFHIR2ESSync'], newLastSyncTime, () => {
+                generalMixin.updateConfigFile(['sync', 'lastFHIR2ESSync'], newLastSyncTime, () => {
                   return callback();
                 });
               }

@@ -15,7 +15,6 @@
           <v-btn
             @click="showReview = true"
             color="success"
-            :disabled='!bucketsModified'
           >
             Save Changes
           </v-btn>
@@ -32,7 +31,7 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-dialog :value="showReview" max-width="900">
+    <v-dialog :value="showReview" max-width="900" persistent>
       <v-card light>
         <v-card-title>
           <v-toolbar color="primary" dark>
@@ -45,7 +44,11 @@
             </v-toolbar-items>
           </v-toolbar>
         </v-card-title>
+        <v-card-text v-if="!bucketsModified">
+          No changes have been made, are you sure you want to go ahead and remove the flag?
+        </v-card-text>
         <v-data-table
+          v-else
           :headers="review_headers"
           :items="review_list"
           class="elevation-1"
@@ -55,7 +58,6 @@
         </v-data-table>
         <v-card-actions>
           <v-btn
-            :disabled="review_list.length === 0"
             color="error"
             @click="showReview = false"
           >
@@ -63,7 +65,6 @@
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
-            :disabled="review_list.length === 0"
             color="success"
             @click="saveChanges"
           >
@@ -308,7 +309,7 @@ export default {
     }
   },
   created: function() {
-    axios.get(`/ocrux/potentialMatches/${this.$route.params.clientId}`).then((resp) => {
+    axios.get(`/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
       this.resolves = resp.data
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
@@ -411,13 +412,34 @@ export default {
       window.open(routeData.href, '_blank')
     },
     saveChanges() {
+      this.$store.state.progress.enable = true
+      this.$store.state.progress.title = 'Saving...'
+      // if no changes made on buckets then remove the flag
+      let removeFlag = true
+      // if buckets have been modified, flag will be removed if changes made will results in no more issues
+      if(this.bucketsModified) {
+        removeFlag = false
+      }
       let body = {
         resolvingFrom: this.$route.params.clientId,
-        resolves: this.resolves
+        resolves: this.resolves,
+        removeFlag,
+        flagType: this.$route.query.flagType
       }
-      axios.post('/ocrux/resolveMatchIssue', body).then(() => {
+      axios.post('/match/resolve-match-issue', body).then(() => {
         this.showReview = false
+        this.$store.state.progress.enable = false
+        this.$store.state.alert.show = true;
+        this.$store.state.alert.width = "500px";
+        this.$store.state.alert.msg = "Operation successful";
+        this.$store.state.alert.type = "success";
       }).catch((err) => {
+        this.showReview = false
+        this.$store.state.progress.enable = false
+        this.$store.state.alert.show = true;
+        this.$store.state.alert.width = "500px";
+        this.$store.state.alert.msg = "Error occured, operation failed";
+        this.$store.state.alert.type = "error";
         console.log(err);
       })
     }

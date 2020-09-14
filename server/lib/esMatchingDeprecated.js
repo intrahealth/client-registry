@@ -7,7 +7,7 @@ const Fhir = require('fhir').Fhir;
 const fhirWrapper = require('./fhir')();
 const logger = require('./winston');
 const config = require('./config');
-const matchingMixin = require('./matchingMixin');
+const generalMixin = require('./mixins/generalMixin');
 const fhir = new Fhir();
 
 const refreshIndex = (callback) => {
@@ -377,7 +377,7 @@ const performMatch = ({
           if (ignoreList.includes(id)) {
             continue;
           }
-          const isBroken = matchingMixin.isMatchBroken(sourceResource, `Patient/${id}`);
+          const isBroken = generalMixin.isMatchBroken(sourceResource, `Patient/${id}`);
           if (isBroken) {
             continue;
           }

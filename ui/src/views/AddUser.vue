@@ -184,7 +184,7 @@ export default {
       formData.append("userName", this.userName);
       formData.append("surname", this.surname);
       axios
-        .post("/ocrux/addUser/", formData, {
+        .post("/user/addUser/", formData, {
           headers: {
             "Content-Type": "multipart/form-data"
           }
