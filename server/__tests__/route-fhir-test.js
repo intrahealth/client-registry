@@ -1,11 +1,11 @@
-jest.mock('axios')
+jest.mock('request')
 
 const DEFAULT_URL = "http://localhost:8081/clientregistry/fhir/"
 
-const request = require("supertest")
+const supertest = require("supertest")
 
 const app = require("../lib/app")
-const axios = require("axios")
+const request = require("request")
 
 describe( "Testing express", () => {
   test( "Testing FHIR route", () => {
@@ -13,8 +13,8 @@ describe( "Testing express", () => {
       resourceType: "Patient",
       id: "123"
     }
-    axios.__setFhirResults( DEFAULT_URL + "Patient/123", null, MOCK_PATIENT )
-    return request(app).get("/fhir/Patient/123").then( (response) => {
+    request.__setFhirResults( DEFAULT_URL + "Patient/123", null, MOCK_PATIENT )
+    return supertest(app).get("/Patient/123").then( (response) => {
       console.log(response.body)
     } )
   } )
