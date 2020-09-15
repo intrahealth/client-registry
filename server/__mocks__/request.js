@@ -26,10 +26,11 @@ function __setFhirError( url, data, status, newFhirResults ) {
 
 function get( options, callback ) {
   let url = options.url
-  if ( fhirErrors.hasOwnProperty( url ) ) {
-    callback( fhirErrors[ url ] )
+  let objHash = __hashObject( null )
+  if ( fhirErrors.hasOwnProperty( url + objHash ) ) {
+    callback( fhirErrors[ url + objHash  ] )
   } else {
-    callback( null, { statusCode: 200 }, fhirResults[url] )
+    callback( null, { statusCode: 200 }, fhirResults[url+objHash] )
   }
 }
 

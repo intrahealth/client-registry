@@ -1,0 +1,79 @@
+{
+  "auth": {
+    "secret": "3084e343-71bc-4247-86e4-ea210af89c28",
+    "tokenDuration": 5400
+  },
+  "app": {
+    "port": 3000,
+    "installed": false
+  },
+  "mediator": {
+    "api": {
+      "username": "root@openhim.org",
+      "password": "openhim-password",
+      "apiURL": "https://localhost:8080",
+      "trustSelfSigned": true,
+      "urn": ""
+    },
+    "register": false
+  },
+  "fhirServer": {
+    "baseURL": "http://localhost:8081/clientregistry/fhir",
+    "username": "hapi",
+    "password": "hapi"
+  },
+  "elastic": {
+    "server": "http://localhost:9200",
+    "username": "",
+    "password": "",
+    "max_compilations_rate": "10000/1m",
+    "index": "patients"
+  },
+  "matching": {
+    "tool": "elasticsearch"
+  },
+  "codes": {
+    "goldenRecord": "5c827da5-4858-4f3d-a50c-62ece001efea"
+  },
+  "structureDefinition": {
+    "uri": "http://openclientregistry.org/fhir",
+    "reportRelationship": "patientreport"
+  },
+  "clients": [
+    {
+      "id": "openmrs",
+      "displayName": "OpenMRS"
+    },
+    {
+      "id": "lims",
+      "displayName": "Lab Info Management System"
+    }
+  ],
+  "systems": {
+    "CRBaseURI": "http://openclientregistry.org/fhir",
+    "internalid": {
+      "uri": [
+        "http://health.go.ug/cr/internalid",
+        "http://clientregistry.org/openmrs"
+      ],
+      "displayName": "Internal ID"
+    },
+    "nationalid": {
+      "uri": "http://health.go.ug/cr/natioanlid",
+      "displayName": "National ID"
+    },
+    "artnumber": {
+      "uri": "http://health.go.ug/cr/artnumber",
+      "displayName": "ART Number"
+    },
+    "brokenMatch": {
+      "uri": "http://clientregistry.org/brokenMatch"
+    }
+  },
+  "sync": {
+    "lastFHIR2ESSync": "2020-02-21T14:51:41"
+  },
+  "__comments": {
+    "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"
+  }
+}
