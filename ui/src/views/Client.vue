@@ -691,7 +691,6 @@ export default {
         for (let breakIt of this.breaks) {
           ids.push("Patient/" + breakIt.fid);
         }
-        console.log(ids);
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.getPatient();

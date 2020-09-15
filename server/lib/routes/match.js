@@ -16,14 +16,13 @@ const humanAdjudicationURI = URI(config.get("systems:CRBaseURI")).segment('human
 
 router.post('/resolve-match-issue', async(req, res) => {
   logger.info('Received a request to resolve match issues');
-  let resolves = req.body.resolves;
-  let resolvingFrom = req.body.resolvingFrom;
-  let resolvingFromResource = '';
-  let removeFlag = req.body.removeFlag;
-  let flagType = req.body.flagType;
+  let {resolves, resolvingFrom, removeFlag, flagType} = req.body;
   let query = '';
   for(let patient of resolves) {
-    if(patient.uid !== patient.ouid) {
+    let joinedThisCRUID = resolves.find((resolve) => {
+      return resolve.uid !== resolve.ouid && resolve.uid === patient.ouid;
+    });
+    if(patient.uid !== patient.ouid || joinedThisCRUID) {
       if(!query) {
         query = `_id=${patient.id},${patient.ouid},${patient.uid}`;
       } else {
@@ -31,30 +30,30 @@ router.post('/resolve-match-issue', async(req, res) => {
       }
     }
   }
-  const bundle = {};
-  bundle.type = 'batch';
-  bundle.resourceType = 'Bundle';
-  bundle.entry = [];
+  const modifiedResourceData = {};
+  modifiedResourceData.type = 'batch';
+  modifiedResourceData.resourceType = 'Bundle';
+  modifiedResourceData.entry = [];
   if(query) {
     query += `,${resolvingFrom}`;
     fhirWrapper.getResource({
       resource: 'Patient',
       query,
       noCaching: true
-    }, (resourceData, statusCode) => {
+    }, (originalResourceData, statusCode) => {
       if(statusCode < 200 || statusCode > 299) {
         logger.error('An error has occured, stop resolving match issues');
         return res.status(statusCode).send();
       }
       for(let patient of resolves) {
         if(patient.uid !== patient.ouid) {
-          let patientResource = resourceData.entry.find((entry) => {
+          let patientResource = originalResourceData.entry.find((entry) => {
             return entry.resource.id === patient.id;
           });
-          let oldCRUID = resourceData.entry.find((entry) => {
+          let oldCRUID = originalResourceData.entry.find((entry) => {
             return entry.resource.id === patient.ouid;
           });
-          let newCRUID = resourceData.entry.find((entry) => {
+          let newCRUID = originalResourceData.entry.find((entry) => {
             return entry.resource.id === patient.uid;
           });
           if(patient.uid.startsWith('New CR ID')) {
@@ -75,7 +74,7 @@ router.post('/resolve-match-issue', async(req, res) => {
             },
             type: 'refer'
           });
-          bundle.entry.push({
+          modifiedResourceData.entry.push({
             resource: patientResource.resource,
             request: {
               method: 'PUT',
@@ -99,7 +98,7 @@ router.post('/resolve-match-issue', async(req, res) => {
               type: 'replaced-by'
             });
           }
-          bundle.entry.push({
+          modifiedResourceData.entry.push({
             resource: oldCRUID.resource,
             request: {
               method: 'PUT',
@@ -115,7 +114,7 @@ router.post('/resolve-match-issue', async(req, res) => {
             },
             type: 'seealso'
           });
-          bundle.entry.push({
+          modifiedResourceData.entry.push({
             resource: newCRUID.resource,
             request: {
               method: 'PUT',
@@ -125,190 +124,229 @@ router.post('/resolve-match-issue', async(req, res) => {
           //end of adding patient into new CRUID
         }
       }
-      fhirWrapper.saveResource({ resourceData: bundle }, (err) => {
+      fhirWrapper.saveResource({ resourceData: modifiedResourceData }, (err) => {
         if(err) {
           return res.status(500).send();
         }
+        // now loop through all the patients, check if there is no match issue then remove the match issue tag, otherwise then the match tag should be kept
         let matchingTool;
         if (config.get("matching:tool") === "mediator") {
           matchingTool = medMatching;
         } else if (config.get("matching:tool") === "elasticsearch") {
           matchingTool = esMatching;
         }
-
-        resolvingFromResource = bundle.entry.find((entry) => {
-          return entry.resource.id === resolvingFrom;
-        });
-        if(!resolvingFromResource) {
-          resolvingFromResource = resourceData.entry.find((entry) => {
-            return entry.resource.id === resolvingFrom;
-          });
-        }
-        matchingTool.performMatch({
-          sourceResource: resolvingFromResource.resource,
-          ignoreList: [resolvingFromResource.resource.id],
-        }, async ({
-          FHIRPotentialMatches,
-          FHIRConflictsMatches
-        }) => {
-          // remove any resolved conflicts
-          FHIRConflictsMatches.entry = FHIRConflictsMatches.entry.filter((entry) => {
-            let needsResolving = true;
-            let link;
-            if(entry.resource.link) {
-              link = entry.resource.link[0].split('/')[1];
+        let errorOccured = false;
+        async.each(resolves, (resolvePatient, nxtRes) => {
+          //if no any modification made then skip checking
+          //for now lets do this check for resources that we are not resolving from, will need to change this in the future
+          if(resolvePatient.id !== resolvingFrom) {
+            // check if there is any patient that joined uuid of this patient
+            let joinedThisCRUID = resolves.find((resolve) => {
+              return resolve.uid !== resolve.ouid && resolve.uid === resolvePatient.uid;
+            });
+            if(resolvePatient.uid === resolvePatient.ouid && !joinedThisCRUID) {
+              return nxtRes();
             }
-            for(let patient of resolves) {
-              if(patient.id === resolvingFrom && patient.uid === link) {
-                needsResolving = false;
-                break;
+          }
+          // end of checking modification made
+          let resolvePatientResource = modifiedResourceData.entry.find((entry) => {
+            return entry.resource.id === resolvePatient.id;
+          });
+          if(!resolvePatientResource) {
+            resolvePatientResource = originalResourceData.entry.find((entry) => {
+              return entry.resource.id === resolvePatient.id;
+            });
+          }
+          if(!resolvePatientResource) {
+            return nxtRes();
+          }
+          matchingTool.performMatch({
+            sourceResource: resolvePatientResource.resource,
+            ignoreList: [resolvePatientResource.resource.id],
+          }, ({
+            FHIRPotentialMatches,
+            FHIRConflictsMatches
+          }) => {
+            // remove any resolved conflicts
+            FHIRConflictsMatches.entry = FHIRConflictsMatches.entry.filter((entry) => {
+              let needsResolving = true;
+              let link;
+              if(entry.resource.link) {
+                link = entry.resource.link[0].split('/')[1];
               }
-            }
-            return needsResolving;
-          });
-          // end of removing resolved conflicts
-
-          // remove any resolved potential matches
-          FHIRPotentialMatches.entry = FHIRPotentialMatches.entry.filter((entry) => {
-            let needsResolving = true;
-            let link;
-            if(entry.resource.link) {
-              link = entry.resource.link[0].other.reference.split('/')[1];
-            }
-            for(let patient of resolves) {
-              if(patient.id === resolvingFrom && patient.uid === link) {
+              if(resolvePatient.uid === link) {
                 needsResolving = false;
-                break;
               }
-            }
-            return needsResolving;
-          });
-          // end of removing any resolved potential matches
+              //if a connflict comes from patient selected for resolving and user decided to remove the flag then dont add this to conflicts
+              if(entry.resource.id === resolvingFrom && removeFlag) {
+                needsResolving = false;
+              }
+              return needsResolving;
+            });
+            // end of removing resolved conflicts
 
-          if(FHIRPotentialMatches.entry.length === 0 || (flagType === 'potentialMatches' && removeFlag)) {
-            if(resolvingFromResource.resource.meta && resolvingFromResource.resource.meta.tag) {
-              for(let tagIndex in resolvingFromResource.resource.meta.tag) {
-                let tag = resolvingFromResource.resource.meta.tag[tagIndex];
-                if(tag.system === matchIssuesURI && tag.code === 'potentialMatches') {
-                  resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
-                  resolvingFromResource.resource.meta.tag.push({
-                    system: humanAdjudicationURI,
-                    code: 'humanAdjudication',
-                    display: 'Matched By Human'
+            // remove any resolved potential matches
+            FHIRPotentialMatches.entry = FHIRPotentialMatches.entry.filter((entry) => {
+              let needsResolving = true;
+              let link;
+              if(entry.resource.link) {
+                link = entry.resource.link[0].other.reference.split('/')[1];
+              }
+              if(resolvePatient.uid === link) {
+                needsResolving = false;
+              }
+              //if a potential match comes from patient selected for resolving and user decided to remove the flag then dont add this to potential matches
+              if(entry.resource.id === resolvingFrom && removeFlag) {
+                needsResolving = false;
+              }
+              return needsResolving;
+            });
+            // end of removing any resolved potential matches
+            async.parallel({
+              potentialMatches: async (callback) => {
+                if(FHIRPotentialMatches.entry.length === 0 || (flagType === 'potentialMatches' && removeFlag)) {
+                  if(resolvePatientResource.resource.meta && resolvePatientResource.resource.meta.tag) {
+                    for(let tagIndex in resolvePatientResource.resource.meta.tag) {
+                      let tag = resolvePatientResource.resource.meta.tag[tagIndex];
+                      if(tag.system === matchIssuesURI && tag.code === 'potentialMatches') {
+                        resolvePatientResource.resource.meta.tag.splice(tagIndex, 1);
+                        resolvePatientResource.resource.meta.tag.push({
+                          system: humanAdjudicationURI,
+                          code: 'humanAdjudication',
+                          display: 'Matched By Human'
+                        });
+                      }
+                    }
+
+                    let parameters = {
+                      resourceType: 'Parameters',
+                      parameter: [{
+                        name: 'meta',
+                        valueMeta: {
+                          tag: {
+                            system: matchIssuesURI,
+                            code: 'potentialMatches',
+                            display: 'Potential Matches'
+                          }
+                        }
+                      }]
+                    };
+                    logger.info('Removing potential match tag');
+                    await fhirWrapper["$meta-delete"]({
+                      resourceParameters: parameters,
+                      resourceType: 'Patient',
+                      resourceID: resolvePatientResource.resource.id
+                    }).catch(() => {
+                      logger.error('An error has occured while removing potential match tag');
+                      errorOccured = true;
+                      return callback(null);
+                    });
+                    logger.info('Potential match tag removed');
+                  } else {
+                    return callback(null);
+                  }
+                } else {
+                  if(!resolvePatientResource.resource.meta) {
+                    resolvePatientResource.resource.meta = {};
+                  }
+                  if(!resolvePatientResource.resource.meta.tag) {
+                    resolvePatientResource.resource.meta.tag = [];
+                  }
+                  let tagExist = resolvePatientResource.resource.meta.tag.find((tag) => {
+                    return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
                   });
-                }
-              }
-
-              let parameters = {
-                resourceType: 'Parameters',
-                parameter: [{
-                  name: 'meta',
-                  valueMeta: {
-                    tag: {
+                  if(!tagExist) {
+                    resolvePatientResource.resource.meta.tag.push({
                       system: matchIssuesURI,
                       code: 'potentialMatches',
                       display: 'Potential Matches'
-                    }
+                    });
                   }
-                }]
-              };
-              logger.info('Removing potential match tag');
-              await fhirWrapper["$meta-delete"]({
-                resourceParameters: parameters,
-                resourceType: 'Patient',
-                resourceID: resolvingFromResource.resource.id
-              }).catch(() => {
-                logger.error('An error has occured while removing potential match tag');
-                return res.status(500).send();
-              });
-              logger.info('Potential match tag removed');
-            }
-          } else {
-            if(!resolvingFromResource.resource.meta) {
-              resolvingFromResource.resource.meta = {};
-            }
-            if(!resolvingFromResource.resource.meta.tag) {
-              resolvingFromResource.resource.meta.tag = [];
-            }
-            let tagExist = resolvingFromResource.resource.meta.tag.find((tag) => {
-              return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
-            });
-            if(!tagExist) {
-              resolvingFromResource.resource.meta.tag.push({
-                system: matchIssuesURI,
-                code: 'potentialMatches',
-                display: 'Potential Matches'
-              });
-            }
-          }
-          if(FHIRConflictsMatches.entry.length === 0 || (flagType === 'conflictMatches' && removeFlag)) {
-            if(resolvingFromResource.resource.meta && resolvingFromResource.resource.meta.tag) {
-              for(let tagIndex in resolvingFromResource.resource.meta.tag) {
-                let tag = resolvingFromResource.resource.meta.tag[tagIndex];
-                if(tag.system === matchIssuesURI && tag.code === 'conflictMatches') {
-                  resolvingFromResource.resource.meta.tag.splice(tagIndex, 1);
-                  resolvingFromResource.resource.meta.tag.push({
-                    system: humanAdjudicationURI,
-                    code: 'humanAdjudication',
-                    display: 'Matched By Human'
-                  });
+                  return callback(null);
                 }
-              }
+              },
+              conflictsMatches: async (callback) => {
+                if(FHIRConflictsMatches.entry.length === 0 || (flagType === 'conflictMatches' && removeFlag)) {
+                  if(resolvePatientResource.resource.meta && resolvePatientResource.resource.meta.tag) {
+                    for(let tagIndex in resolvePatientResource.resource.meta.tag) {
+                      let tag = resolvePatientResource.resource.meta.tag[tagIndex];
+                      if(tag.system === matchIssuesURI && tag.code === 'conflictMatches') {
+                        resolvePatientResource.resource.meta.tag.splice(tagIndex, 1);
+                        resolvePatientResource.resource.meta.tag.push({
+                          system: humanAdjudicationURI,
+                          code: 'humanAdjudication',
+                          display: 'Matched By Human'
+                        });
+                      }
+                    }
 
-              let parameters = {
-                resourceType: 'Parameters',
-                parameter: [{
-                  name: 'meta',
-                  valueMeta: {
-                    tag: {
+                    let parameters = {
+                      resourceType: 'Parameters',
+                      parameter: [{
+                        name: 'meta',
+                        valueMeta: {
+                          tag: {
+                            system: matchIssuesURI,
+                            code: 'conflictMatches',
+                            display: 'Conflict On Match'
+                          }
+                        }
+                      }]
+                    };
+                    await fhirWrapper["$meta-delete"]({
+                      resourceParameters: parameters,
+                      resourceType: 'Patient',
+                      resourceID: resolvePatientResource.resource.id
+                    }).catch(() => {
+                      logger.error('An error has occured while removing conflict match tag');
+                      errorOccured = true;
+                      return callback(null);
+                    });
+                  } else {
+                    return callback(null);
+                  }
+                } else {
+                  if(!resolvePatientResource.resource.meta) {
+                    resolvePatientResource.resource.meta = {};
+                  }
+                  if(!resolvePatientResource.resource.meta.tag) {
+                    resolvePatientResource.resource.meta.tag = [];
+                  }
+                  let tagExist = resolvePatientResource.resource.meta.tag.find((tag) => {
+                    return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
+                  });
+                  if(!tagExist) {
+                    resolvePatientResource.resource.meta.tag.push({
                       system: matchIssuesURI,
                       code: 'conflictMatches',
                       display: 'Conflict On Match'
-                    }
+                    });
                   }
-                }]
-              };
-              await fhirWrapper["$meta-delete"]({
-                resourceParameters: parameters,
-                resourceType: 'Patient',
-                resourceID: resolvingFromResource.resource.id
-              }).catch(() => {
-                logger.error('An error has occured while removing conflict match tag');
-                return res.status(500).send();
+                  return callback(null);
+                }
+              }
+            }, () => {
+              modifiedResourceData.entry = [];
+              modifiedResourceData.entry.push({
+                resource: resolvePatientResource.resource,
+                request: {
+                  method: 'PUT',
+                  url: 'Patient/' + resolvePatientResource.resource.id
+                }
               });
-            }
-          } else {
-            if(!resolvingFromResource.resource.meta) {
-              resolvingFromResource.resource.meta = {};
-            }
-            if(!resolvingFromResource.resource.meta.tag) {
-              resolvingFromResource.resource.meta.tag = [];
-            }
-            let tagExist = resolvingFromResource.resource.meta.tag.find((tag) => {
-              return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
+              fhirWrapper.saveResource({ resourceData: modifiedResourceData}, (err) => {
+                if(err) {
+                  errorOccured = true;
+                }
+                return nxtRes();
+              });
             });
-            if(!tagExist) {
-              resolvingFromResource.resource.meta.tag.push({
-                system: matchIssuesURI,
-                code: 'conflictMatches',
-                display: 'Conflict On Match'
-              });
-            }
+          });
+        }, () => {
+          if(errorOccured) {
+            return res.status(500).send();
           }
-          bundle.entry = [];
-          bundle.entry.push({
-            resource: resolvingFromResource.resource,
-            request: {
-              method: 'PUT',
-              url: 'Patient/' + resolvingFromResource.resource.id
-            }
-          });
-          fhirWrapper.saveResource({ resourceData: bundle}, (err) => {
-            if(err) {
-              return res.status(500).send();
-            }
-            return res.status(200).send();
-          });
+          return res.status(200).send();
         });
       });
     });
@@ -360,7 +398,8 @@ router.post('/resolve-match-issue', async(req, res) => {
       });
       fhirWrapper.getResource({
         resource: 'Patient',
-        id: resolvingFrom
+        id: resolvingFrom,
+        noCaching: true
       }, (resolvingFromResource, statusCode) => {
         if(statusCode < 200 || statusCode > 299) {
           return res.status(500).send();
@@ -376,15 +415,15 @@ router.post('/resolve-match-issue', async(req, res) => {
           code: 'humanAdjudication',
           display: 'Matched By Human'
         });
-        bundle.entry = [];
-        bundle.entry.push({
+        modifiedResourceData.entry = [];
+        modifiedResourceData.entry.push({
           resource: resolvingFromResource,
           request: {
             method: 'PUT',
             url: 'Patient/' + resolvingFromResource.id
           }
         });
-        fhirWrapper.saveResource({ resourceData: bundle}, (err) => {
+        fhirWrapper.saveResource({ resourceData: modifiedResourceData}, (err) => {
           if(err) {
             return res.status(500).send();
           }
@@ -881,7 +920,8 @@ router.post('/break-match', (req, res) => {
 router.get(`/count-match-issues`, (req, res) => {
   fhirWrapper.getResource({
     resource: 'Patient',
-    query: `_tag=${matchIssuesURI}|potentialMatches&_summary=count`
+    query: `_tag=${matchIssuesURI}|potentialMatches&_summary=count`,
+    noCaching: true
   }, (issuesCount) => {
     return res.status(200).json({total: issuesCount.total});
   });
@@ -891,7 +931,8 @@ router.get('/potential-matches/:id', (req, res) => {
   let matchResults = [];
   fhirWrapper.getResource({
     resource: 'Patient',
-    id: req.params.id
+    id: req.params.id,
+    noCaching: true
   }, (patient) => {
     generateScoreMatric(patient, () => {
       return res.status(200).send(matchResults);
@@ -1030,7 +1071,8 @@ router.get(`/get-match-issues`, (req, res) => {
   const clientIDURI = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
   fhirWrapper.getResource({
     resource: 'Patient',
-    query: `_tag=${matchIssuesURI}|potentialMatches`
+    query: `_tag=${matchIssuesURI}|potentialMatches`,
+    noCaching: true
   }, (issues) => {
     const internalIdURI = config.get("systems:internalid:uri");
     let reviews = [];
@@ -1052,6 +1094,7 @@ router.get(`/get-match-issues`, (req, res) => {
       const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
         return internalIdURI.includes(identifier.system) && identifier.value;
       });
+
       let matchTag = entry.resource.meta.tag.find((tag) => {
         return tag.system === matchIssuesURI;
       });

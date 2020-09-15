@@ -320,7 +320,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
         const existLinkPromise = new Promise((resolve) => {
           if (currentLinks.length > 0) {
             for (const entry of currentLinks) {
-              logger.error(JSON.stringify(entry,0,2));
               const exist = entry.resource.link.find((link) => {
                 return link.other.reference === 'Patient/' + patient.id;
               });
