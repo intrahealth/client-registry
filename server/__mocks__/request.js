@@ -56,13 +56,13 @@ function post( options, callback ) {
   }
 }
 
-function remove( url, config ) {
+function remove( options, callback ) {
   let url = options.url
   let paramHash = __hashObject( null )
   if ( fhirErrors.hasOwnProperty( url + paramHash ) ) {
     callback( fhirErrors[ url + paramHash ] )
   } else {
-    callback( null, { statusCode: 200 }, fhirResults[ url + paramHash )
+    callback( null, { statusCode: 200 }, fhirResults[ url + paramHash ] )
   }
 }
 
