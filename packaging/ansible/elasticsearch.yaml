@@ -36,14 +36,14 @@
 
   - name: download string similarity plugin and rename
     get_url:
-      url: https://github.com/intrahealth/client-registry/blob/master/tools/string-similarity-scoring-0.0.5-es7.6.2.zip?raw=true
-      dest: /home/{{ user }}/string-similarity-scoring-0.0.5-es7.6.2.zip
+      url: https://github.com/intrahealth/client-registry/blob/master/tools/string-similarity-scoring-0.0.6-es7.6.2.zip?raw=true
+      dest: /home/{{ user }}/string-similarity-scoring-0.0.6-es7.6.2.zip
       mode: '0640'
 
 
   - elasticsearch_plugin:
       name: string-similarity-scoring
-      src: file:///home/{{ user }}/string-similarity-scoring-0.0.5-es7.6.2.zip
+      src: file:///home/{{ user }}/string-similarity-scoring-0.0.6-es7.6.2.zip
       state: present
 
 
