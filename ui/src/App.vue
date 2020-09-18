@@ -21,7 +21,7 @@
           to="/review"
           v-if='!$store.state.denyAccess'
         >
-          <v-badge color="error" :content="totalMatchIssues" >
+          <v-badge color="error" :content="$store.state.totalMatchIssues" >
           <v-icon>mdi-alert</v-icon> Action Required
           </v-badge>
         </v-btn>
@@ -89,15 +89,6 @@ export default {
   data() {
     return {
       totalMatchIssues: 0
-    }
-  },
-  methods: {
-    countMatchIssues() {
-      axios.get(`/match/count-match-issues`).then((response) => {
-        if(response.data) {
-          this.totalMatchIssues = response.data.total
-        }
-      })
     }
   },
   created() {

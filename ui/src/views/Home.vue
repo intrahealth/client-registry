@@ -227,6 +227,7 @@ export default {
               }
             }
             let systemName = this.getClientDisplayName(clientUserId);
+            console.log(clientUserId);
             this.patients.push({
               id: entry.resource.id,
               family: name.family,

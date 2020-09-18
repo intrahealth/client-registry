@@ -1,0 +1,12 @@
+{
+  "resourceType": "Bundle",
+  "id": "7c1e1bab-2411-4bd4-bef9-fb4cb9a5185f",
+  "type": "searchset",
+  "total": 0,
+  "link": [
+    {
+      "relation": "self",
+      "url": "http://localhost:8081/clientregistry/fhir/Practitioner"
+    }
+  ]
+}

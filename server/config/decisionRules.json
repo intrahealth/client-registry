@@ -32,7 +32,7 @@
       }
     },
     "potentialMatchThreshold": 1,
-    "autoMatchThreshold": 4,
+    "autoMatchThreshold": 3,
     "filters": {
       "gender": {
         "fhirpath": "gender",

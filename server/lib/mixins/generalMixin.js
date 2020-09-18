@@ -12,6 +12,17 @@ const isMatchBroken = (resourceData, reference) => {
   return isBroken;
 };
 
+const getClientDisplayName = (clientid) => {
+  let clients = config.get("clients");
+  let clientDet = clients.find((client) => {
+    return client.id === clientid;
+  });
+  if (clientDet) {
+    return clientDet.displayName;
+  }
+  return '';
+};
+
 const getClientIdentifier = (resource) => {
   const internalIdURI = config.get("systems:internalid:uri");
   const validSystem = resource.identifier && resource.identifier.find(identifier => {
@@ -76,5 +87,6 @@ module.exports = {
   updateConfigFile,
   flattenComplex,
   getClientIdentifier,
+  getClientDisplayName,
   isMatchBroken
 };

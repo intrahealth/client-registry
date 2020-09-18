@@ -1,0 +1,66 @@
+{
+  "resourceType": "Patient",
+  "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2020-09-16T18:44:38.354+03:00",
+    "source": "#IpA14nVPAs8KcpdJ",
+    "tag": [
+      {
+        "system": "http://openclientregistry.org/fhir/clientid",
+        "code": "openmrs",
+        "display": "OpenMRS"
+      }
+    ]
+  },
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Emanuel <b>JOSHUA </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>patient2</td></tr><tr><td>Date of birth</td><td><span>08 January 1972</span></td></tr></tbody></table></div>"
+  },
+  "identifier": [
+    {
+      "system": "http://clientregistry.org/openmrs",
+      "value": "patient2"
+    },
+    {
+      "system": "http://health.go.ug/cr/nationalid",
+      "value": "228374844"
+    },
+    {
+      "system": "http://system1.org",
+      "value": "12347",
+      "period": {
+        "start": "2001-05-07"
+      },
+      "assigner": {
+        "display": "test Org"
+      }
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Joshua",
+      "given": [
+        "Emanuel"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "0678 561608"
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1972-01-08",
+  "link": [
+    {
+      "other": {
+        "reference": "Patient/739d4023-40eb-4f44-8d14-3355926bd60d"
+      },
+      "type": "refer"
+    }
+  ]
+}

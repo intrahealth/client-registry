@@ -1,0 +1,130 @@
+{
+  "resourceType": "Basic",
+  "id": "patientreport",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2020-09-16T18:44:08.834+03:00",
+    "source": "#TZD60hP95kHHSqj7",
+    "profile": [
+      "http://ihris.org/fhir/StructureDefinition/iHRISRelationship"
+    ]
+  },
+  "extension": [{
+    "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportDetails",
+    "extension": [{
+        "url": "label",
+        "valueString": "Patient Report"
+      },
+      {
+        "url": "name",
+        "valueString": "patients"
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "gender"
+          },
+          {
+            "url": "name",
+            "valueString": "gender"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "birthDate"
+          },
+          {
+            "url": "name",
+            "valueString": "birthDate"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "given"
+          },
+          {
+            "url": "name",
+            "valueString": "name.where(use='official').last().given"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "family"
+          },
+          {
+            "url": "name",
+            "valueString": "name.where(use='official').last().family"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "fullname"
+          },
+          {
+            "url": "name",
+            "valueString": "name.where(use='official').last().text"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "phone"
+          },
+          {
+            "url": "name",
+            "valueString": "telecom.where(system='phone').value"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "nationalid"
+          },
+          {
+            "url": "name",
+            "valueString": "identifier.where(system='http://clientregistry.org/nationalid').last().value"
+          }
+        ]
+      },
+      {
+        "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+        "extension": [{
+            "url": "label",
+            "valueString": "art"
+          },
+          {
+            "url": "name",
+            "valueString": "identifier.where(system='http://clientregistry/artnumber').last().value"
+          }
+        ]
+      }
+    ]
+  }],
+  "code": {
+    "coding": [{
+      "system": "http://ihris.org/fhir/ValueSet/ihris-resource",
+      "code": "iHRISRelationship"
+    }],
+    "text": "iHRISRelationship"
+  },
+  "subject": {
+    "reference": "StructureDefinition/Patient"
+  }
+}

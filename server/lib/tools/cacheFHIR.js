@@ -170,7 +170,6 @@ const getFields = (links, reportDetails) => {
   }
 
   for (const link of links) {
-    logger.error(link);
     const reportElements = link.extension.filter(ln => {
       return (ln.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportElement');
     });

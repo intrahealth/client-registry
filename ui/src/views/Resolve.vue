@@ -239,9 +239,10 @@ const shuffle = (arr) => {
     arr[j] = temp
   }
 }
-
+import { generalMixin } from "@/mixins/generalMixin";
 export default {
   name: "Resolve",
+  mixins: [generalMixin],
   components: {
     //draggable
   },
@@ -339,6 +340,7 @@ export default {
       for( let resolve of this.resolves ) {
         if ( firstTime ) {
           let scoreRow = {}
+          console.log(this.getClientDisplayName(resolve.source_id));
           scoreRow.name = resolve.source+" "+resolve.source_id
           this.score_headers.push( { text: scoreRow.name, value: resolve.source_id } )
           for( let score_id of Object.keys(resolve.scores) ) {
@@ -427,6 +429,7 @@ export default {
         flagType: this.$route.query.flagType
       }
       axios.post('/match/resolve-match-issue', body).then(() => {
+        this.countMatchIssues();
         this.showReview = false
         this.$store.state.progress.enable = false
         this.$store.state.alert.show = true;

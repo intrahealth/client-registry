@@ -981,6 +981,17 @@ router.get('/potential-matches/:id', (req, res) => {
       if(name && name.given) {
         given = name.given.join(' ');
       }
+      let clientUserId;
+      if (patient.meta && patient.meta.tag) {
+        for (let tag of patient.meta.tag) {
+          if (
+            tag.system === "http://openclientregistry.org/fhir/clientid"
+          ) {
+            clientUserId = tag.code;
+          }
+        }
+      }
+      let systemName = generalMixin.getClientDisplayName(clientUserId);
       let primaryPatient = {
         id: patient.id,
         gender: patient.gender,
@@ -990,12 +1001,12 @@ router.get('/potential-matches/:id', (req, res) => {
         uid: goldenLink,
         ouid: goldenLink,
         source_id: validSystem.value,
-        source: validSystem.value,
+        source: systemName,
         scores: {}
       };
       populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
       matchResults.push(primaryPatient);
-      async.parallel({
+      async.series({
         auto: (callback) => {
           async.eachSeries(FHIRAutoMatched.entry, (autoMatched, nxtAutoMatched) => {
             const validSystem = generalMixin.getClientIdentifier(autoMatched.resource);
@@ -1053,6 +1064,9 @@ router.get('/potential-matches/:id', (req, res) => {
         let patResource = FHIRPotentialMatches.entry.find((entry) => {
           return entry.resource.id === potMatch['_id'];
         });
+        if(!patResource) {
+          continue;
+        }
         const validSystem = generalMixin.getClientIdentifier(patResource.resource);
         patient.scores[validSystem.value] = potMatch['_score'];
       }
@@ -1060,6 +1074,9 @@ router.get('/potential-matches/:id', (req, res) => {
         let patResource = FHIRConflictsMatches.entry.find((entry) => {
           return entry.resource.id === conflMatch['_id'];
         });
+        if(!patResource) {
+          continue;
+        }
         const validSystem = generalMixin.getClientIdentifier(patResource.resource);
         patient.scores[validSystem.value] = conflMatch['_score'];
       }

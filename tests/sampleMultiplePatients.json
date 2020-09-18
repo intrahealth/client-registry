@@ -4,90 +4,110 @@
   "entry": [{
     "resource": {
       "resourceType": "Patient",
-      "meta": {
-        "versionId": "2",
-        "lastUpdated": "2020-02-25T17:48:18.028+03:00",
-        "source": "#5YskPxdp2NQaRit7",
-        "tag": [{
-          "code": "clientid",
-          "display": "openmrs"
-        }]
-      },
       "identifier": [{
-        "type": {
-          "coding": [{
-            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-            "code": "PT",
-            "display": "Patient External Identifier"
-          }]
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient1"
         },
-        "system": "http://clientregistry.org/openmrs",
-        "value": "1110PPPYYJJHHNN"
-      }],
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
       "name": [{
         "use": "official",
         "family": "Joshua",
-        "given": ["Emmanuel"]
+        "given": [
+          "Emmanuel"
+        ]
       }],
-      "gender": "male",
-      "birthDate": "2020-01-02",
       "telecom": [{
         "system": "phone",
-        "value": "774 232423"
-      }]
-    }
-  }, {
-    "resource": {
-      "resourceType": "Practitioner",
-      "identifier": [{
-        "type": {
-          "coding": [{
-            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-            "code": "PT",
-            "display": "Patient External Identifier"
-          }]
-        },
-        "system": "http://clientregistry.org/openmrs",
-        "value": "1110PPPYYJJHHNN"
-      }],
-      "name": [{
-        "use": "official",
-        "family": "Ally",
-        "given": ["Muawiya"]
+        "value": "0678 561608"
       }],
       "gender": "male",
-      "birthDate": "2020-01-02",
-      "telecom": [{
-        "system": "phone",
-        "value": "774 232423"
-      }]
+      "birthDate": "1972-01-08"
     }
   }, {
     "resource": {
       "resourceType": "Patient",
-      "id": "efa9af55-ed82-49e1-9c58-7a3b36155ffe",
       "identifier": [{
-        "type": {
-          "coding": [{
-            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
-            "code": "PT",
-            "display": "Patient External Identifier"
-          }]
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient2"
         },
-        "system": "http://clientregistry.org/openmrs",
-        "value": "45sdfs2324534"
-      }],
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
       "name": [{
         "use": "official",
-        "family": "Ally",
-        "given": ["Kawthar"]
+        "family": "Joshua",
+        "given": [
+          "Emanuel"
+        ]
       }],
-      "gender": "male",
-      "birthDate": "2020-01-02",
       "telecom": [{
         "system": "phone",
-        "value": "774 232423"
-      }]
+        "value": "0678 561608"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient3"
+        }, {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        }, {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+      }],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Joshua",
+        "given": [
+          "Emanuel"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 56160"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08"
     }
   }]
 }

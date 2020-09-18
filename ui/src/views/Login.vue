@@ -128,6 +128,7 @@ export default {
         params
       })
         .then(authResp => {
+          this.countMatchIssues();
           this.getClients();
           this.$store.state.auth.token = authResp.data.token;
           this.$store.state.auth.username = this.username;

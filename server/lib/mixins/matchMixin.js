@@ -10,7 +10,6 @@ const cacheFHIR = require('../tools/cacheFHIR');
 const logger = require('../winston');
 const config = require('../config');
 const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
-const humanAdjudicationURI = URI(config.get("systems:CRBaseURI")).segment('humanAdjudication').toString();
 
 function createAddPatientAudEvent(operationSummary, req) {
   const auditBundle = {};
@@ -96,7 +95,9 @@ function createAddPatientAudEvent(operationSummary, req) {
         for (const esmatch of operSummary.ESMatches) {
           let match = {
             rule: esmatch.rule,
-            match: esmatch.results,
+            potentialMatches: esmatch.potentialMatchResults,
+            autoMatches: esmatch.autoMatchResults,
+            conflictMatches: esmatch.conflictsMatchResults,
             query: esmatch.query
           };
           match = JSON.stringify(match);
@@ -240,11 +241,16 @@ const addPatient = (clientID, patientsBundle, callback) => {
         if(!patient.meta.tag) {
           patient.meta.tag = [];
         }
-        patient.meta.tag.push({
-          system: matchIssuesURI,
-          code: 'potentialMatches',
-          display: 'Potential Matches'
+        let tagExist = patient.meta.tag.find((tag) => {
+          return tag.system === matchIssuesURI && tag.code === 'potentialMatches';
         });
+        if(!tagExist) {
+          patient.meta.tag.push({
+            system: matchIssuesURI,
+            code: 'potentialMatches',
+            display: 'Potential Matches'
+          });
+        }
       } else {
         // remove the potential match tag
         for(let tagIndex in patient.meta.tag) {
@@ -280,11 +286,16 @@ const addPatient = (clientID, patientsBundle, callback) => {
         if(!patient.meta.tag) {
           patient.meta.tag = [];
         }
-        patient.meta.tag.push({
-          system: matchIssuesURI,
-          code: 'conflictMatches',
-          display: 'Conflict On Match'
+        let tagExist = patient.meta.tag.find((tag) => {
+          return tag.system === matchIssuesURI && tag.code === 'conflictMatches';
         });
+        if(!tagExist) {
+          patient.meta.tag.push({
+            system: matchIssuesURI,
+            code: 'conflictMatches',
+            display: 'Conflict On Match'
+          });
+        }
       } else {
         // remove the conflict match tag
         for(let tagIndex in patient.meta.tag) {
@@ -611,13 +622,8 @@ const addPatient = (clientID, patientsBundle, callback) => {
               existingLinks = _.cloneDeep(goldenRecords);
             }
             delete newPatient.resource.link;
-            let adjudTag = existingPatient.resource.meta && existingPatient.resource.meta.tag.find((tag) => {
-              return tag.system === humanAdjudicationURI;
-            });
-            existingPatient.resource = Object.assign({}, newPatient.resource);
-            if(adjudTag) {
-              existingPatient.resource.meta.tag.push(adjudTag);
-            }
+            delete existingPatient.resource.link;
+            existingPatient.resource = _.merge(existingPatient.resource, newPatient.resource);
             existingPatient.resource.id = id;
             bundle.entry.push({
               resource: existingPatient.resource,

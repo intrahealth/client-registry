@@ -372,9 +372,31 @@
                               <v-textarea
                                 filled
                                 color="deep-purple"
-                                label="Elasticsearch Results"
+                                label="Elasticsearch Automatches Results"
                                 rows="10"
-                                :value="detail.match"
+                                :value="detail.autoMatches"
+                              />
+                            </v-card-text>
+                          </v-card>
+                          <v-card>
+                            <v-card-text>
+                              <v-textarea
+                                filled
+                                color="deep-purple"
+                                label="Elasticsearch Potential Matches Results"
+                                rows="10"
+                                :value="detail.potentialMatches"
+                              />
+                            </v-card-text>
+                          </v-card>
+                          <v-card>
+                            <v-card-text>
+                              <v-textarea
+                                filled
+                                color="deep-purple"
+                                label="Elasticsearch Conflicts Matches Results"
+                                rows="10"
+                                :value="detail.conflictsMatchResults"
                               />
                             </v-card-text>
                           </v-card>
@@ -693,6 +715,7 @@ export default {
         }
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
+          this.countMatchIssues();
           this.getPatient();
           this.getAuditEvents();
         });
@@ -715,6 +738,7 @@ export default {
         }
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
+          this.countMatchIssues();
           this.getPatient();
           this.getAuditEvents();
         });
@@ -798,10 +822,7 @@ export default {
                 if (detail.type === "resource") {
                   modifiedEvent.submittedResourceData = detail.valueString;
                 } else if (detail.type === "match") {
-                  let matches = new Buffer.from(
-                    detail.valueBase64Binary,
-                    "base64"
-                  ).toString("ascii");
+                  let matches = new Buffer.from(detail.valueBase64Binary, "base64").toString("ascii");
                   matches = JSON.parse(matches);
                   let decRule = [];
                   for (let field in matches.rule.fields) {
@@ -816,7 +837,9 @@ export default {
                     decisionRule: decRule,
                     matchingType: matches.rule.matchingType,
                     filters: matches.rule.filters,
-                    match: JSON.stringify(matches.match, 0, 2),
+                    autoMatches: JSON.stringify(matches.autoMatches, 0, 2),
+                    potentialMatches: JSON.stringify(matches.potentialMatches, 0, 2),
+                    conflictsMatchResults: JSON.stringify(matches.conflictMatches, 0, 2),
                     query: JSON.stringify(matches.query, 0, 2)
                   });
                 }

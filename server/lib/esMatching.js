@@ -210,7 +210,7 @@ const performMatch = ({
         json: esquery,
       };
       request.get(options, (err, res, body) => {
-        if (!body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
+        if (!body || !body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
           logger.error(JSON.stringify(body, 0, 2));
           return nxtRule();
         }
@@ -378,7 +378,9 @@ const performMatch = ({
             if(sameGoldenID) {
               FHIRPotentialMatches.entry.splice(potentialIndex - deletedIndex, 1);
               deletedIndex++;
-              FHIRAutoMatched.entry.push(potentialMatch);
+              FHIRAutoMatched.entry.push({
+                resource: potentialMatch
+              });
               for(let esIndex in ESMatches) {
                 let esmatch = ESMatches[esIndex];
                 for(let esPotIndex in esmatch.potentialMatchResults) {

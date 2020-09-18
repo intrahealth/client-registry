@@ -45,6 +45,10 @@ function appRoutes() {
   app.use('/crux', express.static(`${__dirname}/../gui`));
 
   const jwtValidator = function (req, res, next) {
+    //if a certificate is available then redirect to certificate validation
+    if(Object.keys(req.connection.getPeerCertificate()).length > 0) {
+      return next();
+    }
     if (req.method == 'OPTIONS' ||
       req.path == '/user/authenticate'
     ) {

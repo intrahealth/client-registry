@@ -206,12 +206,18 @@ router.post('/', (req, res) => {
         entry: patients
       };
       let clientID;
-      if (config.get('mediator:register')) {
-        clientID = req.headers['x-openhim-clientid'];
-      } else {
+      if(req.connection && typeof req.connection.getPeerCertificate === "function") {
         const cert = req.connection.getPeerCertificate();
         clientID = cert.subject.CN;
+      } else if(req.headers['x-openhim-clientid']) {
+        clientID = req.headers['x-openhim-clientid'];
       }
+      // if (config.get('mediator:register')) {
+      //   clientID = req.headers['x-openhim-clientid'];
+      // } else {
+      //   const cert = req.connection.getPeerCertificate();
+      //   clientID = cert.subject.CN;
+      // }
       matchMixin.addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
         if (err) {
           return callback(null, {code: 500, err, response, body: operationSummary});
@@ -260,13 +266,34 @@ router.post('/:resourceType', (req, res) => {
         resource
       }]
     };
+
     let clientID;
-    if (config.get('mediator:register')) {
-      clientID = req.headers['x-openhim-clientid'];
-    } else {
+    if(req.connection && typeof req.connection.getPeerCertificate === "function") {
       const cert = req.connection.getPeerCertificate();
       clientID = cert.subject.CN;
+    } else if(req.headers['x-openhim-clientid']) {
+      clientID = req.headers['x-openhim-clientid'];
     }
+
+    if(!clientID) {
+      return res.status(400).json({
+        resourceType: "OperationOutcome",
+        issue: [{
+          severity: "error",
+          code: "processing",
+          diagnostics: "Client ID not found"
+        }],
+        response: {
+          status: 400
+        }
+      });
+    }
+    // if (config.get('mediator:register')) {
+    //   clientID = req.headers['x-openhim-clientid'];
+    // } else {
+    //   const cert = req.connection.getPeerCertificate();
+    //   clientID = cert.subject.CN;
+    // }
     matchMixin.addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
       const auditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
       fhirWrapper.saveResource({

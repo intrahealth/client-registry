@@ -1,0 +1,112 @@
+{
+  "resourceType": "Bundle",
+  "id": "5cd469f6-1679-4f0f-8a45-8e6f70ce9047",
+  "meta": {
+    "lastUpdated": "2020-09-18T11:24:45.186+03:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [{
+    "relation": "self",
+    "url": "http://localhost:8081/clientregistry/fhir/Patient?_include=Patient%3Alink&identifier=http%3A%2F%2Fclientregistry.org%2Fopenmrs%7Cpatient3"
+  }],
+  "entry": [{
+      "fullUrl": "http://localhost:8081/clientregistry/fhir/Patient/433ebeb6-1d89-4b64-97e6-a985675ca571",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2020-09-16T18:44:39.971+03:00",
+          "source": "#8fDYGpXcmuBUY6oO",
+          "tag": [{
+              "system": "http://openclientregistry.org/fhir/clientid",
+              "code": "openmrs",
+              "display": "OpenMRS"
+            },
+            {
+              "system": "http://openclientregistry.org/fhir/matchIssues",
+              "code": "potentialMatches",
+              "display": "Potential Matches"
+            }
+          ]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Emanuel <b>JOSHUA </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>patient3</td></tr><tr><td>Date of birth</td><td><span>08 January 1972</span></td></tr></tbody></table></div>"
+        },
+        "identifier": [{
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient3"
+          },
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
+          },
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
+          }
+        ],
+        "active": true,
+        "name": [{
+          "use": "official",
+          "family": "Joshua",
+          "given": [
+            "Emanuel"
+          ]
+        }],
+        "telecom": [{
+          "system": "phone",
+          "value": "0678 56160"
+        }],
+        "gender": "male",
+        "birthDate": "1972-01-08",
+        "link": [{
+          "other": {
+            "reference": "Patient/eda0fdeb-1d52-4878-a84f-ccf581ef9fff"
+          },
+          "type": "refer"
+        }]
+      },
+      "search": {
+        "mode": "match"
+      }
+    },
+    {
+      "fullUrl": "http://localhost:8081/clientregistry/fhir/Patient/eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+      "resource": {
+        "resourceType": "Patient",
+        "id": "eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2020-09-16T18:44:39.820+03:00",
+          "source": "#8fDYGpXcmuBUY6oO",
+          "tag": [{
+            "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+            "display": "Golden Record"
+          }]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><table class=\"hapiPropertyTable\"><tbody/></table></div>"
+        },
+        "link": [{
+          "other": {
+            "reference": "Patient/433ebeb6-1d89-4b64-97e6-a985675ca571"
+          },
+          "type": "seealso"
+        }]
+      },
+      "search": {
+        "mode": "include"
+      }
+    }
+  ]
+}
