@@ -1,0 +1,47 @@
+{
+  "query": {
+    "function_score": {
+      "query": {
+        "bool": {
+          "filter": [{
+            "term": {
+              "gender": "male"
+            }
+          }]
+        }
+      },
+      "boost_mode": "sum",
+      "functions": [{
+        "script_score": {
+          "script": {
+            "source": "string_similarity",
+            "lang": "similarity_scripts",
+            "params": {
+              "score_mode": "sum",
+              "matchers": [{
+                  "field": "given",
+                  "value": "Emmanuel",
+                  "matcher": "jaro-winkler-similarity",
+                  "threshold": 0.8
+                },
+                {
+                  "field": "family",
+                  "value": "Joshua",
+                  "matcher": "damerau-levenshtein",
+                  "threshold": 3
+                },
+                {
+                  "field": "phone",
+                  "value": "0678 561608",
+                  "matcher": "normalized-levenshtein-similarity",
+                  "threshold": 1
+                }
+              ]
+            }
+          }
+        }
+      }],
+      "min_score": 1
+    }
+  }
+}

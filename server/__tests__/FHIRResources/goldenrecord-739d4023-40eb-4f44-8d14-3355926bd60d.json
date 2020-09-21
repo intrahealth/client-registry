@@ -1,0 +1,30 @@
+{
+  "resourceType": "Patient",
+  "id": "739d4023-40eb-4f44-8d14-3355926bd60d",
+  "meta": {
+    "versionId": "3",
+    "lastUpdated": "2020-09-16T18:44:38.599+03:00",
+    "source": "#IpA14nVPAs8KcpdJ",
+    "tag": [{
+      "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+      "display": "Golden Record"
+    }]
+  },
+  "text": {
+    "status": "generated",
+    "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><table class=\"hapiPropertyTable\"><tbody/></table></div>"
+  },
+  "link": [{
+      "other": {
+        "reference": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
+      },
+      "type": "seealso"
+    },
+    {
+      "other": {
+        "reference": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+      },
+      "type": "seealso"
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "properties": {
+    "patients": {
+      "type": "keyword"
+    },
+    "gender": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "birthDate": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "given": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "family": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "fullname": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "phone": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "nationalid": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    },
+    "art": {
+      "type": "text",
+      "analyzer": "levenshtein_analyzer",
+      "fields": {
+        "jaro": {
+          "type": "keyword"
+        },
+        "phonetic": {
+          "type": "text",
+          "analyzer": "phonetic_analyzer"
+        }
+      }
+    }
+  }
+}

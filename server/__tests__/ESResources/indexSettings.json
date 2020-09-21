@@ -1,0 +1,24 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "levenshtein_analyzer": {
+          "type": "custom",
+          "tokenizer": "keyword",
+          "filter": ["lowercase"]
+        },
+        "phonetic_analyzer": {
+          "tokenizer": "keyword",
+          "filter": ["lowercase", "cr_metaphone"]
+        }
+      },
+      "filter": {
+        "cr_metaphone": {
+          "type": "phonetic",
+          "encoder": "metaphone",
+          "replace": false
+        }
+      }
+    }
+  }
+}

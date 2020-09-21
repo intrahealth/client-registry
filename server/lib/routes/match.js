@@ -441,7 +441,7 @@ router.post('/break-match', (req, res) => {
   const operationSummary = [];
   const ids = req.body;
   if (!Array.isArray(ids)) {
-    logger.error('Invalid request, expected an array of IDs but non was found in ' + ids);
+    logger.error('Invalid requ;est, expected an array of IDs but non was found in ' + ids);
     return res.status(400).json({
       resourceType: "OperationOutcome",
       issue: [{
@@ -451,6 +451,7 @@ router.post('/break-match', (req, res) => {
       }]
     });
   }
+
   const bundle = {};
   bundle.type = 'batch';
   bundle.resourceType = 'Bundle';
@@ -787,7 +788,7 @@ router.post('/break-match', (req, res) => {
                 });
               }
               saveAuditEvent(() => {
-                res.status(200).send();
+                return res.status(200).send('Match Broken');
               });
             });
           });
@@ -822,7 +823,7 @@ router.post('/break-match', (req, res) => {
     });
   }
 
-  const saveAuditEvent = (callback) => {
+  function saveAuditEvent (callback) {
     logger.info('saving audit event');
     const ipAddress = req.ip.split(':').pop();
     const username = req.query.username;
@@ -914,7 +915,7 @@ router.post('/break-match', (req, res) => {
     } else {
       return callback();
     }
-  };
+  }
 });
 
 router.get(`/count-match-issues`, (req, res) => {
@@ -1159,11 +1160,9 @@ router.post('/unbreak-match', (req, res) => {
   bundle.resourceType = 'Bundle';
   bundle.entry = [];
   const notProcessed = [];
-  const noLink = [];
   let dontSaveChanges = false;
   let query;
-  const goldenIds = [];
-  const clientIDTag = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
+  let addedToQuery = [];
   for (const idPair of ids) {
     if (!idPair.id1 || !idPair.id2) {
       const operSummary = {
@@ -1209,8 +1208,21 @@ router.post('/unbreak-match', (req, res) => {
       continue;
     }
     if (query) {
-      query += ',' + idPair.id1 + ',' + idPair.id2;
+      let id1Added = addedToQuery.find((id) => {
+        return id === idPair.id1;
+      });
+      let id2Added = addedToQuery.find((id) => {
+        return id === idPair.id2;
+      });
+      if(!id1Added) {
+        query += ',' + idPair.id1;
+      }
+      if(!id2Added) {
+        query += ',' + idPair.id2;
+      }
     } else {
+      addedToQuery.push(idPair.id1);
+      addedToQuery.push(idPair.id2);
       query = '_id=' + idPair.id1 + ',' + idPair.id2;
     }
   }

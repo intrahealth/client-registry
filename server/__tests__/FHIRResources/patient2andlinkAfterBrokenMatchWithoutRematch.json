@@ -1,0 +1,101 @@
+{
+  "resourceType": "Bundle",
+  "id": "5cd469f6-1679-4f0f-8a45-8e6f70ce9047",
+  "meta": {
+    "lastUpdated": "2020-09-18T11:24:45.186+03:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [{
+    "relation": "self",
+    "url": "http://localhost:8081/clientregistry/fhir/Patient?_include=Patient%3Alink&identifier=http%3A%2F%2Fclientregistry.org%2Fopenmrs%7Cpatient2"
+  }],
+  "entry": [{
+      "resource": {
+        "resourceType": "Patient",
+        "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+        "meta": {
+          "versionId": "2",
+          "lastUpdated": "2020-09-21T08:39:58.830+03:00",
+          "source": "#KyPstdvItSlecOli",
+          "tag": [{
+            "system": "http://openclientregistry.org/fhir/clientid",
+            "code": "openmrs",
+            "display": "OpenMRS"
+          }]
+        },
+        "extension": [],
+        "identifier": [{
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient2"
+          },
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
+          },
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
+          }
+        ],
+        "active": true,
+        "name": [{
+          "use": "official",
+          "family": "Joshua",
+          "given": [
+            "Emanuel"
+          ]
+        }],
+        "telecom": [{
+          "system": "phone",
+          "value": "0678 561608"
+        }],
+        "gender": "male",
+        "birthDate": "1972-01-08",
+        "link": [{
+          "other": {
+            "reference": "Patient/42184bd9-1c0c-41ce-9188-f57341ca9e88"
+          },
+          "type": "refer"
+        }]
+      },
+      "search": {
+        "mode": "match"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "42184bd9-1c0c-41ce-9188-f57341ca9e88",
+        "meta": {
+          "versionId": "1",
+          "lastUpdated": "2020-09-21T08:39:57.746+03:00",
+          "source": "#KyPstdvItSlecOli",
+          "tag": [
+            {
+              "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+              "display": "Golden Record"
+            }
+          ]
+        },
+        "link": [
+          {
+            "other": {
+              "reference": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+            },
+            "type": "seealso"
+          }
+        ]
+      },
+      "search": {
+        "mode": "include"
+      }
+    }
+  ]
+}

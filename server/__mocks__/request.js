@@ -26,8 +26,10 @@ function __setFhirError( url, data, status, newFhirResults ) {
 
 function get( options, callback ) {
   let url = decodeURIComponent(options.url);
-
   let objHash = __hashObject( null );
+  if(options.json) {
+    objHash = __hashObject( options.json );
+  }
   if ( fhirErrors.hasOwnProperty( url + objHash ) ) {
     callback( fhirErrors[ url + objHash  ] );
   } else {

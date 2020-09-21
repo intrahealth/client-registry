@@ -237,15 +237,11 @@ const updateESCompilationsRate = callback => {
       ),
     },
   };
-  axios({
-    method: 'PUT',
-    url,
-    auth: {
-      username: config.get('elastic:username'),
-      password: config.get('elastic:password'),
-    },
-    data: body,
-  }).then(response => {
+  let auth = {
+    username: config.get('elastic:username'),
+    password: config.get('elastic:password'),
+  };
+  axios.put(url, body, auth).then(response => {
     if (response.status > 199 && response.status < 299) {
       logger.info('maximum compilation rate updated successfully');
       return callback(false);
@@ -289,15 +285,11 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           },
         },
       };
-      axios({
-        method: 'PUT',
-        url,
-        data: settings,
-        auth: {
-          username: config.get('elastic:username'),
-          password: config.get('elastic:password'),
-        },
-      }).then(response => {
+      let auth = {
+        username: config.get('elastic:username'),
+        password: config.get('elastic:password'),
+      };
+      axios.put(url, settings, auth).then(response => {
         if (response.status >= 200 && response.status <= 299) {
           logger.info('Analyzer created successfully');
           return callback(null);
@@ -351,15 +343,11 @@ const createESIndex = (name, IDFields, reportFields, callback) => {
           },
         };
       }
-      axios({
-        method: 'PUT',
-        url,
-        data: mapping,
-        auth: {
-          username: config.get('elastic:username'),
-          password: config.get('elastic:password'),
-        },
-      }).then(response => {
+      let auth = {
+        username: config.get('elastic:username'),
+        password: config.get('elastic:password'),
+      };
+      axios.put(url, mapping, auth).then(response => {
         if (response.status >= 200 && response.status <= 299) {
           logger.info('Mappings added successfully into elasticsearch');
           return callback(null);
@@ -399,15 +387,11 @@ const updateESDocument = (id, index, record, callback) => {
     .segment('_doc')
     .segment(id)
     .toString();
-  axios({
-    method: 'POST',
-    url,
-    data: record,
-    auth: {
-      username: config.get('elastic:username'),
-      password: config.get('elastic:password'),
-    },
-  }).then(response => {
+  let auth = {
+    username: config.get('elastic:username'),
+    password: config.get('elastic:password')
+  };
+  axios.post(url, record, auth).then(response => {
     logger.info(response.data);
     if (response.data._shards.failed) {
       logger.warn('Transaction failed, rerunning again');
@@ -489,7 +473,7 @@ const fhir2ES = ({
       return callback(true);
     }
     logger.info('processing relationship ID ' + relationship.id);
-    const sd = relationship.subject.reference.substring(
+    const sd = relationship.subject && relationship.subject.reference.substring(
       relationship.subject.reference.lastIndexOf('/')
     );
     structureDefinition(sd, (err, subject) => {

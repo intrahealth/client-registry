@@ -1,0 +1,10 @@
+{
+  "_index": "patients",
+  "_type": "_doc",
+  "_id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+  "_version": 1,
+  "result": "created",
+  "_shards": {" total": 2, "successful": 1, "failed": 0 },
+  "_seq_no": 1,
+  "_primary_term": 1
+}

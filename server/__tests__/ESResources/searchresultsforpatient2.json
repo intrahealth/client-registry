@@ -1,0 +1,69 @@
+{
+  "took": 0,
+  "timed_out": false,
+  "_shards": {
+    "total": 1,
+    "successful": 1,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {
+      "value": 3,
+      "relation": "eq"
+    },
+    "max_score": 3.0,
+    "hits": [{
+        "_index": "patients",
+        "_type": "_doc",
+        "_id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+        "_score": 3.0,
+        "_source": {
+          "gender": "male",
+          "birthDate": "1972-01-08",
+          "given": "Emmanuel",
+          "family": "Joshua",
+          "fullname": "",
+          "phone": "0678 561608",
+          "nationalid": "",
+          "art": "",
+          "patients": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
+        }
+      },
+      {
+        "_index": "patients",
+        "_type": "_doc",
+        "_id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+        "_score": 3.0,
+        "_source": {
+          "gender": "male",
+          "birthDate": "1972-01-08",
+          "given": "Emanuel",
+          "family": "Joshua",
+          "fullname": "",
+          "phone": "0678 561608",
+          "nationalid": "",
+          "art": "",
+          "patients": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+        }
+      },
+      {
+        "_index": "patients",
+        "_type": "_doc",
+        "_id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+        "_score": 2.0,
+        "_source": {
+          "gender": "male",
+          "birthDate": "1972-01-08",
+          "given": "Emanuel",
+          "family": "Joshua",
+          "fullname": "",
+          "phone": "0678 56160",
+          "nationalid": "",
+          "art": "",
+          "patients": "Patient/433ebeb6-1d89-4b64-97e6-a985675ca571"
+        }
+      }
+    ]
+  }
+}

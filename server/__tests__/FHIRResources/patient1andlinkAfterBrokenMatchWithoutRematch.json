@@ -1,0 +1,101 @@
+{
+  "resourceType": "Bundle",
+  "id": "5cd469f6-1679-4f0f-8a45-8e6f70ce9047",
+  "meta": {
+    "lastUpdated": "2020-09-18T11:24:45.186+03:00"
+  },
+  "type": "searchset",
+  "total": 1,
+  "link": [{
+    "relation": "self",
+    "url": "http://localhost:8081/clientregistry/fhir/Patient?_include=Patient%3Alink&identifier=http%3A%2F%2Fclientregistry.org%2Fopenmrs%7Cpatient1"
+  }],
+  "entry": [{
+      "resource": {
+        "resourceType": "Patient",
+        "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+        "meta": {
+          "versionId": "4",
+          "lastUpdated": "2020-09-21T08:53:42.987+03:00",
+          "source": "#DJlfc3Z18cQT7EIo",
+          "tag": [{
+            "system": "http://openclientregistry.org/fhir/clientid",
+            "code": "openmrs",
+            "display": "OpenMRS"
+          }]
+        },
+        "text": {
+          "status": "generated",
+          "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Emmanuel <b>JOSHUA </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>patient1</td></tr><tr><td>Date of birth</td><td><span>08 January 1972</span></td></tr></tbody></table></div>"
+        },
+        "extension": [],
+        "identifier": [{
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient1"
+          },
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
+          },
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
+          }
+        ],
+        "active": true,
+        "name": [{
+          "use": "official",
+          "family": "Joshua",
+          "given": [
+            "Emmanuel"
+          ]
+        }],
+        "telecom": [{
+          "system": "phone",
+          "value": "0678 561608"
+        }],
+        "gender": "male",
+        "birthDate": "1972-01-08",
+        "link": [{
+          "other": {
+            "reference": "Patient/739d4023-40eb-4f44-8d14-3355926bd60d"
+          },
+          "type": "refer"
+        }]
+      },
+      "search": {
+        "mode": "match"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "id": "739d4023-40eb-4f44-8d14-3355926bd60d",
+        "meta": {
+          "versionId": "6",
+          "lastUpdated": "2020-09-21T08:53:42.855+03:00",
+          "source": "#DJlfc3Z18cQT7EIo",
+          "tag": [{
+            "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+            "display": "Golden Record"
+          }]
+        },
+        "link": [{
+          "other": {
+            "reference": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
+          },
+          "type": "seealso"
+        }]
+      },
+      "search": {
+        "mode": "include"
+      }
+    }
+  ]
+}
