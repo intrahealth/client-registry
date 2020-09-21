@@ -1,0 +1,15 @@
+{
+  "resourceType": "Bundle",
+  "id": "dc14757b-a57a-4461-85b7-6504c01591ed",
+  "meta": {
+    "lastUpdated": "2020-09-21T17:41:37.911+03:00",
+    "tag": [{
+      "system": "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
+      "code": "SUBSETTED",
+      "display": "Resource encoded in summary mode"
+    }]
+  },
+  "total": 1,
+  "entry": [],
+  "next": false
+}

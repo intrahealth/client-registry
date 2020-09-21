@@ -1,0 +1,46 @@
+[{
+    "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+    "gender": "male",
+    "given": "Emanuel",
+    "family": "Joshua",
+    "birthDate": "1972-01-08",
+    "uid": "eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+    "ouid": "eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+    "source_id": "patient3",
+    "source": "OpenMRS",
+    "scores": {
+      "patient1": 2,
+      "patient2": 2
+    }
+  },
+  {
+    "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+    "gender": "male",
+    "given": "Emmanuel",
+    "family": "Joshua",
+    "birthDate": "1972-01-08",
+    "uid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+    "ouid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+    "source_id": "patient1",
+    "source": "OpenMRS",
+    "scores": {
+      "patient2": 3,
+      "patient3": 2
+    }
+  },
+  {
+    "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+    "gender": "male",
+    "given": "Emanuel",
+    "family": "Joshua",
+    "birthDate": "1972-01-08",
+    "uid": "42184bd9-1c0c-41ce-9188-f57341ca9e88",
+    "ouid": "42184bd9-1c0c-41ce-9188-f57341ca9e88",
+    "source_id": "patient2",
+    "source": "OpenMRS",
+    "scores": {
+      "patient1": 3,
+      "patient3": 2
+    }
+  }
+]

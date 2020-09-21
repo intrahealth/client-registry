@@ -919,16 +919,19 @@ router.post('/break-match', (req, res) => {
 });
 
 router.get(`/count-match-issues`, (req, res) => {
+  logger.info("Received a request to count match issues");
   fhirWrapper.getResource({
     resource: 'Patient',
     query: `_tag=${matchIssuesURI}|potentialMatches&_summary=count`,
     noCaching: true
   }, (issuesCount) => {
+    logger.info(`Returning ${issuesCount.total} match issues`);
     return res.status(200).json({total: issuesCount.total});
   });
 });
 
 router.get('/potential-matches/:id', (req, res) => {
+  logger.info("Received a request to get potential matches");
   let matchResults = [];
   fhirWrapper.getResource({
     resource: 'Patient',
