@@ -1,0 +1,72 @@
+{
+  "entry": [{
+    "fullUrl": "http://localhost:8081/clientregistry/fhir/Patient/433ebeb6-1d89-4b64-97e6-a985675ca571",
+    "resource": {
+      "resourceType": "Patient",
+      "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+      "meta": {
+        "versionId": "5",
+        "lastUpdated": "2020-09-21T12:36:28.317+03:00",
+        "source": "#TFj3udqBSswrIvMC",
+        "tag": [{
+            "system": "http://openclientregistry.org/fhir/clientid",
+            "code": "openmrs",
+            "display": "OpenMRS"
+          },
+          {
+            "system": "http://openclientregistry.org/fhir/matchIssues",
+            "code": "potentialMatches",
+            "display": "Potential Matches"
+          }
+        ]
+      },
+      "text": {
+        "status": "generated",
+        "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><div class=\"hapiHeaderText\">Emanuel <b>JOSHUA </b></div><table class=\"hapiPropertyTable\"><tbody><tr><td>Identifier</td><td>patient3</td></tr><tr><td>Date of birth</td><td><span>08 January 1972</span></td></tr></tbody></table></div>"
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient3"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Joshua",
+        "given": [
+          "Emanuel"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 56160"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/c49a52c1-88bc-41fb-9c87-bdd2a911f360"
+        },
+        "type": "refer"
+      }]
+    },
+    "search": {
+      "mode": "match"
+    }
+  }],
+  "next": false
+}

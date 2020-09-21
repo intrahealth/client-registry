@@ -165,7 +165,7 @@ describe( "Testing express", () => {
   });
 
   test( "Testing Count Match Issues", () => {
-    request.__setFhirResults( `${FHIR_BASE_URL}/Patient?_tag=http://openclientregistry.org/fhir/matchIssues|potentialMatches&_summary=count`, null, JSON.stringify(require("./FHIRResources/totalMatchIssues.json")) );
+    request.__setFhirResults( `${FHIR_BASE_URL}/Patient?_tag=http://openclientregistry.org/fhir/matchIssues|potentialMatches,http://openclientregistry.org/fhir/matchIssues|conflictMatches&_summary=count`, null, JSON.stringify(require("./FHIRResources/totalMatchIssues.json")) );
     return supertest(app)
       .get("/count-match-issues").send().then( (response) => {
         expect(response.statusCode).toBe(200);
@@ -181,6 +181,17 @@ describe( "Testing express", () => {
       .get("/potential-matches/433ebeb6-1d89-4b64-97e6-a985675ca571").send().then( (response) => {
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual(potentialMatches);
+    } );
+  });
+
+  test( "Testing Getting Match Issues", () => {
+    const allMatchIssues = require("./FHIRResources/allMatchIssues.json");
+    const allMatchIssuesRes = require("./otherResources/allMatchIssues.json");
+    request.__setFhirResults( `${FHIR_BASE_URL}/Patient?_tag=http://openclientregistry.org/fhir/matchIssues|potentialMatches,http://openclientregistry.org/fhir/matchIssues|conflictMatches`, null, JSON.stringify(allMatchIssues) );
+    return supertest(app)
+      .get("/get-match-issues").send().then( (response) => {
+        expect(response.statusCode).toBe(200);
+        expect(response.body).toEqual(allMatchIssuesRes);
     } );
   });
 } );

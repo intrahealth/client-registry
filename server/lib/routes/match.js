@@ -922,7 +922,7 @@ router.get(`/count-match-issues`, (req, res) => {
   logger.info("Received a request to count match issues");
   fhirWrapper.getResource({
     resource: 'Patient',
-    query: `_tag=${matchIssuesURI}|potentialMatches&_summary=count`,
+    query: `_tag=${matchIssuesURI}|potentialMatches,${matchIssuesURI}|conflictMatches&_summary=count`,
     noCaching: true
   }, (issuesCount) => {
     logger.info(`Returning ${issuesCount.total} match issues`);
@@ -1092,7 +1092,7 @@ router.get(`/get-match-issues`, (req, res) => {
   const clientIDURI = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
   fhirWrapper.getResource({
     resource: 'Patient',
-    query: `_tag=${matchIssuesURI}|potentialMatches`,
+    query: `_tag=${matchIssuesURI}|potentialMatches,${matchIssuesURI}|conflictMatches`,
     noCaching: true
   }, (issues) => {
     const internalIdURI = config.get("systems:internalid:uri");
