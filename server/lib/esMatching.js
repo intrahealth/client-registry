@@ -63,6 +63,19 @@ const buildQuery = (sourceResource, decisionRule) => {
   let matchers = [];
   for (const ruleField in decisionRule.fields) {
     const rule = decisionRule.fields[ruleField];
+    let null_handling;
+    let null_handling_both;
+    if(rule.nullHandling) {
+      null_handling = rule.nullHandling;
+    } else if(decisionRule.nullHandling) {
+      null_handling = decisionRule.nullHandling;
+    }
+
+    if(rule.nullHandlingBothFields) {
+      null_handling_both = rule.nullHandlingBothFields;
+    } else if(decisionRule.nullHandlingBothFields) {
+      null_handling_both = decisionRule.nullHandlingBothFields;
+    }
     let path = rule.espath;
     let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
     const values = [];
@@ -104,6 +117,12 @@ const buildQuery = (sourceResource, decisionRule) => {
       field: path,
       value
     };
+    if(null_handling) {
+      matcher.null_handling = null_handling;
+    }
+    if(null_handling_both) {
+      matcher.null_handling_both = null_handling_both;
+    }
     if (rule.algorithm === 'exact') {
       matcher.matcher = 'normalized-levenshtein-similarity';
       matcher.threshold = 1.0;
@@ -209,9 +228,7 @@ const performMatch = ({
         },
         json: esquery,
       };
-      logger.error(sourceResource.id + " " + JSON.stringify(esquery,0,2));
       request.get(options, (err, res, body) => {
-        logger.error(sourceResource.id + " " + JSON.stringify(body,0,2));
         if (!body || !body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
           logger.error(JSON.stringify(body, 0, 2));
           return nxtRule();
