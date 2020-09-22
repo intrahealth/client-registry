@@ -209,7 +209,9 @@ const performMatch = ({
         },
         json: esquery,
       };
+      logger.error(sourceResource.id + " " + JSON.stringify(esquery,0,2));
       request.get(options, (err, res, body) => {
+        logger.error(sourceResource.id + " " + JSON.stringify(body,0,2));
         if (!body || !body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
           logger.error(JSON.stringify(body, 0, 2));
           return nxtRule();

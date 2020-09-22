@@ -194,4 +194,15 @@ describe( "Testing express", () => {
         expect(response.body).toEqual(allMatchIssuesRes);
     } );
   });
+
+  test( "Testing Resolving Match Issues", () => {
+    const resolveIssuesReqBundle = require("./otherResources/requestResolveIssue.json");
+    request.__setFhirResults( `${FHIR_BASE_URL}/Patient?_id=433ebeb6-1d89-4b64-97e6-a985675ca571,c49a52c1-88bc-41fb-9c87-bdd2a911f360,739d4023-40eb-4f44-8d14-3355926bd60d,bc58707b-62f1-498a-8fb3-568cd5b69db2,d55e15fd-d7a6-42b8-89cc-560e3578ef7f`, null, JSON.stringify(
+      require("./FHIRResources/allMatchIssuesWithLinks.json")
+    ) );
+    return supertest(app)
+      .post("/resolve-match-issue").send(resolveIssuesReqBundle).then( (response) => {
+        expect(response.statusCode).toBe(200);
+    } );
+  });
 } );

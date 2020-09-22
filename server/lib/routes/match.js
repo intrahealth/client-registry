@@ -18,15 +18,42 @@ router.post('/resolve-match-issue', async(req, res) => {
   logger.info('Received a request to resolve match issues');
   let {resolves, resolvingFrom, removeFlag, flagType} = req.body;
   let query = '';
+  let addedToQuery = [];
   for(let patient of resolves) {
     let joinedThisCRUID = resolves.find((resolve) => {
       return resolve.uid !== resolve.ouid && resolve.uid === patient.ouid;
     });
     if(patient.uid !== patient.ouid || joinedThisCRUID) {
+      let uidAdded = addedToQuery.find((id) => {
+        return id === patient.uid;
+      });
+      let ouidAdded = addedToQuery.find((id) => {
+        return id === patient.ouid;
+      });
+      let idAdded = addedToQuery.find((id) => {
+        return id === patient.id;
+      });
       if(!query) {
-        query = `_id=${patient.id},${patient.ouid},${patient.uid}`;
+        addedToQuery.push(patient.id);
+        addedToQuery.push(patient.ouid);
+        query = `_id=${patient.id},${patient.ouid}`;
+        if(!uidAdded) {
+          addedToQuery.push(patient.uid);
+          query += `,${patient.uid}`;
+        }
       } else {
-        query += `,${patient.id},${patient.ouid},${patient.uid}`;
+        if(!idAdded) {
+          query += `,${patient.id}`;
+          addedToQuery.push(patient.id);
+        }
+        if(!ouidAdded) {
+          query += `,${patient.ouid}`;
+          addedToQuery.push(patient.ouid);
+        }
+        if(!uidAdded) {
+          query += `,${patient.uid}`;
+          addedToQuery.push(patient.uid);
+        }
       }
     }
   }
@@ -35,7 +62,12 @@ router.post('/resolve-match-issue', async(req, res) => {
   modifiedResourceData.resourceType = 'Bundle';
   modifiedResourceData.entry = [];
   if(query) {
-    query += `,${resolvingFrom}`;
+    let idAdded = addedToQuery.find((id) => {
+      return id === resolvingFrom;
+    });
+    if(!idAdded) {
+      query += `,${resolvingFrom}`;
+    }
     fhirWrapper.getResource({
       resource: 'Patient',
       query,
@@ -1218,9 +1250,11 @@ router.post('/unbreak-match', (req, res) => {
         return id === idPair.id2;
       });
       if(!id1Added) {
+        addedToQuery.push(idPair.id1);
         query += ',' + idPair.id1;
       }
       if(!id2Added) {
+        addedToQuery.push(idPair.id2);
         query += ',' + idPair.id2;
       }
     } else {
