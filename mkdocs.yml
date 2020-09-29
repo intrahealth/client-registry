@@ -22,60 +22,64 @@ theme:
     text: "Roboto"
     code: "Roboto Mono"
   features:
-    - navigation.expand
-  #   - tabs
+    # - navigation.expand
+    - tabs
 
 nav:
-  - Overview:
+  - Home:
     - 'index.md'
-    - 'process.md'
-    - 'usecases.md'
-    - 'openmrs.md'
-    - 'cruid.md'
-    - 'algos.md'
-    - 'supported.md'
-    - 'architecture.md'
-  - User Manual: 
+  - User:
     - 'user/introduction.md'
     - 'user/process.md'
+    - 'user/recordlinkage.md'
+    - 'user/usecases.md'
     - 'user/ui.md'
+    - 'user/openmrs.md'
+    - 'user/cruid.md'
+    - 'user/algos.md'
+    - 'user/supported.md'
+  - Implementer:
+    # - 'user/process.md'
     - 'user/guide.md'
-    - 'user/roles.md'
+    - 'impl/roles.md'
     - 'user/resources.md'
-  - Developer Manual:
-    - 'Introduction': 
-      - 'dev/proficiencies.md'
-      - 'dev/internals.md'
-    - 'Getting Started (Docker)':
-      - 'dev/docker.md'
-      - 'dev/queries.md'
-      - 'notebooks/basic_query_in_python.ipynb'
-      - 'dev/decision_rules.md'
-    - 'Installation':
-      - 'dev/requirements.md'
-      - 'dev/method.md'
-      - 'dev/configuration.md'
-      - 'dev/installation.md'
-      - 'dev/installation_full.md'
-      - 'dev/ansible.md'
-    - 'Load Bulk Data':
-      - 'dev/loadjs.md'
-      - 'notebooks/load_bulk_data_in_python.ipynb'
-    - 'Production Considerations':
-      - 'dev/security.md'
-      - 'dev/backup.md'
-      - 'dev/troubleshooting.md'
+  - Developer:
     - 'dev/addalgos.md'
     - 'dev/docs.md'
     - 'dev/license.md'
     - 'dev/contributing.md'
+
+  - Sysadmin:
+    - 'Introduction': 
+      - 'admin/architecture.md'
+      - 'admin/proficiencies.md'
+      - 'admin/internals.md'
+    - 'Getting Started (Docker)':
+      - 'admin/docker.md'
+      - 'admin/queries.md'
+      - 'notebooks/basic_query_in_python.ipynb'
+      - 'admin/decision_rules.md'
+    - 'Installation':
+      - 'admin/requirements.md'
+      - 'admin/method.md'
+      - 'admin/configuration.md'
+      - 'admin/installation.md'
+      - 'admin/installation_full.md'
+      - 'admin/ansible.md'
+    - 'Load Bulk Data':
+      - 'admin/loadjs.md'
+      - 'notebooks/load_bulk_data_in_python.ipynb'
+    - 'Production Considerations':
+      - 'admin/security.md'
+      - 'admin/backup.md'
+      - 'admin/troubleshooting.md'
 
 markdown_extensions:
   - admonition
   - codehilite:
       guess_lang: false
   - toc:
-      toc_depth : "1-2"
+      toc_depth : "3"
   - footnotes
   
 # https://github.com/zhaoterryy/mkdocs-pdf-export-plugin not working

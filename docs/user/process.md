@@ -1,19 +1,32 @@
-# Record Linkage Process
+# Matching Process
 
-The below diagram shows how OpenCR performs record linkage after the matching process. The diagram begins with a source system submitting a request with patient demographic data in a FHIR message, as indicated by the circle on the left.
+This is an overview of the matching process. 
 
-![Matching Process](../images/matching.png)
+## Generic Matching Process
 
-After requests are submitted with demographic data, OpenCR reads the submitting system's ID of that patient. The Client Registry searches for that source system's ID in its records. This happens regardless if it is a new patient or update of existing patient.
+It is helpful to look at a generic matching process first, and then move to to see where OpenCR fits.
 
-When the submitting system's ID matches an existing record, the Client Registry updates the patient demographic information of that record with changes submitted. Once the update is complete, the existing record linkages may affected. This is because algorithms may not continue to link records as before because details have changed. Therefore, the Client Registry will pool all patients that were previously matched and break all the matches. The Client Registry will rerun matching algorithms again to see what matches are currently true matches of the patient. Then the Client Registry will be updated with the true matches given the changes in demographic data.
+This diagram is reproduced from [Christen, Peter, 2012, "Data Matching: Concepts and Techniques for Record Linkage, Entity Resolution, and Duplicate Detection"](https://www.springer.com/gp/book/9783642311635)
 
-Another scenario is when the Client Registry searches and doesn't find anyone already with same submitting system's ID.
-If there is not existing match, the Client Registry runs the matching algorithms for existing patients who matches that patient and will provide record linkages with other records.
+The diagram is an example of a deduplication process with only one data source. 
 
-## Requirements
+* **Database**: The flow begins on the top left at 'Database'.
+* **Preprocessing**: Data from the database source is preprocessed. This means cleaning the data before submission of errors in date formats, data entry mistakes, biologically implausible values, and similar.
+* **Blocking**: This means using filters to be more efficient in queries. For example, filtering on the birth year of 1960 reduces the amount of searching that has to be done because only 1960 is used.
+* **Comparison**: Algorithms compare pairs of records.
+* **Classification**: Records are classified as matches, non-matches, or potential matches. 
+* **Clerical review**: For records that are potential matches, they may be reviewed individually.
+* **Evaluation**: This process is a way to understand the matching performance against a known baseline. It is not necessarily built into the client registry but may be conducted using other tools.
 
-In order for this process to work as expected, there are some requirements:
+![Overall matching process](../images/matchingprocess.png)
 
-* Requests sent to the Client Registry must be made of FHIR messages. FHIR is a popular specification for accessing an API for providing data in health systems. Messages must support FHIR R4.
-* Requests can only be received from trusted systems. See the [security page](../dev/security.md) in the Developers Manual for mode detail.
+OpenCR performs much of the functionality in the matching process.
+
+* **Database and preprocessing**: The database and cleaning of records is done outside of OpenCR.
+* **Comparison and classification**: In production, ElasticSearch is used for these processes. ElasticSearch is a part of OpenCR.
+* **Clerical review**: There is a UI for viewing and breaking matches. 
+* **Evaluation**: This process is conducted externally with other tools, it is not provided as a feature set in OpenCR. 
+
+
+![OpenCR matching process](../images/matchingprocessopencr.png)
+
