@@ -240,8 +240,20 @@ router.post('/', (req, res) => {
 });
 
 router.post('/:resourceType', (req, res) => {
+  saveResource(req, res);
+});
+
+router.put('/:resourceType/:id', (req, res) => {
+  saveResource(req, res);
+});
+
+function saveResource(req, res) {
   let resource = req.body;
   let resourceType = req.params.resourceType;
+  let id = req.params.id;
+  if(id && !resource.id) {
+    resource.id = id;
+  }
   logger.info('Received a request to add resource type ' + resourceType);
   if(resourceType !== "Patient") {
     fhirWrapper.create(resource, (code, err, response, body) => {
@@ -309,6 +321,6 @@ router.post('/:resourceType', (req, res) => {
       });
     });
   }
-});
+}
 
 module.exports = router;

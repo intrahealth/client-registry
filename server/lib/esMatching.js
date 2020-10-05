@@ -417,7 +417,6 @@ const performMatch = ({
           goldenRecords.entry = goldenRecords.entry.filter((entry) => {
             return entry.resource.resourceType + '/' + entry.resource.id === goldenID;
           });
-
           logger.info('Done matching');
           return callback({
             error,

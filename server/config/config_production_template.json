@@ -18,9 +18,9 @@
     "register": false
   },
   "fhirServer": {
-    "baseURL": "http://localhost:8081/clientregistry/fhir",
     "username": "hapi",
-    "password": "hapi"
+    "password": "hapi",
+    "baseURL": "http://localhost:8080/hapi/fhir"
   },
   "elastic": {
     "server": "http://localhost:9200",
@@ -30,7 +30,8 @@
     "index": "patients"
   },
   "matching": {
-    "tool": "elasticsearch"
+    "tool": "elasticsearch",
+    "autoMatchPatientWithHumanAdjudTag": false
   },
   "codes": {
     "goldenRecord": "5c827da5-4858-4f3d-a50c-62ece001efea"
@@ -45,8 +46,16 @@
       "displayName": "OpenMRS"
     },
     {
+      "id": "dhis2",
+      "displayName": "DHIS2"
+    },
+    {
       "id": "lims",
       "displayName": "Lab Info Management System"
+    },
+    {
+      "id": "cr",
+      "displayName": "Client Registry"
     }
   ],
   "systems": {
@@ -54,16 +63,19 @@
     "internalid": {
       "uri": [
         "http://health.go.ug/cr/internalid",
-        "http://clientregistry.org/openmrs"
+        "http://openmrs.org/openmrs2",
+        "http://clientregistry.org/openmrs",
+        "http://clientregistry.org/dhis2",
+        "http://clientregistry.org/lims"
       ],
       "displayName": "Internal ID"
     },
     "nationalid": {
-      "uri": "http://health.go.ug/cr/natioanlid",
+      "uri": "http://clientregistry.org/cr/natioanlid",
       "displayName": "National ID"
     },
     "artnumber": {
-      "uri": "http://health.go.ug/cr/artnumber",
+      "uri": "http://clientregistry.org/cr/artnumber",
       "displayName": "ART Number"
     },
     "brokenMatch": {
@@ -71,7 +83,7 @@
     }
   },
   "sync": {
-    "lastFHIR2ESSync": "2020-02-21T14:51:41"
+    "lastFHIR2ESSync": "1970-10-05T08:15:12"
   },
   "__comments": {
     "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"

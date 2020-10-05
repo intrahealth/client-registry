@@ -20,7 +20,7 @@
   "fhirServer": {
     "username": "hapi",
     "password": "hapi",
-    "baseURL": "http://localhost:8081/clientregistry/fhir"
+    "baseURL": "http://localhost:8080/hapi/fhir"
   },
   "elastic": {
     "server": "http://localhost:9200",
@@ -30,7 +30,8 @@
     "index": "patients"
   },
   "matching": {
-    "tool": "elasticsearch"
+    "tool": "elasticsearch",
+    "autoMatchPatientWithHumanAdjudTag": false
   },
   "codes": {
     "goldenRecord": "5c827da5-4858-4f3d-a50c-62ece001efea"
@@ -82,7 +83,7 @@
     }
   },
   "sync": {
-    "lastFHIR2ESSync": "2020-09-22T18:02:56"
+    "lastFHIR2ESSync": "1970-10-05T08:15:12"
   },
   "__comments": {
     "matching.tool": "this tells if the app should use mediator algorithms or elasticsearch algorithms for matching, two options mediator and elasticsearch"
