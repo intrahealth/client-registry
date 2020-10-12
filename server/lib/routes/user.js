@@ -114,6 +114,9 @@ router.post("/authenticate", function (req, res, next) {
     auth: {
       username: config.get('fhirServer:username'),
       password: config.get('fhirServer:password'),
+    },
+    headers: {
+      'Cache-Control': 'no-cache',
     }
   };
   request.get(options, (err, response, body) => {
