@@ -50,7 +50,7 @@ function appRoutes() {
       return next();
     }
     if (req.method == 'OPTIONS' ||
-      req.path == '/user/authenticate'
+      req.path === '/user/authenticate'
     ) {
       authorized = true;
       return next();
