@@ -124,7 +124,7 @@ export default {
       let params = { username: this.username, password: this.password };
       axios({
         method: "POST",
-        url: "/user/authenticate",
+        url: "/ocrux/user/authenticate",
         params
       })
         .then(authResp => {

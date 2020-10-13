@@ -62,7 +62,7 @@ export default {
   },
   methods: {
     getReviews() {
-      axios.get('/match/get-match-issues').then((resp) => {
+      axios.get('/ocrux/match/get-match-issues').then((resp) => {
         this.reviews = resp.data
       })
     },
