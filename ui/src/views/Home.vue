@@ -180,7 +180,7 @@ export default {
         }
 
         url =
-          "/fhir/Patient?_count=" +
+          "/ocrux/fhir/Patient?_count=" +
           count +
           "&_total=accurate&_tag:not=5c827da5-4858-4f3d-a50c-62ece001efea";
         if (this.search_terms.length > 0) {
@@ -227,7 +227,6 @@ export default {
               }
             }
             let systemName = this.getClientDisplayName(clientUserId);
-            console.log(clientUserId);
             this.patients.push({
               id: entry.resource.id,
               family: name.family,

@@ -24,7 +24,7 @@
           <h3 class="white--text">Options</h3>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="useNickname" dark label="Use Temporary CD ID?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="useNickname" dark label="Use Simplified Label?" @change="setupCRIDList"></v-switch>
         </v-list-item>
         <v-list-item>
           <v-switch v-model="includeCRID" dark label="Include Actual CR ID with Temporary CR ID?" @change="setupCRIDList"></v-switch>
@@ -310,7 +310,7 @@ export default {
     }
   },
   created: function() {
-    axios.get(`/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
+    axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
       this.resolves = resp.data
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
@@ -428,7 +428,7 @@ export default {
         removeFlag,
         flagType: this.$route.query.flagType
       }
-      axios.post('/match/resolve-match-issue', body).then(() => {
+      axios.post('/ocrux/match/resolve-match-issue', body).then(() => {
         this.countMatchIssues();
         this.showReview = false
         this.$store.state.progress.enable = false

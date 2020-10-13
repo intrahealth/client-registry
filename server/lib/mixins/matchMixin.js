@@ -10,6 +10,7 @@ const cacheFHIR = require('../tools/cacheFHIR');
 const logger = require('../winston');
 const config = require('../config');
 const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+const humanAdjudURI = URI(config.get("systems:CRBaseURI")).segment('humanAdjudication').toString();
 
 function createAddPatientAudEvent(operationSummary, req) {
   const auditBundle = {};
@@ -121,6 +122,7 @@ function createAddPatientAudEvent(operationSummary, req) {
 }
 
 const addPatient = (clientID, patientsBundle, callback) => {
+  let autoMatchPatientWithHumanAdjudTag = config.get("matching:autoMatchPatientWithHumanAdjudTag");
   const responseBundle = {
     resourceType: 'Bundle',
     entry: []
@@ -176,28 +178,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
     }
   };
 
-  const getLinksFromResources = (resourceBundle) => {
-    const links = [];
-    for (const entry of resourceBundle.entry) {
-      if (entry.resource.link && entry.resource.link.length > 0) {
-        for (const link of entry.resource.link) {
-          const exist = links.find((pushedLink) => {
-            return pushedLink === link.other.reference;
-          });
-          if (!exist) {
-            links.push(link.other.reference);
-          }
-        }
-      }
-    }
-    return links;
-  };
-
   const findMatches = ({
     patient,
     currentLinks = [],
     newPatient = true,
     bundle,
+    hasHumanAdjudTag = false,
     operSummary
   }, callback) => {
     const patientEntry = {};
@@ -234,7 +220,21 @@ const addPatient = (clientID, patientsBundle, callback) => {
       operSummary.ESMatches = ESMatches;
 
       // if there is potential matches or conflict matches then add a tag
-      if(FHIRPotentialMatches.entry.length > 0) {
+      let existsPotentialMatches = false;
+      for(const potential of FHIRPotentialMatches.entry) {
+        let isCurrentLink = currentLinks.find((currentLink) => {
+          return potential.resource.link.find((link) => {
+            return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
+          });
+        });
+        // if this potential match is currently linked to this patient and patient has human adjudication tag then this will be kept as a link, dont count as potential
+        if(isCurrentLink && hasHumanAdjudTag && !autoMatchPatientWithHumanAdjudTag) {
+          continue;
+        } else {
+          existsPotentialMatches = true;
+        }
+      }
+      if(existsPotentialMatches) {
         if(!patient.meta) {
           patient.meta = {};
         }
@@ -279,7 +279,21 @@ const addPatient = (clientID, patientsBundle, callback) => {
           resourceID: patient.id
         });
       }
-      if(FHIRConflictsMatches.entry.length > 0) {
+      let existsConflictMatches = false;
+      for(const conflict of FHIRConflictsMatches.entry) {
+        let isCurrentLink = currentLinks.find((currentLink) => {
+          return conflict.resource.link.find((link) => {
+            return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
+          });
+        });
+        // if this conflict match is currently linked to this patient and patient has human adjudication tag then this will be kept as a link, dont count as conflict
+        if(isCurrentLink && hasHumanAdjudTag && !autoMatchPatientWithHumanAdjudTag) {
+          continue;
+        } else {
+          existsConflictMatches = true;
+        }
+      }
+      if(existsConflictMatches) {
         if(!patient.meta) {
           patient.meta = {};
         }
@@ -392,7 +406,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
               logger.error('An error occured while saving patient and golden record');
               return callback(err);
             }
-            addLinks(patient, goldenRecord);
+            // if has human adjudication tag then already has golden record
+            if(!hasHumanAdjudTag || (hasHumanAdjudTag && autoMatchPatientWithHumanAdjudTag)) {
+              addLinks(patient, goldenRecord);
+            }
             const patientResource = {
               resource: patient,
               request: {
@@ -420,74 +437,116 @@ const addPatient = (clientID, patientsBundle, callback) => {
           });
         });
       } else if (matchedGoldenRecords.entry && matchedGoldenRecords.entry.length > 0) {
-        if (currentLinks.length > 0) {
-          /**
-           * The purpose for this piece of code is to remove this patient from existing golden links
-           * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
-           * otherwise just remove the patient from this exisitng golden link
-           * It also remove the exisitng golden link from the patient
-           */
+        if(hasHumanAdjudTag && !autoMatchPatientWithHumanAdjudTag) {
           for (const currentLink of currentLinks) {
-            const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
-              return link.other.reference === 'Patient/' + patient.id;
-            });
-            let replacedByNewGolden = false;
-            if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
-              const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
-                return entry.resource.id === currentLink.resource.id;
-              });
-              if (!inNewMatches) {
-                replacedByNewGolden = true;
+            operSummary.cruid.push(currentLink.resource.resourceType + '/' + currentLink.resource.id);
+            responseBundle.entry.push({
+              response: {
+                location: currentLink.resource.resourceType + '/' + currentLink.resource.id
               }
-            }
-            for (const index in currentLink.resource.link) {
-              if (currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
-                // remove patient from golden link
-                if (replacedByNewGolden) {
-                  currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
-                  currentLink.resource.link[index].type = 'replaced-by';
-                } else {
-                  currentLink.resource.link.splice(index, 1);
-                }
-                // remove golden link from patient
-                for (const index in patient.link) {
-                  if (patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
-                    patient.link.splice(index, 1);
-                  }
-                }
+            });
+          }
+          for (const goldenRecord of matchedGoldenRecords.entry) {
+            let isSame = currentLinks.find((currLink) => {
+              return currLink.resource.id === goldenRecord.resource.id;
+            });
+            // if matched golden record is different from the existing golden record then this is a conflict
+            if(!isSame) {
+              if(!patient.meta) {
+                patient.meta = {};
+              }
+              if(!patient.meta.tag) {
+                patient.meta.tag = [];
+              }
+              let tagExist = patient.meta.tag.find((tag) => {
+                return tag.system === matchIssuesURI && tag.code === 'conflictMatches';
+              });
+              if(!tagExist) {
+                patient.meta.tag.push({
+                  system: matchIssuesURI,
+                  code: 'conflictMatches',
+                  display: 'Conflict On Match'
+                });
                 bundle.entry.push({
-                  resource: currentLink.resource,
+                  resource: patient,
                   request: {
                     method: 'PUT',
-                    url: `Patient/${currentLink.resource.id}`,
+                    url: `Patient/${patient.id}`,
                   },
                 });
               }
             }
           }
-        }
-        // adding new links now to the patient
-        for (const goldenRecord of matchedGoldenRecords.entry) {
-          operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
-          responseBundle.entry.push({
-            response: {
-              location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
+        } else {
+          if (currentLinks.length > 0) {
+            /**
+             * The purpose for this piece of code is to remove this patient from existing golden links
+             * if the existing golden link has just one link which is this patient, then link this golden link to new golden link of a patient
+             * otherwise just remove the patient from this exisitng golden link
+             * It also remove the exisitng golden link from the patient
+             */
+            for (const currentLink of currentLinks) {
+              const exist = currentLink.resource.link && currentLink.resource.link.find((link) => {
+                return link.other.reference === 'Patient/' + patient.id;
+              });
+              let replacedByNewGolden = false;
+              if (currentLink.resource.link && currentLink.resource.link.length === 1 && exist) {
+                const inNewMatches = matchedGoldenRecords.entry.find((entry) => {
+                  return entry.resource.id === currentLink.resource.id;
+                });
+                if (!inNewMatches) {
+                  replacedByNewGolden = true;
+                }
+              }
+              for (const index in currentLink.resource.link) {
+                if (currentLink.resource.link[index].other.reference === 'Patient/' + patient.id) {
+                  // remove patient from golden link
+                  if (replacedByNewGolden) {
+                    currentLink.resource.link[index].other.reference = 'Patient/' + matchedGoldenRecords.entry[0].resource.id;
+                    currentLink.resource.link[index].type = 'replaced-by';
+                  } else {
+                    currentLink.resource.link.splice(index, 1);
+                  }
+                  // remove golden link from patient
+                  for (const index in patient.link) {
+                    if (patient.link[index].other.reference === 'Patient/' + currentLink.resource.id) {
+                      patient.link.splice(index, 1);
+                    }
+                  }
+                  bundle.entry.push({
+                    resource: currentLink.resource,
+                    request: {
+                      method: 'PUT',
+                      url: `Patient/${currentLink.resource.id}`,
+                    },
+                  });
+                }
+              }
             }
-          });
-          addLinks(patient, goldenRecord.resource);
-          bundle.entry.push({
-            resource: patient,
-            request: {
-              method: 'PUT',
-              url: `Patient/${patient.id}`,
-            },
-          }, {
-            resource: goldenRecord.resource,
-            request: {
-              method: 'PUT',
-              url: `Patient/${goldenRecord.resource.id}`,
-            },
-          });
+          }
+          // adding new links now to the patient
+          for (const goldenRecord of matchedGoldenRecords.entry) {
+            operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
+            responseBundle.entry.push({
+              response: {
+                location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
+              }
+            });
+            addLinks(patient, goldenRecord.resource);
+            bundle.entry.push({
+              resource: patient,
+              request: {
+                method: 'PUT',
+                url: `Patient/${patient.id}`,
+              },
+            }, {
+              resource: goldenRecord.resource,
+              request: {
+                method: 'PUT',
+                url: `Patient/${goldenRecord.resource.id}`,
+              },
+            });
+          }
         }
         operSummary.FHIRMatches = FHIRAutoMatched.entry;
         operSummary.ESMatches = ESMatches;
@@ -564,7 +623,9 @@ const addPatient = (clientID, patientsBundle, callback) => {
       if (existingPatients.length === 0) {
         operSummary.action = 'create';
         delete newPatient.resource.link;
-        newPatient.resource.id = uuid4();
+        if(!newPatient.resource.id) {
+          newPatient.resource.id = uuid4();
+        }
         operSummary.submittedResource = newPatient.resource;
         findMatches({
           patient: newPatient.resource,
@@ -610,7 +671,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
         operSummary.submittedResource = existingPatient.resource;
         operSummary.what = existingPatient.resource.resourceType + '/' + existingPatient.resource.id;
         logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
-        let adjudTag;
+
+        let adjudTag = existingPatient.resource.meta && existingPatient.resource.meta.tag && existingPatient.resource.meta.tag.find((tag) => {
+          return tag.system === humanAdjudURI && tag.code === 'humanAdjudication';
+        });
         async.series([
           /**
            * overwrite with this new Patient to existing CR patient who has same identifier as the new patient
@@ -622,7 +686,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
               existingLinks = _.cloneDeep(goldenRecords);
             }
             delete newPatient.resource.link;
-            delete existingPatient.resource.link;
+            // if patient has human adjudication tag then dont delete existing link as no modification will be done even if there will be some new auto matches
+            if(!adjudTag || (adjudTag && autoMatchPatientWithHumanAdjudTag)) {
+              delete existingPatient.resource.link;
+            }
             existingPatient.resource = _.merge(existingPatient.resource, newPatient.resource);
             existingPatient.resource.id = id;
             bundle.entry.push({
@@ -635,9 +702,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
             return callback(null);
           },
           /**
-           * Drop links to every CR patient who is linked to this new patient
+           * Remove link of this submitted patient from the golden record
            */
           callback => {
+            if(adjudTag) {
+              return callback(null);
+            }
             const link = `Patient/${existingPatient.resource.id}`;
             for (const goldenRecord of goldenRecords) {
               for (const index in goldenRecord.resource.link) {
@@ -659,9 +729,9 @@ const addPatient = (clientID, patientsBundle, callback) => {
           findMatches({
             patient: existingPatient.resource,
             currentLinks: existingLinks,
-            adjudicationTag: adjudTag,
             newPatient: false,
             bundle,
+            hasHumanAdjudTag: adjudTag,
             operSummary
           }, (err) => {
             if (err) {

@@ -2,7 +2,7 @@ import axios from "axios";
 export const generalMixin = {
   methods: {
     countMatchIssues() {
-      axios.get(`/match/count-match-issues`).then((response) => {
+      axios.get(`/ocrux/match/count-match-issues`).then((response) => {
         if(response.data) {
           this.$store.state.totalMatchIssues = response.data.total
         }
@@ -19,7 +19,7 @@ export const generalMixin = {
     },
     getClients() {
       axios
-        .get("/config/getClients")
+        .get("/ocrux/config/getClients")
         .then(response => {
           this.$store.state.clients = response.data;
         })

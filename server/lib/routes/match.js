@@ -196,6 +196,7 @@ router.post('/resolve-match-issue', async(req, res) => {
             sourceResource: resolvePatientResource.resource,
             ignoreList: [resolvePatientResource.resource.id],
           }, ({
+            FHIRAutoMatched,
             FHIRPotentialMatches,
             FHIRConflictsMatches
           }) => {
@@ -215,6 +216,24 @@ router.post('/resolve-match-issue', async(req, res) => {
               }
               return needsResolving;
             });
+
+            // this checks those that has higher scores but are not linked to this patient
+            FHIRConflictsMatches.entry = FHIRAutoMatched.entry.filter((entry) => {
+              let needsResolving = true;
+              let link;
+              if(entry.resource.link) {
+                link = entry.resource.link[0].other.reference.split('/')[1];
+              }
+              if(resolvePatient.uid === link) {
+                needsResolving = false;
+              }
+              //if a potential match comes from patient selected for resolving and user decided to remove the flag then dont add this to potential matches
+              if(entry.resource.id === resolvingFrom && removeFlag) {
+                needsResolving = false;
+              }
+              return needsResolving;
+            });
+            // end of removing any resolved potential matches
             // end of removing resolved conflicts
 
             // remove any resolved potential matches
@@ -234,6 +253,7 @@ router.post('/resolve-match-issue', async(req, res) => {
               return needsResolving;
             });
             // end of removing any resolved potential matches
+
             async.parallel({
               potentialMatches: async (callback) => {
                 if(FHIRPotentialMatches.entry.length === 0 || (flagType === 'potentialMatches' && removeFlag)) {

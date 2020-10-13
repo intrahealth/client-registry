@@ -50,7 +50,7 @@ function appRoutes() {
       return next();
     }
     if (req.method == 'OPTIONS' ||
-      req.path == '/user/authenticate'
+      req.path === '/ocrux/user/authenticate'
     ) {
       authorized = true;
       return next();
@@ -113,10 +113,16 @@ function appRoutes() {
     }
     next();
   }
+
+  function cleanReqPath (req, res, next) {
+    req.url = req.url.replace('ocrux/', '');
+    return next();
+  }
   app.use(jwtValidator);
   if (!config.get('mediator:register')) {
     app.use(certificateValidity);
   }
+  app.use(cleanReqPath);
   app.use('/user', userRouter);
   app.use('/fhir', fhirRoutes);
   app.use('/match', matchRoutes);

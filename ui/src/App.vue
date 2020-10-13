@@ -99,7 +99,7 @@ export default {
       axios.get("/ocrux/isTokenActive/").then(() => {
         this.$store.state.denyAccess = false;
         axios
-          .get("/config/getURI")
+          .get("/ocrux/config/getURI")
           .then(response => {
             this.$store.state.systemURI = response.data;
           })
