@@ -310,10 +310,20 @@ export default {
     }
   },
   created: function() {
+    this.$store.state.progress.enable = true;
+    this.$store.state.progress.width = "300px";
+    this.$store.state.progress.title = "Loading potential Matches"
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
       this.resolves = resp.data
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
+      this.$store.state.progress.enable = false;
+    }).catch(() => {
+      this.$store.state.progress.enable = false;
+      this.$store.state.alert.show = true;
+      this.$store.state.alert.width = "500px";
+      this.$store.state.alert.msg = "Oops, something went wrong";
+      this.$store.state.alert.type = "error";
     })
   },
   computed: {

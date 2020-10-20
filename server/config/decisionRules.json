@@ -6,43 +6,40 @@
       "levenshtein": "Lower the number, the closer the match, 0 being exact match, max threshold is 2",
       "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
     },
-    "nullHandlingSingleField": {
-      "description": "this option tells openCR what to do when a field is empty, when set at the top level of the rule then it will apply to all fields, if set at the respective field then it will apply for that particular field",
-      "values": "either conservative, moderate or greedy"
-    },
-    "nullHandlingBothFields": {
-      "description": "this option tells openCR what to do when a both fields are empty, when set at the top level of the rule then it will apply to all fields, if set at the respective field then it will apply for that particular field",
-      "values": "either conservative, moderate or greedy"
-    },
     "supported_algorithms": {
       "elasticsearch": ["https://github.com/intrahealth/similarity-scoring"]
     }
   },
   "rules": [{
-    "matchingType": "deterministic",
-    "nullHandlingSingleField": "moderate",
-    "nullHandlingBothFields": "moderate",
+    "matchingType": "probabilistic",
     "fields": {
       "given": {
         "algorithm": "jaro-winkler-similarity",
         "threshold": 0.8,
+        "mValue": 0.9172,
+        "uValue": 0.003628206379557255,
         "fhirpath": "name.where(use='official').given",
         "espath": "given"
       },
       "family": {
         "algorithm": "damerau-levenshtein",
         "threshold": 3,
+        "mValue": 0.9346,
+        "uValue": 0.0018975910650996456,
         "fhirpath": "name.where(use='official').family",
         "espath": "family"
       },
       "phone": {
-        "algorithm": "exact",
+        "algorithm": "normalized-levenshtein-similarity",
+        "threshold": 0.8,
+        "mValue": 0.99,
+        "uValue": 0.00277670269535094,
         "fhirpath": "telecom.where(system='phone').value",
         "espath": "phone"
       }
     },
-    "potentialMatchThreshold": 1,
-    "autoMatchThreshold": 3,
+    "potentialMatchThreshold": 104,
+    "autoMatchThreshold": 107,
     "filters": {
       "gender": {
         "fhirpath": "gender",

@@ -61,7 +61,7 @@
         :width="$store.state.progress.width"
       >
         <v-card
-          color="primary"
+          color="primary darken-1"
           dark
         >
           <v-card-text>

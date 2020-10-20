@@ -175,8 +175,9 @@ export default {
         this.$store.state.errorDescription = "Password mismatch";
         return;
       }
-      this.$store.state.dynamicProgress = true;
-      this.$store.state.progressTitle = "Saving User";
+      this.$store.state.progress.enable = true;
+      this.$store.state.progress.width = "300px";
+      this.$store.state.progress.title = "Saving User"
       let formData = new FormData();
       formData.append("firstName", this.firstName);
       formData.append("otherName", this.otherName);
@@ -190,6 +191,7 @@ export default {
           }
         })
         .then(() => {
+          this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
           this.$store.state.alert.msg = "User added successfully";
@@ -197,6 +199,7 @@ export default {
           this.$refs.form.reset();
         })
         .catch(() => {
+          this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
           this.$store.state.alert.msg =
