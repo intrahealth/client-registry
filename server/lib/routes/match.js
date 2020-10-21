@@ -990,7 +990,7 @@ router.get('/potential-matches/:id', (req, res) => {
     id: req.params.id,
     noCaching: true
   }, (patient) => {
-    generateScoreMatric(patient, () => {
+    generateScoreMatrix(patient, () => {
       return res.status(200).send(matchResults);
     });
   });
@@ -1009,7 +1009,7 @@ router.get('/potential-matches/:id', (req, res) => {
     return found;
   }
 
-  function generateScoreMatric(patient, callback) {
+  function generateScoreMatrix(patient, callback) {
     let matchingTool;
     if (config.get("matching:tool") === "mediator") {
       matchingTool = medMatching;
@@ -1048,12 +1048,21 @@ router.get('/potential-matches/:id', (req, res) => {
         }
       }
       let systemName = generalMixin.getClientDisplayName(clientUserId);
+      let phone;
+      if(patient.telecom) {
+        for(let telecom of patient.telecom) {
+          if(telecom.system === 'phone') {
+            phone = telecom.value;
+          }
+        }
+      }
       let primaryPatient = {
         id: patient.id,
         gender: patient.gender,
         given,
         family: name.family,
         birthDate: patient.birthDate,
+        phone,
         uid: goldenLink,
         ouid: goldenLink,
         source_id: validSystem.value,
@@ -1069,7 +1078,7 @@ router.get('/potential-matches/:id', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtAutoMatched();
             }
-            generateScoreMatric(autoMatched.resource, () => {
+            generateScoreMatrix(autoMatched.resource, () => {
               return nxtAutoMatched();
             });
           }, () => {
@@ -1082,7 +1091,7 @@ router.get('/potential-matches/:id', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtPotMatch();
             }
-            generateScoreMatric(potentialMatch.resource, () => {
+            generateScoreMatrix(potentialMatch.resource, () => {
               return nxtPotMatch();
             });
           }, () => {
@@ -1095,7 +1104,7 @@ router.get('/potential-matches/:id', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtConflictMatch();
             }
-            generateScoreMatric(conflictMatch.resource, () => {
+            generateScoreMatrix(conflictMatch.resource, () => {
               return nxtConflictMatch();
             });
           }, () => {

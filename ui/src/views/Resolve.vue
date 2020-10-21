@@ -137,8 +137,8 @@
             <template v-slot:item.score="{ item }">
               <v-switch v-model="showScore[item.source_id]" hide-details></v-switch>
             </template>
-            <template v-slot:item.birthdate="{ item }">
-              {{ item.birthdate | moment("MMMM DD YYYY") }}
+            <template v-slot:item.birthDate="{ item }">
+              {{ item.birthDate | moment("MMMM DD YYYY") }}
             </template>
           </v-data-table>
         </v-card>
@@ -264,14 +264,14 @@ export default {
         { text: "Source ID", value: "source_id" },
         { text: "Surname", value: "family" },
         { text: "Given Names", value: "given" },
-        { text: "Birth Date", value: "birthdate" },
+        { text: "Birth Date", value: "birthDate" },
         { text: "Gender", value: "gender" },
         { text: "Full View", value: "view", sortable: false },
         { text: "Scores", value: "score", sortable: false },
       ],
-      dates: { birthdate: true },
+      dates: { birthDate: true },
       fields: { source: "Submitting System", source_id: "System ID", family: "Family Name", given: "Given Name",
-        gender: "Gender", birthdate: "Birth Date"
+        gender: "Gender", birthDate: "Birth Date", phone: "Phone"
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
@@ -350,7 +350,6 @@ export default {
       for( let resolve of this.resolves ) {
         if ( firstTime ) {
           let scoreRow = {}
-          console.log(this.getClientDisplayName(resolve.source_id));
           scoreRow.name = resolve.source+" "+resolve.source_id
           this.score_headers.push( { text: scoreRow.name, value: resolve.source_id } )
           for( let score_id of Object.keys(resolve.scores) ) {
