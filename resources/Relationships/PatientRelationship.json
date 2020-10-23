@@ -86,7 +86,7 @@
         "valueString": "art"
       }, {
         "url": "name",
-        "valueString": "identifier.where(system='http://clientregistry/artnumber').last().value"
+        "valueString": "identifier.where(system='http://clientregistry.org/artnumber').value"
       }]
     }]
   }],

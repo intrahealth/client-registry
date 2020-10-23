@@ -8,6 +8,20 @@
     },
     "supported_algorithms": {
       "elasticsearch": ["https://github.com/intrahealth/similarity-scoring"]
+    },
+    "nullHandling": {
+      "nullHandling": "by itself means it is used with either one value or both are null.",
+      "nullHandlingBothFields": "it means both values are null",
+      "descriptions": "if you have nullHandling and nullHandlingBothFields, then nullHandling is for when only 1 value is null and nullHandlingBothFields is for when both are null.",
+      "possible_values_for_nullHandling": {
+        "conservative": "means it's not a match",
+        "moderate": "means it doesn't affect the score",
+        "greedy": "means it is a match"
+      },
+      "example": [
+        "if you have nullHandling = 'conservative' and that's it, and one or both are null, then it won't be considered a match.",
+        "if you have nullHandling = 'conservative' and nullHandlingBothFields = 'greedy' then if only 1 is null, then it won't be a match, but if both are null then it will be."
+      ]
     }
   },
   "rules": [{

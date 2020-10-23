@@ -1056,6 +1056,17 @@ router.get('/potential-matches/:id', (req, res) => {
           }
         }
       }
+      let nationalid;
+      let artnumber;
+      if(patient.identifier) {
+        for(let identifier of patient.identifier) {
+          if(identifier.system === 'http://clientregistry.org/nationalid') {
+            nationalid = identifier.value;
+          } else if(identifier.system === 'http://clientregistry.org/artnumber') {
+            artnumber = identifier.value
+;          }
+        }
+      }
       let primaryPatient = {
         id: patient.id,
         gender: patient.gender,
@@ -1063,6 +1074,8 @@ router.get('/potential-matches/:id', (req, res) => {
         family: name.family,
         birthDate: patient.birthDate,
         phone,
+        nationalid,
+        artnumber,
         uid: goldenLink,
         ouid: goldenLink,
         source_id: validSystem.value,

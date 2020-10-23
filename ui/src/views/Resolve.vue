@@ -271,7 +271,7 @@ export default {
       ],
       dates: { birthDate: true },
       fields: { source: "Submitting System", source_id: "System ID", family: "Family Name", given: "Given Name",
-        gender: "Gender", birthDate: "Birth Date", phone: "Phone"
+        gender: "Gender", birthDate: "Birth Date", phone: "Phone", "artnumber": "ART Number", "nationalid": "National ID"
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
