@@ -11,35 +11,34 @@
     }
   },
   "rules": [{
-    "matchingType": "probabilistic",
+    "matchingType": "deterministic",
     "fields": {
       "given": {
         "algorithm": "jaro-winkler-similarity",
         "threshold": 0.8,
-        "mValue": 0.9172,
-        "uValue": 0.003628206379557255,
         "fhirpath": "name.where(use='official').given",
-        "espath": "given"
+        "espath": "given",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate"
       },
       "family": {
         "algorithm": "damerau-levenshtein",
         "threshold": 3,
-        "mValue": 0.9346,
-        "uValue": 0.0018975910650996456,
         "fhirpath": "name.where(use='official').family",
-        "espath": "family"
+        "espath": "family",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate"
       },
       "phone": {
-        "algorithm": "normalized-levenshtein-similarity",
-        "threshold": 0.8,
-        "mValue": 0.99,
-        "uValue": 0.00277670269535094,
+        "algorithm": "exact",
         "fhirpath": "telecom.where(system='phone').value",
-        "espath": "phone"
+        "espath": "phone",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate"
       }
     },
-    "potentialMatchThreshold": 104,
-    "autoMatchThreshold": 107,
+    "potentialMatchThreshold": 1,
+    "autoMatchThreshold": 2,
     "filters": {
       "gender": {
         "fhirpath": "gender",

@@ -21,7 +21,11 @@
           to="/review"
           v-if='!$store.state.denyAccess'
         >
-          <v-badge color="error" :content="$store.state.totalMatchIssues" >
+          <v-badge color="error"
+            :content="$store.state.totalMatchIssues"
+            :value="displayActionRequiredBadge"
+            offset-x="100"
+          >
           <v-icon>mdi-alert</v-icon> Action Required
           </v-badge>
         </v-btn>
@@ -110,6 +114,14 @@ export default {
       });
     }
     this.countMatchIssues();
+  },
+  computed: {
+    displayActionRequiredBadge() {
+      if(this.$store.state.totalMatchIssues > 0) {
+        return true
+      }
+      return false
+    }
   }
 };
 </script>
