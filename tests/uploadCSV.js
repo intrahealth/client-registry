@@ -41,8 +41,8 @@ if (extTrueLinks !== '.csv') {
 }
 
 logger.info('Upload started ...');
-let bundles = [];
-let bundle = {};
+const bundles = [];
+const bundle = {};
 bundle.type = 'batch';
 bundle.resourceType = 'Bundle';
 bundle.entry = [];
@@ -86,7 +86,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (birthDate) {
           birthDate = birthDate.trim();
         }
-        let resource = {};
+        const resource = {};
         resource.resourceType = 'Patient';
         if (sex == 'f') {
           resource.gender = 'female';
@@ -94,9 +94,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
           resource.gender = 'male';
         }
         if ( birthDate.match( /\d{8,8}/ ) ) {
-          let birthMoment = moment( birthDate );
+          const birthMoment = moment( birthDate );
           if ( birthMoment.isValid() ) {
-            resource.birthDate = birthMoment.format("YYYY-MM-DD")
+            resource.birthDate = birthMoment.format("YYYY-MM-DD");
           }
         }
         resource.identifier = [
@@ -124,7 +124,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
             value: phone,
           });
         }
-        let name = {};
+        const name = {};
         if (given) {
           name.given = [given];
         }
@@ -138,7 +138,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         });
         if (bundle.entry.length === 250) {
           totalRecords += 250;
-          let tmpBundle = {
+          const tmpBundle = {
             ...bundle,
           };
           bundles.push(tmpBundle);
@@ -150,7 +150,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
   })
   .on('end', rowCount => {
     if (bundle.entry.length > 0) {
-      totalRecords += bundle.entry.length
+      totalRecords += bundle.entry.length;
       bundles.push(bundle);
     }
     Promise.all(promises).then(() => {
@@ -163,9 +163,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
             bundle.entry,
             (entry, nxtEntry) => {
               count++;
-              console.time('Processing Took')
+              console.time('Processing Took');
               console.log('Processing ' + count + ' of ' + totalRecords);
-              let agentOptions = {
+              const agentOptions = {
                 cert: fs.readFileSync(
                   '../server/sampleclientcertificates/openmrs_cert.pem'
                 ),
@@ -174,14 +174,15 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 ),
                 ca: fs.readFileSync('../server/certificates/server_cert.pem'),
                 securityOptions: 'SSL_OP_NO_SSLv3',
-              }
-              let auth = {
+              };
+              const auth = {
                 username: 'openmrs',
                 password: 'openmrs'
-              }
+              };
               const options = {
-                url: 'http://localhost:5001/Patient',
-                auth,
+                url: 'https://localhost:3000/fhir/Patient',
+                // auth,
+                agentOptions,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
@@ -191,7 +192,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                   return nxtEntry();
                 }
                 if(!res.headers) {
-                  logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details');
+                  logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details;');
                   return nxtEntry()
                 }
                 if(res.headers.location) {
@@ -199,7 +200,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 } else {
                   logger.error('Something went wrong, no CRUID created');
                 }
-                console.timeEnd('Processing Took')
+           ;     console.timeEnd('Processing Took')
                 return nxtEntry();
               });
             }, () => {

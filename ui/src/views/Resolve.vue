@@ -24,7 +24,7 @@
           <h3 class="white--text">Options</h3>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="useNickname" dark label="Use Simplified Label?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="useNickname" dark label="Use Simplified naming?" @change="setupCRIDList"></v-switch>
         </v-list-item>
         <v-list-item>
           <v-switch v-model="includeCRID" dark label="Include Actual CR ID with Temporary CR ID?" @change="setupCRIDList"></v-switch>
@@ -137,8 +137,8 @@
             <template v-slot:item.score="{ item }">
               <v-switch v-model="showScore[item.source_id]" hide-details></v-switch>
             </template>
-            <template v-slot:item.birthdate="{ item }">
-              {{ item.birthdate | moment("MMMM DD YYYY") }}
+            <template v-slot:item.birthDate="{ item }">
+              {{ item.birthDate | moment("MMMM DD YYYY") }}
             </template>
           </v-data-table>
         </v-card>
@@ -264,14 +264,14 @@ export default {
         { text: "Source ID", value: "source_id" },
         { text: "Surname", value: "family" },
         { text: "Given Names", value: "given" },
-        { text: "Birth Date", value: "birthdate" },
+        { text: "Birth Date", value: "birthDate" },
         { text: "Gender", value: "gender" },
         { text: "Full View", value: "view", sortable: false },
         { text: "Scores", value: "score", sortable: false },
       ],
-      dates: { birthdate: true },
+      dates: { birthDate: true },
       fields: { source: "Submitting System", source_id: "System ID", family: "Family Name", given: "Given Name",
-        gender: "Gender", birthdate: "Birth Date"
+        gender: "Gender", birthDate: "Birth Date", phone: "Phone", "artnumber": "ART Number", "nationalid": "National ID"
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
@@ -310,10 +310,20 @@ export default {
     }
   },
   created: function() {
+    this.$store.state.progress.enable = true;
+    this.$store.state.progress.width = "300px";
+    this.$store.state.progress.title = "Loading potential Matches"
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
       this.resolves = resp.data
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
+      this.$store.state.progress.enable = false;
+    }).catch(() => {
+      this.$store.state.progress.enable = false;
+      this.$store.state.alert.show = true;
+      this.$store.state.alert.width = "500px";
+      this.$store.state.alert.msg = "Oops, something went wrong";
+      this.$store.state.alert.type = "error";
     })
   },
   computed: {
@@ -340,7 +350,6 @@ export default {
       for( let resolve of this.resolves ) {
         if ( firstTime ) {
           let scoreRow = {}
-          console.log(this.getClientDisplayName(resolve.source_id));
           scoreRow.name = resolve.source+" "+resolve.source_id
           this.score_headers.push( { text: scoreRow.name, value: resolve.source_id } )
           for( let score_id of Object.keys(resolve.scores) ) {

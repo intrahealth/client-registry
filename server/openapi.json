@@ -13,7 +13,7 @@
     }
   },
   "servers": [{
-    "url": "http://localhost:8081/scratchpad"
+    "url": "https://localhost:3000"
   }],
   "paths": {
     "/fhir/{ResourceType}/{id}": {
@@ -72,7 +72,120 @@
           "name": "body",
           "description": "A bundle of resources",
           "schema": {
-            "type": "object"
+            "type": "object",
+            "example": {
+              "resourceType": "Bundle",
+              "type": "batch",
+              "entry": [{
+                "resource": {
+                  "resourceType": "Patient",
+                  "identifier": [{
+                      "system": "http://clientregistry.org/openmrs",
+                      "value": "patient1"
+                    },
+                    {
+                      "system": "http://health.go.ug/cr/nationalid",
+                      "value": "228374844"
+                    },
+                    {
+                      "system": "http://system1.org",
+                      "value": "12347",
+                      "period": {
+                        "start": "2001-05-07"
+                      },
+                      "assigner": {
+                        "display": "test Org"
+                      }
+                    }
+                  ],
+                  "active": true,
+                  "name": [{
+                    "use": "official",
+                    "family": "Joshua",
+                    "given": [
+                      "Emmanuel"
+                    ]
+                  }],
+                  "telecom": [{
+                    "system": "phone",
+                    "value": "0678 561608"
+                  }],
+                  "gender": "male",
+                  "birthDate": "1972-01-08"
+                }
+              }, {
+                "resource": {
+                  "resourceType": "Patient",
+                  "identifier": [{
+                      "system": "http://clientregistry.org/openmrs",
+                      "value": "patient2"
+                    },
+                    {
+                      "system": "http://health.go.ug/cr/nationalid",
+                      "value": "228374844"
+                    },
+                    {
+                      "system": "http://system1.org",
+                      "value": "12347",
+                      "period": {
+                        "start": "2001-05-07"
+                      },
+                      "assigner": {
+                        "display": "test Org"
+                      }
+                    }
+                  ],
+                  "active": true,
+                  "name": [{
+                    "use": "official",
+                    "family": "Joshua",
+                    "given": [
+                      "Emanuel"
+                    ]
+                  }],
+                  "telecom": [{
+                    "system": "phone",
+                    "value": "0678 561608"
+                  }],
+                  "gender": "male",
+                  "birthDate": "1972-01-08"
+                }
+              }, {
+                "resource": {
+                  "resourceType": "Patient",
+                  "identifier": [{
+                      "system": "http://clientregistry.org/openmrs",
+                      "value": "patient3"
+                    }, {
+                      "system": "http://health.go.ug/cr/nationalid",
+                      "value": "228374844"
+                    }, {
+                      "system": "http://system1.org",
+                      "value": "12347",
+                      "period": {
+                        "start": "2001-05-07"
+                      },
+                      "assigner": {
+                        "display": "test Org"
+                      }
+                  }],
+                  "active": true,
+                  "name": [{
+                    "use": "official",
+                    "family": "Joshua",
+                    "given": [
+                      "Emanuel"
+                    ]
+                  }],
+                  "telecom": [{
+                    "system": "phone",
+                    "value": "0678 56160"
+                  }],
+                  "gender": "male",
+                  "birthDate": "1972-01-08"
+                }
+              }]
+            }
           }
         }],
         "responses": {
@@ -114,84 +227,49 @@
           "name": "body",
           "description": "Resource details",
           "schema": {
-            "type": "object"
+            "type": "object",
+            "example": {
+              "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+              "resourceType": "Patient",
+              "identifier": [{
+                  "system": "http://clientregistry.org/openmrs",
+                  "value": "patient1"
+                },
+                {
+                  "system": "http://health.go.ug/cr/nationalid",
+                  "value": "228374844"
+                },
+                {
+                  "system": "http://system1.org",
+                  "value": "12347",
+                  "period": {
+                    "start": "2001-05-07"
+                  },
+                  "assigner": {
+                    "display": "test Org"
+                  }
+                }
+              ],
+              "active": true,
+              "name": [{
+                "use": "official",
+                "family": "Joshua",
+                "given": [
+                  "Emmanuel"
+                ]
+              }],
+              "telecom": [{
+                "system": "phone",
+                "value": "0678 561608"
+              }],
+              "gender": "male",
+              "birthDate": "1972-01-08"
+            }
           }
         }],
         "responses": {
           "201": {
-            "description": "successful operation"
-          },
-          "400": {
-            "description":"Bad request"
-          },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
-    "/Patient": {
-      "post": {
-        "tags": [
-          "[Deprecated] Single Patient"
-        ],
-        "summary": "Submit patient information into the client registry",
-        "operationId": "submitPatient",
-        "consumes": [
-          "application/fhir+json",
-          "application/json+fhir"
-        ],
-        "produces": [
-          "application/fhir+json",
-          "application/json+fhir"
-        ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "Patient demographics and other details",
-          "schema": {
-            "type": "object"
-          }
-        }],
-        "responses": {
-          "201": {
-            "description": "successful operation"
-          },
-          "400": {
-            "description":"Bad request"
-          },
-          "500": {
-            "description": "Internal error"
-          }
-        }
-      }
-    },
-    "/": {
-      "post": {
-        "tags": [
-          "[Deprecated] Patients Bundle"
-        ],
-        "summary": "Submit a bundle of patients into the client registry",
-        "operationId": "submitPatientsBundle",
-        "consumes": [
-          "application/fhir+json",
-          "application/json+fhir"
-        ],
-        "produces": [
-          "application/fhir+json",
-          "application/json+fhir"
-        ],
-        "parameters": [{
-          "in": "body",
-          "name": "body",
-          "description": "A bundle of patients demographics and other details",
-          "schema": {
-            "type": "object"
-          }
-        }],
-        "responses": {
-          "201": {
-            "description": "successful operation"
+            "description": "successful operation with CRUID set on the header"
           },
           "400": {
             "description":"Bad request"
@@ -220,9 +298,13 @@
         "parameters": [{
           "in": "body",
           "name": "body",
-          "description": "An array of patients IDs in the format [Patient/123]",
+          "description": "An array of patients IDs in the format ['Patient/123']",
           "schema": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Patient/123"]
           }
         }],
         "responses": {
@@ -256,9 +338,267 @@
         "parameters": [{
           "in": "body",
           "name": "body",
-          "description": "An array of patients IDs in the format [Patient/123]",
+          "description": "An array of patients IDs in the format ['Patient/123']",
           "schema": {
-            "type": "array"
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": ["Patient/123"]
+          }
+        }],
+        "responses": {
+          "201": {
+            "description": "successful operation"
+          },
+          "400": {
+            "description":"Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/potential-matches/{patientID}": {
+      "get": {
+        "tags": [
+          "Get Patient Potential Matches"
+        ],
+        "summary": "Get Potential Matches",
+        "operationId": "potential-matches",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [{
+          "name": "patientID",
+          "in": "path",
+          "description": "ID of a patient",
+          "required": true,
+          "type": "string",
+          "example": "433ebeb6-1d89-4b64-97e6-a985675ca571"
+        }],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "example": [{
+                    "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+                    "gender": "male",
+                    "given": "Emanuel",
+                    "family": "Joshua",
+                    "birthDate": "1972-01-08",
+                    "uid": "eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+                    "ouid": "eda0fdeb-1d52-4878-a84f-ccf581ef9fff",
+                    "source_id": "patient3",
+                    "source": "OpenMRS",
+                    "scores": {
+                      "patient1": 2,
+                      "patient2": 2
+                    }
+                  },
+                  {
+                    "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+                    "gender": "male",
+                    "given": "Emmanuel",
+                    "family": "Joshua",
+                    "birthDate": "1972-01-08",
+                    "uid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                    "ouid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                    "source_id": "patient1",
+                    "source": "OpenMRS",
+                    "scores": {
+                      "patient2": 3,
+                      "patient3": 2
+                    }
+                  },
+                  {
+                    "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+                    "gender": "male",
+                    "given": "Emanuel",
+                    "family": "Joshua",
+                    "birthDate": "1972-01-08",
+                    "uid": "42184bd9-1c0c-41ce-9188-f57341ca9e88",
+                    "ouid": "42184bd9-1c0c-41ce-9188-f57341ca9e88",
+                    "source_id": "patient2",
+                    "source": "OpenMRS",
+                    "scores": {
+                      "patient1": 3,
+                      "patient3": 2
+                    }
+                  }
+                ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/count-match-issues": {
+      "get": {
+        "tags": [
+          "Count Match Issues"
+        ],
+        "summary": "Counting match issues",
+        "operationId": "count-match-issues",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "example": {
+                    "total": 10
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/get-match-issues": {
+      "get": {
+        "tags": [
+          "Get Patients With Match Issues"
+        ],
+        "summary": "Get Patients With potential/conflicts matches",
+        "operationId": "get-match-issues",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "example": [{
+                    "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+                    "gender": "male",
+                    "family": "Joshua",
+                    "given": "Emanuel",
+                    "birthDate": "1972-01-08",
+                    "uid": "c49a52c1-88bc-41fb-9c87-bdd2a911f360",
+                    "source": "openmrs",
+                    "source_id": "patient3",
+                    "reason": "Potential Matches",
+                    "reasonCode": "potentialMatches"
+                  }]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal error"
+          }
+        }
+      }
+    },
+    "/ocrux/resolve-match-issue": {
+      "post": {
+        "tags": [
+          "Resolve Match Issues"
+        ],
+        "summary": "Resolve match issues",
+        "operationId": "resolve-match-issue",
+        "consumes": [
+          "application/fhir+json",
+          "application/json+fhir"
+        ],
+        "parameters": [{
+          "in": "body",
+          "name": "body",
+          "description": "Request body",
+          "schema": {
+            "type": "object",
+            "example": {
+              "resolvingFrom": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+              "resolves": [{
+                  "id": "433ebeb6-1d89-4b64-97e6-a985675ca571",
+                  "gender": "male",
+                  "given": "Emanuel",
+                  "family": "Joshua",
+                  "birthDate": "1972-01-08",
+                  "uid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                  "ouid": "c49a52c1-88bc-41fb-9c87-bdd2a911f360",
+                  "source_id": "patient3",
+                  "source": "OpenMRS",
+                  "scores": {
+                    "patient2": 2,
+                    "patient1": 2
+                  },
+                  "patient2": 2,
+                  "patient1": 2
+                },
+                {
+                  "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+                  "gender": "male",
+                  "given": "Emmanuel",
+                  "family": "Joshua",
+                  "birthDate": "1972-01-08",
+                  "uid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                  "ouid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                  "source_id": "patient1",
+                  "source": "OpenMRS",
+                  "scores": {
+                    "patient2": 3,
+                    "patient3": 2
+                  },
+                  "patient2": 3,
+                  "patient3": 2
+                },
+                {
+                  "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+                  "gender": "male",
+                  "given": "Emanuel",
+                  "family": "Joshua",
+                  "birthDate": "1972-01-08",
+                  "uid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                  "ouid": "739d4023-40eb-4f44-8d14-3355926bd60d",
+                  "source_id": "patient2",
+                  "source": "OpenMRS",
+                  "scores": {
+                    "patient1": 3,
+                    "patient3": 2
+                  },
+                  "patient1": 3,
+                  "patient3": 2
+                }
+              ],
+              "removeFlag": false,
+              "flagType": "potentialMatches"
+            }
           }
         }],
         "responses": {
@@ -286,7 +626,35 @@
         ],
         "responses": {
           "200": {
-            "description": "successful operation"
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object"
+                  },
+                  "example": [
+                    {
+                      "id": "openmrs",
+                      "displayName": "OpenMRS"
+                    },
+                    {
+                      "id": "dhis2",
+                      "displayName": "DHIS2"
+                    },
+                    {
+                      "id": "lims",
+                      "displayName": "Lab Info Management System"
+                    },
+                    {
+                      "id": "cr",
+                      "displayName": "Client Registry"
+                    }
+                  ]
+                }
+              }
+            }
           },
           "400": {
             "description": "Bad request"
