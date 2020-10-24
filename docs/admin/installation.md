@@ -94,4 +94,4 @@ sudo NODE_ENV=development node lib/app.js
 
 OpenCR may require access to /var/log for logging. This requirement may be changed in the future.
 
-Congratulations! Now it's time to run a [query](queries.md).
+Congratulations! Now it's time to run a [query](../admin/queries.md).

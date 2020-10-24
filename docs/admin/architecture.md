@@ -13,5 +13,5 @@ The OpenCR architecture includes:
 * An **optional UI** to view and break matches between records, and view matching histories (audit events).
 * The [**Open Health Information Mediator (OpenHIM)**](http://openhim.org) (Optional): The OpenHIM is the entrypoint for POS systems, and includes authentication (are you who you say you are?), authorization (what roles do you have permission to fulfill?), and auditing of all transactions. OpenHIM is optional but the administrator must manage users and node access in some manner if not with OpenHIM.
 
-![Alt text](images/production_architecture.png "Production Architecture")
+![Alt text](../images/production_architecture.png "Production Architecture")
 

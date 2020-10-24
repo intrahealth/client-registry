@@ -1,14 +1,15 @@
-# User Interface (CRUX)
-
-The OpenCR User Interface (CRUX) is a key way to monitor the operation of OpenCR. With CRUX, you can:
-
-* View matches, break matches, revert broken matches
-* Verifying FHIR messages are being processed correctly from submitting systems
-* Validating matching is working as expected
-* Perform deep inspection before putting it into production
+# UI -- Basics
 
 !!! caution
-    You may have access to the CRUX of a system, and that's a good thing. The CRUX allows users to be able to view any break any match, which includes viewing demographic data from submitting systems. It should be secure and only authorized users would be able to access it.
+    You may not have access to the UI, and that's a good thing. The UI allows users to be able to view any break any match, which includes viewing demographic data from submitting systems. It should be secure and only authorized users must be able to access it.
+
+The OpenCR User Interface is a key way to monitor the operation of OpenCR. With it, you can:
+
+* Verify FHIR messages are being processed correctly from submitting systems
+* Validate matching is working as expected
+* Perform deep inspection before putting it into production
+* View matches, break matches, revert broken matches
+* Conduct human adjudication to correct matches and create new ones.
 
 ## Login 
 
@@ -20,15 +21,23 @@ User must be added to the CRUX to be able to login.
 
 On landing inside CRUX, it display the records submitted in a row. These are individual records for POS that submit them. 
 
-![](../images/cruxsplash.png)
+![](../images/home.png)
 
-It is easy to search for records on fields. In the below example, there are two records submitted that share the same CRUID. 
+It is easy to search for records. 
+
+![](../images/search.png)
+
+In the below example, there are two records submitted that share the same CRUID. 
 
 ![](../images/cruxdupes.png)
 
+Searches can be restricted to specific points-of-service:
+
+![](../images/searchpos.png)
+
 ## Record
 
-The record page has a great deal of information, including:
+On clicking on an single record, a great deal of information is revealed.
 
 * On the top right: All of the fields stored in the system
 * On the top left: Matched records to the current one being viewed.
@@ -60,15 +69,16 @@ The history card shows the set of decision rules and overall submission informat
 
 ![](../images/cruxhistoryoverall.png)
 
-
-### Submission
-
-The submission information includes when the event occurred, the status, and the IP address of the submitting system. (The address 127.0.0.1 in the example means within the same computer, not from the network, and is for example purposes only.)
-
-![](../images/cruxhistoryipaddr.png)
-
-### Decision Rules
-
 Decision rules include the overall rule to evaluate the chain of decision rules, which is either probabilistic or deterministic. Then the card shows each decision rule and its configuration. This card helps understand how a decision was made and is critical for evaluation purposes.
 
 ![](../images/cruxhistorydecisionrules.png)
+
+The history card also includes when the event occurred, the status, and the IP address of the submitting system. (The address 127.0.0.1 in the example means within the same computer, not from the network, and is for example purposes only.)
+
+![](../images/cruxhistoryipaddr.png)
+
+## Add User
+
+There is a simple add user feature in the main menu for administrators.
+
+![](../images/adduser.png)

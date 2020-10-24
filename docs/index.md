@@ -1,11 +1,11 @@
-# Welcome
+# Welcome!
 
 *Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.*
 
 !!! tip
     Regardless if you're just curious, an implementer, or a developer, please read the this Overview tab first and then the User Manual. We've kept them short.
 
-# What is OpenCR?
+## What is OpenCR?
 
 OpenCR is an open source and standards-based client registry. A client registry facilitates the exchange of patient information between disparate systems. A client registry holds patient identifers and may include patient demographic information. It is a necessary tool for public health to help manage patients, monitor outcomes, and conduct case-based surveillance.
 
@@ -33,7 +33,7 @@ The Client Registry is one component in a more complex HIS architecture needed t
 !!! caution
     The Client Registry is not deduplicating or even touching patient clinical and demographic records within point-of-service systems. Instead, it provides a way to enable use cases like deduplication - which must be an external process. 
 
-# About
+## About
 
 OpenCR was developed by IntraHealth International with support from PEPFAR through the USAID MEASURE Evaluation Project. Technical direction was provided by CDC. 
 
