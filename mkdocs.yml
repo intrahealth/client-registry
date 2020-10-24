@@ -34,6 +34,7 @@ nav:
     - 'user/recordlinkage.md'
     - 'user/usecases.md'
     - 'user/ui.md'
+    - 'user/ui-advanced.md'
     - 'user/openmrs.md'
     - 'user/cruid.md'
     - 'user/algos.md'
