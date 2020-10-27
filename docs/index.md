@@ -5,12 +5,12 @@
 !!! tip
     Regardless if you're just curious, an implementer, or a developer, please read the this page first and then the User Manual. We've kept them short.
 
-There are four manuals in the iHRIS technical documentation. Choose the one based on your needs:
+There are four manuals in the OpenCR technical documentation. Choose the one based on your needs:
 
 * **User**: Start here then move on. This covers the basics, use cases, how matching works, and the user interface.
 * **Implementer**: This manual covers some of the areas important to deploying OpenCR.
-* **Developer**: This manual covers details for building new features and customizing iHRIS.
-* **Sysadmin**: This manual shows how to install iHRIS on servers and how to configure it.
+* **Developer**: This manual covers details for building new features and customizing OpenCR.
+* **Sysadmin**: This manual shows how to install OpenCR on servers and how to configure it.
 
 ## What is OpenCR?
 
