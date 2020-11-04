@@ -10,7 +10,7 @@ services:
     depends_on:
       - fhir
       - es
-    restart: on-failure
+    restart: always
     environment:
       - NODE_ENV=cicd
     # networks: 
@@ -18,7 +18,7 @@ services:
 
   fhir:
     container_name: hapi-fhir
-    image: hapiproject/hapi:v4.1.0
+    image: hapiproject/hapi:v5.1.0
     ports:
       - "8080:8080"
     # networks:
