@@ -1,4 +1,4 @@
-# Open Client Registry ![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg) ![tests](https://github.com/intrahealth/client-registry/workflows/test/badge.svg) ![docs](https://github.com/intrahealth/client-registry/workflows/docs/badge.svg)
+# Open Client Registry ![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg) ![tests](https://github.com/intrahealth/client-registry/workflows/test/badge.svg) ![docs](https://github.com/intrahealth/client-registry/workflows/docs/badge.svg) ![compose](https://github.com/intrahealth/client-registry/workflows/compose/badge.svg)
 
 Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.
 
