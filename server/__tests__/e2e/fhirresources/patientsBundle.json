@@ -1,0 +1,158 @@
+{
+  "resourceType": "Bundle",
+  "type": "batch",
+  "entry": [{
+    "resource": {
+      "resourceType": "Patient",
+      "id": "9dd75a6a-2408-43d0-a577-d38292f4a73f",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "bc58707b-62f1-498a-8fb3-568cd5b69db2",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient1"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Joshua",
+        "given": [
+          "Emmanuel"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 561608"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "d55e15fd-d7a6-42b8-89cc-560e3578ef7f",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient2"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374844"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12347",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Joshua",
+        "given": [
+          "Emanuel"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 561608"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "9dd75a6a-2408-43d0-a577-d38292f4a73f",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+          "other": {
+            "reference": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
+          },
+          "type": "seealso"
+        },
+        {
+          "other": {
+            "reference": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+          },
+          "type": "seealso"
+        }
+      ]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+    }
+  }]
+}

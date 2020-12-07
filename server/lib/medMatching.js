@@ -33,13 +33,14 @@ module.exports = () => ({
         ignoreList,
       }, (err, matched) => {
         matches.entry = matches.entry.concat(matched.entry);
-        if (targetResources.next) {
-          const next = targetResources.next;
+        if (targetResources.link) {
+          let next = targetResources.link && targetResources.link.find(link => link.relation === 'next');
+          const url = next.url
           targetResources = [];
           this.performMatch({
             sourceResource,
             ignoreList,
-            url: next,
+            url: url,
           }, (err, matched) => {
             matches.entry = matches.entry.concat(matched.entry);
             return callback(err, matches);

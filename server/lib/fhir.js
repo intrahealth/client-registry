@@ -142,10 +142,8 @@ module.exports = () => ({
               url = next.url;
             }
           }
-          if (next) {
-            resourceData.next = next.url;
-          } else {
-            resourceData.next = false;
+          if (!id) {
+            resourceData.link = body.link;
           }
           return callback(null, url);
         });

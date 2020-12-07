@@ -23,6 +23,7 @@ const config = require('../config');
 // });
 
 router.get('/:resource?/:id?', (req, res) => {
+  logger.info(`Received a request to get data for resource ${req.params.resource}`);
   const id = req.params.id;
   if (id === '$ihe-pix') {
     pixmRequest({

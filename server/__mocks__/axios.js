@@ -25,6 +25,7 @@ function __setFhirError( url, data, status, newFhirResults ) {
 }
 
 function get( url, config ) {
+  console.log('comming here');
   let paramHash = __hashObject( config.params );
   return new Promise( (resolve, reject) => {
     if ( fhirErrors.hasOwnProperty( url + paramHash ) ) {
