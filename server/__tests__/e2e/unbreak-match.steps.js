@@ -5,7 +5,7 @@ const fs = require('fs');
 const axios = require("axios");
 const { defineFeature, loadFeature } = require( "jest-cucumber" );
 
-const feature = loadFeature("../features/addPatient.feature");
+const feature = loadFeature("../features/unBreakMatch.feature");
 
 const httpsAgent = new https.Agent({
   cert: fs.readFileSync('../server/sampleclientcertificates/openmrs_cert.pem'),
@@ -13,27 +13,27 @@ const httpsAgent = new https.Agent({
   ca: fs.readFileSync('../server/certificates/server_cert.pem'),
   rejectUnauthorized: false,
 });
-const baseURL = 'https://localhost:3000/fhir';
+const baseURL = 'https://localhost:3000/match';
 const options = {
   httpsAgent
 };
 let response;
 
 defineFeature( feature, test => {
-  test("Add a new Patient", ({ given, when, then }) => {
-    let patient;
-    given("A new Patient", newPatient => {
-      patient = JSON.parse(newPatient);
+  test("UnBreaking a match", ({ given, when, then }) => {
+    let patientIDs;
+    given("Patient IDs", ids => {
+      patientIDs = JSON.parse(ids);
     } );
-    when("The POS sends the Patient", async() => {
-      let url = URI(baseURL).segment('Patient').toString();
+    when("The POS sends Patient IDS", async() => {
+      let url = URI(baseURL).segment('unbreak-match').toString();
       options.method = 'POST';
       options.url = url;
-      options.data = patient;
+      options.data = patientIDs;
       response = await axios(options);
     } );
-    then("The added Patient Location and CRID are returned", () => {
-      expect(response.headers.location).toEqual("Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f");
+    then("The server responds with status code 201", () => {
+      expect(response.status).toEqual(201);
     } );
   } );
 } );

@@ -5,46 +5,60 @@ Scenario: Add a new Patient
     Given A new Patient
       """
       {
-        "resourceType": "Patient",
-        "id": "433ebeb6-1d89-4b64-97e6-a985675ca572",
-        "identifier": [
-          {
-            "system": "http://clientregistry.org/openmrs",
-            "value": "patient3"
+        "resource": {
+          "resourceType": "Patient",
+          "id": "6f017270-a089-4b23-a667-3f8508412ca0",
+          "meta": {
+            "tag": [{
+              "system": "http://openclientregistry.org/fhir/clientid",
+              "code": "openmrs",
+              "display": "OpenMRS"
+            }]
           },
-          {
-            "system": "http://health.go.ug/cr/nationalid",
-            "value": "228374844"
-          },
-          {
-            "system": "http://system1.org",
-            "value": "12347",
-            "period": {
-              "start": "2001-05-07"
+          "identifier": [{
+              "system": "http://clientregistry.org/openmrs",
+              "value": "patient4"
             },
-            "assigner": {
-              "display": "test Org"
+            {
+              "system": "http://health.go.ug/cr/nationalid",
+              "value": "228374855"
+            },
+            {
+              "system": "http://system1.org",
+              "value": "12347",
+              "period": {
+                "start": "2001-05-07"
+              },
+              "assigner": {
+                "display": "test Org"
+              }
             }
-          }
-        ],
-        "active": true,
-        "name": [
-          {
+          ],
+          "active": true,
+          "name": [{
             "use": "official",
             "family": "Joshua",
             "given": [
-              "Emanuel"
+              "Emanueel"
             ]
-          }
-        ],
-        "telecom": [
-          {
+          }],
+          "telecom": [{
             "system": "phone",
             "value": "0678 561608"
-          }
-        ],
-        "gender": "male",
-        "birthDate": "1972-01-08"
+          }],
+          "gender": "male",
+          "birthDate": "1972-01-08",
+          "link": [{
+            "other": {
+              "reference": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+            },
+            "type": "refer"
+          }]
+        },
+        "request": {
+          "method": "PUT",
+          "url": "Patient/6f017270-a089-4b23-a667-3f8508412ca0"
+        }
       }
       """
     When The POS sends the Patient

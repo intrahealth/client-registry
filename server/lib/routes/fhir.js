@@ -236,6 +236,7 @@ router.post('/', (req, res) => {
     if(!code) {
       code = 500;
     }
+    res.setHeader('location', JSON.stringify(results.patients.response.entry));
     return res.status(code).json([results.patients.body, results.patients.body]);
   });
 });
