@@ -21,20 +21,20 @@ const feature = loadFeature("../features/getPatient.feature");
 
 defineFeature( feature, test => {
   test("Get an existing patient", ({ given, when, then }) => {
-    let patient;
+    let patientID;
     let response;
-    given("Patient 76e82de7-26d5-4aa8-9e1c-b549a4184b7e exists on the server", existingPatient => {
-      patient = JSON.parse(existingPatient);
+    given("Patient d55e15fd-d7a6-42b8-89cc-560e3578ef7f exists on the server", id => {
+      patientID = id;
     } );
-    when("A system requests patient 76e82de7-26d5-4aa8-9e1c-b549a4184b7e", async() => {
-      let url = URI(baseURL).segment('Patient').segment('76e82de7-26d5-4aa8-9e1c-b549a4184b7e').toString();
+    when("A system requests patient d55e15fd-d7a6-42b8-89cc-560e3578ef7f", async() => {
+      let url = URI(baseURL).segment('Patient').segment('d55e15fd-d7a6-42b8-89cc-560e3578ef7f').toString();
       options.method = 'GET';
       options.url = url;
       let resp = await axios(options);
       response = resp;
     } );
-    then("Patient 76e82de7-26d5-4aa8-9e1c-b549a4184b7e is returned", () => {
-      expect(response.data).toEqual(patient);
+    then("Patient d55e15fd-d7a6-42b8-89cc-560e3578ef7f is returned", () => {
+      expect(response.data.id).toEqual(patientID);
     } );
   } );
 } );

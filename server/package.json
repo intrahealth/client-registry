@@ -7,7 +7,7 @@
     "start": "env NODE_ENV=production node lib/app.js",
     "dev": "env NODE_ENV=development node lib/app.js",
     "test": "env NODE_ENV=test jest --testPathIgnorePatterns=__tests__/e2e",
-    "e2e": "env NODE_ENV=test jest --testPathPattern=__tests__/e2e"
+    "e2e": "env NODE_ENV=test node __tests__/e2e/resetTestData.js && jest --detectOpenHandles --testPathPattern=__tests__/e2e"
   },
   "keywords": [
     "client registry",

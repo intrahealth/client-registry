@@ -148,7 +148,9 @@ module.exports = {
   //   "/node_modules/"
   // ],
   testPathIgnorePatterns: [
-    "resources/"
+    "resources/",
+    "__tests__/e2e/add-invalid-patient.js",
+    "__tests__/e2e/resetTestData.js"
   ],
 
   // The regexp pattern or array of patterns that Jest uses to detect test files

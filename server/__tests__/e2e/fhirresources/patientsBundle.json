@@ -14,7 +14,22 @@
     },
     "request": {
       "method": "PUT",
-      "url": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+      "url": "Patient/fe697ff3-62c5-4aa3-8747-ccb15a2ee9c3"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4"
     }
   }, {
     "resource": {
@@ -162,6 +177,116 @@
   }, {
     "resource": {
       "resourceType": "Patient",
+      "id": "ba3d2c47-f0ec-4f62-8677-c45786e37b90",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient6"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374866"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12346",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Omari",
+        "given": [
+          "Suleyman"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 763295"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/ba3d2c47-f0ec-4f62-8677-c45786e37b90"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "8c829026-58a0-4dd9-a2a1-49e40a49a9ef",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient7"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374866"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12346",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Omar",
+        "given": [
+          "Suleyman"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 765995"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/8c829026-58a0-4dd9-a2a1-49e40a49a9ef"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
       "id": "9dd75a6a-2408-43d0-a577-d38292f4a73f",
       "meta": {
         "tag": [{
@@ -179,6 +304,412 @@
     "request": {
       "method": "PUT",
       "url": "Patient/9dd75a6a-2408-43d0-a577-d38292f4a73f"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+        "other": {
+          "reference": "Patient/ba3d2c47-f0ec-4f62-8677-c45786e37b90"
+        },
+        "type": "seealso"
+      }, {
+        "other": {
+          "reference": "Patient/8c829026-58a0-4dd9-a2a1-49e40a49a9ef"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/d3173ed3-2f19-4d22-b1a7-f3ed0a987fe4"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "c5f4b57a-cc8f-41b2-ba62-5ff1c3f5b966",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/c5f4b57a-cc8f-41b2-ba62-5ff1c3f5b966"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "9ad3c074-0b21-4c9a-904e-f43eae54dd37",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/9ad3c074-0b21-4c9a-904e-f43eae54dd37"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "c14361b1-481f-4cdb-87c7-018e0e107a55",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "extension": [
+        {
+          "url": "http://clientregistry.org/brokenMatch",
+          "valueReference": {
+            "reference": "Patient/cfa54360-ab37-4ded-8309-4c136ca40e33"
+          }
+        }
+      ],
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient8"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374888"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12388",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Kisanga",
+        "given": [
+          "Kija"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 588608"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/c5f4b57a-cc8f-41b2-ba62-5ff1c3f5b966"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/c14361b1-481f-4cdb-87c7-018e0e107a55"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "cfa54360-ab37-4ded-8309-4c136ca40e33",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "extension": [
+        {
+          "url": "http://clientregistry.org/brokenMatch",
+          "valueReference": {
+            "reference": "Patient/c14361b1-481f-4cdb-87c7-018e0e107a55"
+          }
+        }
+      ],
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient9"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374888"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12388",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Kisaanga",
+        "given": [
+          "Kija"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 588608"
+      }],
+      "gender": "male",
+      "birthDate": "1972-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/9ad3c074-0b21-4c9a-904e-f43eae54dd37"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/cfa54360-ab37-4ded-8309-4c136ca40e33"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "c5f4b57a-cc8f-41b2-ba62-5ff1c3f5b966",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+        "other": {
+          "reference": "Patient/c14361b1-481f-4cdb-87c7-018e0e107a55"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/c5f4b57a-cc8f-41b2-ba62-5ff1c3f5b966"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "9ad3c074-0b21-4c9a-904e-f43eae54dd37",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+        "other": {
+          "reference": "Patient/cfa54360-ab37-4ded-8309-4c136ca40e33"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/9ad3c074-0b21-4c9a-904e-f43eae54dd37"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "74bf4455-20e3-4acc-9fe1-888898ceb815",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/74bf4455-20e3-4acc-9fe1-888898ceb815"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "0db56938-46b5-4d8f-83e5-d3d4b96248db",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      }
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/0db56938-46b5-4d8f-83e5-d3d4b96248db"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "04cdafc2-cc7b-435e-bd5b-0ee12a2367b7",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient10"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374810"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12310",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Masunga",
+        "given": [
+          "Mahengenya"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 111177"
+      }],
+      "gender": "male",
+      "birthDate": "1980-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/74bf4455-20e3-4acc-9fe1-888898ceb815"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/04cdafc2-cc7b-435e-bd5b-0ee12a2367b7"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "c5c94f59-3c8c-4636-b747-235fbe55f80a",
+      "meta": {
+        "tag": [{
+          "system": "http://openclientregistry.org/fhir/clientid",
+          "code": "openmrs",
+          "display": "OpenMRS"
+        }]
+      },
+      "identifier": [{
+          "system": "http://clientregistry.org/openmrs",
+          "value": "patient11"
+        },
+        {
+          "system": "http://health.go.ug/cr/nationalid",
+          "value": "228374810"
+        },
+        {
+          "system": "http://system1.org",
+          "value": "12310",
+          "period": {
+            "start": "2001-05-07"
+          },
+          "assigner": {
+            "display": "test Org"
+          }
+        }
+      ],
+      "active": true,
+      "name": [{
+        "use": "official",
+        "family": "Masunga",
+        "given": [
+          "Mahengenya"
+        ]
+      }],
+      "telecom": [{
+        "system": "phone",
+        "value": "0678 11177"
+      }],
+      "gender": "male",
+      "birthDate": "1980-01-08",
+      "link": [{
+        "other": {
+          "reference": "Patient/0db56938-46b5-4d8f-83e5-d3d4b96248db"
+        },
+        "type": "refer"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/c5c94f59-3c8c-4636-b747-235fbe55f80a"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "74bf4455-20e3-4acc-9fe1-888898ceb815",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+        "other": {
+          "reference": "Patient/04cdafc2-cc7b-435e-bd5b-0ee12a2367b7"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/74bf4455-20e3-4acc-9fe1-888898ceb815"
+    }
+  }, {
+    "resource": {
+      "resourceType": "Patient",
+      "id": "0db56938-46b5-4d8f-83e5-d3d4b96248db",
+      "meta": {
+        "tag": [{
+          "code": "5c827da5-4858-4f3d-a50c-62ece001efea",
+          "display": "Golden Record"
+        }]
+      },
+      "link": [{
+        "other": {
+          "reference": "Patient/c5c94f59-3c8c-4636-b747-235fbe55f80a"
+        },
+        "type": "seealso"
+      }]
+    },
+    "request": {
+      "method": "PUT",
+      "url": "Patient/0db56938-46b5-4d8f-83e5-d3d4b96248db"
     }
   }]
 }

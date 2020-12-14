@@ -5,11 +5,8 @@ Scenario: UnBreaking a match
     Given Patient IDs
       """
       [{
-        "id2": "Patient/6f017270-a089-4b23-a667-3f8508412ca0",
-        "id1": "Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2"
-      }, {
-        "id2": "Patient/6f017270-a089-4b23-a667-3f8508412ca0",
-        "id1": "Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f"
+        "id2": "Patient/c14361b1-481f-4cdb-87c7-018e0e107a55",
+        "id1": "Patient/cfa54360-ab37-4ded-8309-4c136ca40e33"
       }]
       """
     When The POS sends Patient IDS
