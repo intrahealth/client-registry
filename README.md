@@ -2,9 +2,9 @@
 
 Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.
 
-> Regardless if you're just curious, an implementer, or a developer, please read the overview at [openclientregistry.com](https://openclientregistry.com).<br>
+> Regardless if you're just curious, an implementer, or a developer, please read the documentation for an overview at https://intrahealth.github.io/client-registry/.
 
-> API documentation https://intrahealth.github.io/opencr-api
+> The API documentation is at https://intrahealth.github.io/opencr-api
 
 This repository is the source code for the OpenCR Service API, and the full OpenCR stack requires ElasticSearch and HAPI FHIR Server.
 
