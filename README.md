@@ -1,4 +1,6 @@
-# Open Client Registry ![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg) ![tests](https://github.com/intrahealth/client-registry/workflows/test/badge.svg) ![docs](https://github.com/intrahealth/client-registry/workflows/docs/badge.svg) ![compose](https://github.com/intrahealth/client-registry/workflows/compose/badge.svg) ![e2e](https://github.com/intrahealth/client-registry/workflows/e2e/badge.svg)
+# Open Client Registry 
+
+![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg) ![tests](https://github.com/intrahealth/client-registry/workflows/test/badge.svg) ![docs](https://github.com/intrahealth/client-registry/workflows/docs/badge.svg) ![compose](https://github.com/intrahealth/client-registry/workflows/compose/badge.svg) ![e2e](https://github.com/intrahealth/client-registry/workflows/e2e/badge.svg)
 
 Thank you for taking an interest in the Open Client Registry (OpenCR)! This is a community project and meant for others to adopt to their use cases as they wish.
 
@@ -33,6 +35,12 @@ The Client Registry is one component in a more complex HIS architecture needed t
 * **Tracking patients lost to clinical care**: EMRs are often not interoperable with one another, resulting in difficulty tracking patients as they move between facilities to seek care. A Client Registry will help data managers to track patients, decreasing instances of duplicate and incomplete records, patients LTFU, and sub-optimal care. 
 
 > The Client Registry is not deduplicating or even touching patient clinical and demographic records within point-of-service systems. Instead, it provides a way to enable use cases like deduplication - which must be an external process. 
+
+## Tests
+
+A major round of investment in OpenCR involved support of the Data Aggregation Service for Health (DASH) architecture. DASH is a reference system under development to support monitoring and reporting using patient data. The initial test automation approach focused on OpenCR as it fits into the DASH architecture. For reference, see the [Test Plan for OpenCR in the DASH Architecture](https://docs.google.com/document/d/1nyTKGSYGMvKz-FjEFt6gD9fxNwIuN0iEN83A8XQnK2o). 
+
+GitHub Actions is used to run tests and feature files are in the /features folder. E2E tests require that the full application stack be stood up. Docker is used to stand up the application stack for E2E tests inside GitHub Actions. All tests and reports are open and under the Actions tab on this page. The maintainers would appreciate further contributions to testing.
 
 ## About
 
