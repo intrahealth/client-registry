@@ -1,0 +1,29 @@
+name: e2e
+on:
+  # push:
+  #   branches:
+  #     - master
+  workflow_dispatch:
+
+jobs:
+
+  composeup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: docker-compose up -d
+        run: docker-compose -f docker-compose.cicd.yml up -d
+      - name: sleep
+        run: sleep 240
+  e2e:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+    - run: npm ci
+    - run: npm test e2e
