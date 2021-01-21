@@ -9,6 +9,11 @@ module.exports = {
         target: "https://localhost:3000",
         secure: false,
         changeOrigin: true
+      },
+      "/fhir": {
+        target: "https://localhost:3000",
+        secure: false,
+        changeOrigin: true
       }
     }
   }

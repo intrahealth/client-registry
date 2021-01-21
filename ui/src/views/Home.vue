@@ -164,7 +164,6 @@ export default {
         } else if (this.options.page === this.prevPage + 1) {
           url = this.link.find(link => link.relation === "next").url;
         }
-        url = url.replace(process.env.VUE_APP_FHIR_ROOT, "");
       }
       if (url === "") {
         let count = this.options.itemsPerPage || 10;
