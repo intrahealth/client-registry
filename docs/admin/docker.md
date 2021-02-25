@@ -158,7 +158,7 @@ docker logs -f <component>
 
 #### Spin down test instance
 
-To remove remove OpenCR and its dependencies, run the following:
+To remove OpenCR and its dependencies, run the following:
 
 ```sh
 docker-compose -f docker-compose.cicd.yml down
