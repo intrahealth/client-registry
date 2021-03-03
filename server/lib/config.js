@@ -7,7 +7,7 @@ if(env === 'test') {
   decisionRulesFile = `${__dirname}/../config/decisionRules.json`;
 }
 nconf.argv()
-  .env()
+  .env({separator:'__'})
   .file(`${__dirname}/../config/config_${env}.json`)
   .file('decRules', decisionRulesFile);
 module.exports = nconf;
