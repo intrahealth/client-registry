@@ -132,6 +132,44 @@ The currently supported FHIR version is R4.
 
 `fhirServer.username | password` must be changed from defaults in HAPI.
 
+### Configure with Environment variables
+
+In the scenario where only a few fields require changing it could be useful to configure these fields with Environment variables.
+Any value within the openCR config file object can be manually configured via enviroment variable.
+
+> OpenHIM Mediator config cannot be configured in this manner
+
+OpenCR uses the `nconf` library to store app config. nconf stores the config files in memory and environemnt variables take precedence.
+See the config object below:
+
+```json
+{
+  "app": {
+    "port": 3000
+  }
+  ,
+  ...
+}
+```
+
+To configure the port field tfrom 300 to 3003 the syntax would be: `app:port=3003`.
+However, the colon syntax does not work well in many instances. To handle this we have configured nconf to accept **__** as a replacement for the colon separator. What this means is that to configure the port field you would use the following, `app__port=3003`.
+This syntax works for deeper nested config as well. For example, let's configure **password** in the config object below:
+
+```json
+
+{
+  ...
+  "mediator": {
+    "api": {
+      "password": "openhim-password"
+    }
+  }
+}
+```
+
+The syntax to change the field from **openhim-password** to **newPassword** would be `mediator__api__password=newPassword`
+
 ### ElasticSearch Configuration
 
 For ES, the relationship between patient resources in FHIR and what fields are synchronized in ES must be explicitly defined. This is termed the Report Relationship mapping. One must define what resource to be used (patient) and what fields need to be available in ES. After this, the Client Registry reads these fields, and populates ES with the information.
