@@ -20,5 +20,8 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
 EXPOSE 3000
-# CMD ["node", "lib/app.js"]
-ENTRYPOINT dockerize -wait-retry-interval 5s -timeout 5s -wait http://fhir:8080/fhir/metadata node lib/app.js
+
+ARG DEFAULT_HAPI_FHIR_URL=http://fhir:8080/fhir/metadata
+ENV HAPI_FHIR_URL=$DEFAULT_HAPI_FHIR_URL
+
+ENTRYPOINT dockerize -wait-retry-interval 5s -timeout 60s -wait $HAPI_FHIR_URL node lib/app.js
