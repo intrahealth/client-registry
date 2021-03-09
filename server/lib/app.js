@@ -45,6 +45,9 @@ function appRoutes() {
   app.use('/crux', express.static(`${__dirname}/../gui`));
 
   const jwtValidator = function (req, res, next) {
+    if (!req.path.startsWith('/ocrux')) {
+      return next();
+    }
     //if a certificate is available then redirect to certificate validation
     if(Object.keys(req.connection.getPeerCertificate()).length > 0) {
       return next();
@@ -55,9 +58,6 @@ function appRoutes() {
       authorized = true;
       return next();
     }
-    // if (!req.path.startsWith('/ocrux')) {
-    //   return next();
-    // }
     if (!req.headers.authorization || req.headers.authorization.split(' ').length !== 2) {
       logger.error('Token is missing');
       res.set('Access-Control-Allow-Origin', '*');
