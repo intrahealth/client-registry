@@ -7,7 +7,6 @@ const medUtils = require('openhim-mediator-utils');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const https = require('https');
-const fhirWrapper = require('./fhir')();
 const cacheFHIR = require('./tools/cacheFHIR');
 const logger = require('./winston');
 const config = require('./config');
@@ -46,10 +45,6 @@ function appRoutes() {
 
   const jwtValidator = function (req, res, next) {
     if (!req.path.startsWith('/ocrux')) {
-      return next();
-    }
-    //if a certificate is available then redirect to certificate validation
-    if(Object.keys(req.connection.getPeerCertificate()).length > 0) {
       return next();
     }
     if (req.method == 'OPTIONS' ||

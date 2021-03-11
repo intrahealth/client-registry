@@ -1,8 +1,14 @@
+'use strict';
+/*global process */
 const URI = require('urijs');
 const async = require('async');
 const uuid4 = require('uuid/v4');
 const _ = require('lodash');
 const moment = require('moment');
+const redis = require('redis');
+const redisClient = redis.createClient({
+  host: process.env.REDIS_HOST || '127.0.0.1',
+});
 const fhirWrapper = require('../fhir')();
 const medMatching = require('../medMatching')();
 const esMatching = require('../esMatching');
@@ -389,6 +395,52 @@ const addPatient = (clientID, patientsBundle, callback) => {
               fhirWrapper.saveResource({
                 resourceData: tmpBundle
               }, (err, body) => {
+                let csvTag = getCSVTag(patient);
+                if(csvTag && csvTag.code && body && body.entry) {
+                  let patientHistory;
+                  let latestHistory = 0;
+                  for(let entry of body.entry) {
+                    logger.error(entry.response.etag);
+                    if(parseInt(entry.response.etag) > latestHistory && entry.response.location.startsWith(`Patient/${patient.id}/_history`)) {
+                      patientHistory = entry.response.location;
+                    }
+                  }
+                  logger.error(patientHistory);
+                  if(patientHistory) {
+                    let provenance = {
+                      resourceType: 'Provenance',
+                      id: uuid4(),
+                      target: patientHistory,
+                      recorded: moment().format('YYYY-MM-DDThh:mm:ss.SSSZ'),
+                      agent: [
+                        {
+                          type: {
+                            coding: [
+                              {
+                                system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type',
+                                code: 'assembler'
+                              }
+                            ]
+                          },
+                          who: {reference: 'Device/mediator' }
+                        }
+                      ],
+                      entity: [
+                        {
+                          role: 'source',
+                          what: `DocumentReference/${csvTag.code}`
+                        }
+                      ]
+                    };
+                    bundle.entry.push({
+                      resource: provenance,
+                      request: {
+                        method: 'PUT',
+                        url: `Provenance/${provenance.id}`
+                      }
+                    });
+                  }
+                }
                 if (err) {
                   operSummary.outcome = '8';
                   operSummary.outcomeDesc = 'An error occured while saving patient and golden record';
@@ -427,7 +479,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
             bundle.entry.push(goldenRecordResource);
             bundle.entry.push(patientResource);
             operSummary.cruid.push(goldenRecord.resourceType + '/' + goldenRecord.id);
-            return callback();
+            return callback(false);
           }).catch((err) => {
             if (!operSummary.outcome) {
               operSummary.outcome = '8';
@@ -550,7 +602,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
         }
         operSummary.FHIRMatches = FHIRAutoMatched.entry;
         operSummary.ESMatches = ESMatches;
-        return callback();
+        return callback(false);
       } else {
         operSummary.outcome = '8';
         operSummary.outcomeDesc = 'Invalid response returned when attempted to get matches';
@@ -562,6 +614,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
 
   logger.info('Searching to check if the patient exists');
   async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
+    processCSVTag(newPatient.resource);
     const operSummary = {};
     operSummary.cruid = [];
     const bundle = {};
@@ -740,7 +793,62 @@ const addPatient = (clientID, patientsBundle, callback) => {
             }
             fhirWrapper.saveResource({
               resourceData: bundle,
-            }, () => {
+            }, (err, body) => {
+              //create the Provenance resource
+              let provenanceBundle = {};
+              provenanceBundle.type = 'batch';
+              provenanceBundle.resourceType = 'Bundle';
+              provenanceBundle.entry = [];
+              let csvTag = getCSVTag(existingPatient.resource);
+              if(csvTag && csvTag.code && body && body.entry) {
+                let patientHistory;
+                let latestHistory = 0;
+                for(let entry of body.entry) {
+                  if(parseInt(entry.response.etag) > latestHistory && entry.response.location.startsWith(`Patient/${existingPatient.resource.id}/_history`)) {
+                    patientHistory = entry.response.location;
+                  }
+                }
+                if(patientHistory) {
+                  let provenance = {
+                    resourceType: 'Provenance',
+                    id: uuid4(),
+                    target: [{
+                      reference: patientHistory
+                    }],
+                    recorded: moment().format('YYYY-MM-DDThh:mm:ss.SSSZ'),
+                    agent: [
+                      {
+                        type: {
+                          coding: [
+                            {
+                              system: 'http://terminology.hl7.org/CodeSystem/provenance-participant-type',
+                              code: 'assembler'
+                            }
+                          ]
+                        },
+                        who: {reference: 'Device/mediator' }
+                      }
+                    ],
+                    entity: [
+                      {
+                        role: 'source',
+                        what: { reference: `DocumentReference/${csvTag.code}`}
+                      }
+                    ]
+                  };
+                  logger.error(JSON.stringify(provenance,0,2));
+                  provenanceBundle.entry.push({
+                    resource: provenance,
+                    request: {
+                      method: 'PUT',
+                      url: `Provenance/${provenance.id}`
+                    }
+                  });
+                  fhirWrapper.saveResource({
+                    resourceData: provenanceBundle
+                  }, () => {});
+                }
+              }
               if (config.get("matching:tool") === "elasticsearch") {
                 cacheFHIR.fhir2ES({
                   "patientsBundle": bundle
@@ -769,6 +877,80 @@ const addPatient = (clientID, patientsBundle, callback) => {
     }
     logger.info('Done adding patient');
     return callback(false, responseBundle, operationSummary);
+  });
+};
+
+const getCSVTag = (patient) => {
+  let csvTag = patient.meta && patient.meta.tag && patient.meta.tag.find((tag) => {
+    return tag.system === URI(config.get("systems:CRBaseURI")).segment('tag').segment('csv').toString();
+  });
+  return csvTag;
+};
+const processCSVTag = (patient) => {
+  return new Promise((resolve) => {
+    let csvTag = getCSVTag(patient);
+    if(!csvTag || (csvTag && !csvTag.code)) {
+      return resolve();
+    }
+    redisClient.get(csvTag.code, (err, docRef) => {
+      if(docRef) {
+        try {
+          docRef = JSON.parse(docRef);
+        } catch (error) {
+          logger.error(error);
+        }
+        return resolve(docRef);
+      }
+      fhirWrapper.getResource({
+        resource: 'DocumentReference',
+        query: `_id=${csvTag.code}`
+      }, (docRefBundle) => {
+        let docRef;
+        if(docRefBundle.entry.length > 0) {
+          docRef = docRefBundle.entry[0].resource;
+        } else {
+          docRef = {
+            resourceType: 'DocumentReference',
+            id: csvTag.code,
+            status: 'current',
+            type: {
+              coding: [{
+                system: URI(config.get("systems:CRBaseURI")).segment('CodeSystem').segment('doc-types').toString(),
+                code: 'csv_upload'
+              }],
+              text: 'CSV Upload'
+            },
+            date: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+            description: csvTag.display,
+            content: [
+              {
+                attachment: {
+                  contentType: 'text/csv',
+                  title: csvTag.display
+                }
+              }
+            ]
+          };
+          let bundle = {
+            resourceType: 'Bundle',
+            type: 'batch',
+            entry: [{
+              resource: docRef,
+              request: {
+                method: 'PUT',
+                url: `DocumentReference/${docRef.id}`,
+              }
+            }]
+          };
+          logger.error(bundle);
+          fhirWrapper.saveResource({
+            resourceData: bundle
+          }, () => {});
+        }
+        redisClient.set(csvTag.code, JSON.stringify(docRef));
+        return resolve(docRef);
+      });
+    });
   });
 };
 

@@ -1,8 +1,15 @@
 {
   "resourceType": "Patient",
+  "meta": {
+    "tag": [{
+      "system": "http://openclientregistry.org/fhir/tag/csv",
+      "code": "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
+      "display": "Testing CSV"
+    }]
+  },
   "identifier": [{
     "system": "http://clientregistry.org/openmrs",
-    "value": "patient3"
+    "value": "123457"
   }, {
     "system": "http://health.go.ug/cr/nationalid",
     "value": "228374844"
