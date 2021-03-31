@@ -196,6 +196,7 @@ module.exports = () => ({
     };
     request.post(options, (err, res, body) => {
       if (res.statusCode < 200 || res.statusCode > 299) {
+        logger.error('saving ' + JSON.stringify(resourceData,0,2));
         logger.error(JSON.stringify(body, 0, 2));
         err = true;
       }

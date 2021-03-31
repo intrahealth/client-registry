@@ -8,8 +8,8 @@
     }]
   },
   "identifier": [{
-    "system": "http://clientregistry.org/openmrs",
-    "value": "123457"
+    "system": "http://openclientregistry.org/fhir/sourceid",
+    "value": "sourceid8"
   }, {
     "system": "http://health.go.ug/cr/nationalid",
     "value": "228374844"
@@ -26,9 +26,9 @@
   "active": true,
   "name": [{
     "use": "official",
-    "family": "Joshua",
+    "family": "Joshu",
     "given": [
-      "Emmmanuel"
+      "Emmanuel"
     ]
   }],
   "telecom": [{

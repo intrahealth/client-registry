@@ -6,12 +6,17 @@ module.exports = {
     host: "localhost",
     proxy: {
       "/ocrux": {
-        target: "https://localhost:3000",
+        target: "http://localhost:3000",
         secure: false,
         changeOrigin: true
       },
       "/fhir": {
-        target: "https://localhost:3000",
+        target: "http://localhost:3000",
+        secure: false,
+        changeOrigin: true
+      },
+      "/tmp": {
+        target: "http://localhost:3000",
         secure: false,
         changeOrigin: true
       }

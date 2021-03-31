@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Client from "../views/Client.vue";
 import Review from "../views/Review.vue";
 import Resolve from "../views/Resolve.vue";
+import CSVReport from "../views/CSVReport.vue";
 import AddUser from "../views/AddUser.vue";
 import Login from '@/views/Login.vue'
 import Logout from '@/components/Logout.vue'
@@ -33,6 +34,11 @@ const routes = [{
     path: "/resolve/:clientId?",
     name: "resolve",
     component: Resolve
+  },
+  {
+    path: "/csvreport",
+    name: "csvreport",
+    component: CSVReport
   },
   {
     path: '/addUser',

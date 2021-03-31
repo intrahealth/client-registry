@@ -31,6 +31,13 @@
         </v-btn>
         <v-btn
           color="primary"
+          to="/csvreport"
+          v-if='!$store.state.denyAccess'
+        >
+          <v-icon>mdi-file-chart</v-icon> CSV Reports
+        </v-btn>
+        <v-btn
+          color="primary"
           to="/addUser"
           v-if='!$store.state.denyAccess'
         >

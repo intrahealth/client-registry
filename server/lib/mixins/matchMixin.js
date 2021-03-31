@@ -3,21 +3,279 @@
 const URI = require('urijs');
 const async = require('async');
 const uuid4 = require('uuid/v4');
+const uuid5 = require('uuid/v5');
 const _ = require('lodash');
 const moment = require('moment');
-const redis = require('redis');
-const redisClient = redis.createClient({
-  host: process.env.REDIS_HOST || '127.0.0.1',
-});
+const NodeCache = require( "node-cache" );
+const crCache = new NodeCache();
 const fhirWrapper = require('../fhir')();
 const medMatching = require('../medMatching')();
 const esMatching = require('../esMatching');
 const cacheFHIR = require('../tools/cacheFHIR');
 const logger = require('../winston');
 const config = require('../config');
-const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
-const humanAdjudURI = URI(config.get("systems:CRBaseURI")).segment('humanAdjudication').toString();
+const sourceIdURI = URI("http://openclientregistry.org/fhir").segment('sourceid').toString();
+const matchIssuesURI = URI("http://openclientregistry.org/fhir").segment('matchIssues').toString();
+const humanAdjudURI = URI("http://openclientregistry.org/fhir").segment('humanAdjudication').toString();
 
+function createCSVUploadAudEvent(operSummary, auditBundle, req) {
+  let processing = crCache.get(`processingCSVReport_${operSummary.csvCode}`);
+  if(processing) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        createCSVUploadAudEvent(operSummary, auditBundle, req).then(() => {
+          resolve();
+        }).catch((err) => {
+          reject(err);
+        });
+      }, 3000);
+    });
+  } else {
+    crCache.set(`processingCSVReport_${operSummary.csvCode}`, true);
+    return new Promise((resolve, reject) => {
+      if(!operSummary.csvCode) {
+        crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+        return reject();
+      }
+      if(!operSummary.submittedResource) {
+        crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+        return reject();
+      }
+
+      //populate scores of automatches
+      for(let autoIndex in operSummary.FHIRAutoMatches) {
+        for(let esmatch of operSummary.ESMatches) {
+          for(let esauto of esmatch.autoMatchResults) {
+            if(esauto._id === operSummary.FHIRAutoMatches[autoIndex].resource.id) {
+              operSummary.FHIRAutoMatches[autoIndex].score = esauto._score;
+              operSummary.FHIRAutoMatches[autoIndex].threshold = esmatch.rule.autoMatchThreshold;
+            }
+          }
+        }
+      }
+
+      //populate scores of potential matches
+      for(let autoIndex in operSummary.FHIRPotentialMatches) {
+        for(let esmatch of operSummary.ESMatches) {
+          for(let esauto of esmatch.potentialMatchResults) {
+            if(esauto._id === operSummary.FHIRPotentialMatches[autoIndex].resource.id) {
+              operSummary.FHIRPotentialMatches[autoIndex].score = esauto._score;
+              operSummary.FHIRPotentialMatches[autoIndex].threshold = esmatch.rule.potentialMatchThreshold;
+            }
+          }
+        }
+      }
+      let matches = {
+        autoMatches: operSummary.FHIRAutoMatches,
+        potentialMatches: operSummary.FHIRPotentialMatches,
+        FHIRConflictsMatches: operSummary.FHIRConflictsMatches
+      };
+      let event;
+      let eventIndexInBundle;
+      async.series([
+        (callback) => {
+          eventIndexInBundle = auditBundle.entry.findIndex((entry) => {
+            return entry.resource.id === uuid5(operSummary.csvCode.toString(), '00b3ffab-450c-4407-9e59-05034a271da7');
+          });
+          if(eventIndexInBundle !== -1) {
+            event = auditBundle.entry[eventIndexInBundle].resource;
+          }
+          return callback(null);
+        },
+        (callback) => {
+          if(event) {
+            return callback(null);
+          }
+          event = crCache.get(`csvreport_${operSummary.csvCode}`);
+          if(event) {
+            try {
+              event = JSON.parse(event);
+            } catch (error) {
+              logger.error(error);
+            }
+          }
+          return callback(null);
+        },
+        (callback) => {
+          if(event) {
+            return callback(null);
+          }
+          fhirWrapper.getResource({
+            resource: 'AuditEvent',
+            id: uuid5(operSummary.csvCode.toString(), '00b3ffab-450c-4407-9e59-05034a271da7')
+          }, (audit) => {
+            if(audit && audit.resourceType !== 'OperationOutcome') {
+              event = audit;
+            }
+            return callback(null);
+          });
+        }
+      ], () => {
+        if(!event) {
+          event = {
+            id: uuid5(operSummary.csvCode.toString(), '00b3ffab-450c-4407-9e59-05034a271da7'),
+            resourceType: 'AuditEvent',
+            meta: {
+              tag: [{
+                system : 'http://openclientregistry.org/tag/csv',
+                code: operSummary.csvCode,
+                display: 'CSV Upload'
+              }]
+            },
+            recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+            agent: [{
+              requestor: true,
+              network: {
+                address: req.ip.split(':').pop(),
+                type: '2'
+              }
+            }],
+            source: {
+              type: {
+                system: 'http://terminology.hl7.org/CodeSystem/security-source-type',
+                code: '4'
+              }
+            },
+            entity: [{
+              what: {
+                reference: `${operSummary.submittedResource.resourceType}/${operSummary.submittedResource.id}`
+              },
+              name: 'submittedResource',
+              detail: [{
+                type: 'submittedPatient',
+                valueBase64Binary: Buffer.from(JSON.stringify(operSummary.submittedResource)).toString('base64')
+              }, {
+                type: 'match',
+                valueBase64Binary: Buffer.from(JSON.stringify(matches)).toString('base64')
+              }]
+            }]
+          };
+          if(operSummary.cruid.length > 0) {
+            event.entity[0].detail.push({
+              type: 'CRUID',
+              valueString: operSummary.cruid[0]
+            });
+          }
+          crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 10000);
+          auditBundle.entry.push({
+            resource: event,
+            request: {
+              method: 'PUT',
+              url: `AuditEvent/${event.id}`
+            }
+          });
+          crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+          return resolve();
+        }
+
+        //check if matches of this uploaded CSV are among the processed patients from this same CSV and add this patient to those matches
+        let entity = {
+          what: {
+            reference: `${operSummary.submittedResource.resourceType}/${operSummary.submittedResource.id}`
+          },
+          name: 'submittedResource',
+          detail: [{
+            type: 'submittedPatient',
+            valueBase64Binary: Buffer.from(JSON.stringify(operSummary.submittedResource)).toString('base64')
+          }, {
+            type: 'match',
+            valueBase64Binary: Buffer.from(JSON.stringify(matches)).toString('base64')
+          }]
+        };
+        if(operSummary.cruid.length > 0) {
+          entity.detail.push({
+            type: 'CRUID',
+            valueString: operSummary.cruid[0]
+          });
+        }
+        event.entity.push(entity);
+        for(let auto of operSummary.FHIRAutoMatches) {
+          let csvTag = getCSVTag(auto.resource);
+          if(csvTag && csvTag.code === operSummary.csvCode) {
+            for(let index in event.entity) {
+              let entity = event.entity[index];
+              if(entity.what.reference === `Patient/${auto.resource.id}`) {
+                let detIndex = entity.detail.findIndex((det) => {
+                  return det.type === 'match';
+                });
+                if(detIndex === -1) {
+                  continue;
+                }
+                let details = Buffer.from(entity.detail[detIndex].valueBase64Binary, 'base64').toString('ascii');
+                try {
+                  details = JSON.parse(details);
+                } catch (error) {
+                  logger.error(error);
+                }
+                let exist = details.autoMatches && details.autoMatches.find((mtch) => {
+                  return mtch.resource.id === operSummary.submittedResource.id;
+                });
+                if(exist) {
+                  continue;
+                }
+                details.autoMatches.push({
+                  resource: operSummary.submittedResource,
+                  score: auto.score,
+                  threshold: auto.threshold
+                });
+                event.entity[index].detail[detIndex].valueBase64Binary = Buffer.from(JSON.stringify(details)).toString('base64');
+              }
+            }
+          }
+        }
+
+        for(let potential of operSummary.FHIRPotentialMatches) {
+          let csvTag = getCSVTag(potential.resource);
+          if(csvTag && csvTag.code === operSummary.csvCode) {
+            for(let index in event.entity) {
+              let entity = event.entity[index];
+              if(entity.what.reference === `Patient/${potential.resource.id}`) {
+                let detIndex = entity.detail.findIndex((det) => {
+                  return det.type === 'match';
+                });
+                if(detIndex === -1) {
+                  continue;
+                }
+                let details = Buffer.from(entity.detail[detIndex].valueBase64Binary, 'base64').toString('ascii');
+                try {
+                  details = JSON.parse(details);
+                } catch (error) {
+                  logger.error(error);
+                }
+                let exist = details.potentialMatches && details.potentialMatches.find((mtch) => {
+                  return mtch.resource.id === operSummary.submittedResource.id;
+                });
+                if(exist) {
+                  continue;
+                }
+                details.potentialMatches.push({
+                  resource: operSummary.submittedResource,
+                  score: potential.score,
+                  threshold: potential.threshold
+                });
+                event.entity[index].detail[detIndex].valueBase64Binary = Buffer.from(JSON.stringify(details)).toString('base64');
+              }
+            }
+          }
+        }
+        crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 10000);
+        if(eventIndexInBundle !== -1) {
+          auditBundle.entry[eventIndexInBundle].resource = event;
+        } else {
+          auditBundle.entry.push({
+            resource: event,
+            request: {
+              method: 'PUT',
+              url: `AuditEvent/${event.id}`
+            }
+          });
+        }
+        crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+        return resolve();
+      });
+    });
+  }
+}
 function createAddPatientAudEvent(operationSummary, req) {
   const auditBundle = {};
   auditBundle.type = 'batch';
@@ -76,8 +334,8 @@ function createAddPatientAudEvent(operationSummary, req) {
         });
       }
     }
-    if (operSummary.FHIRMatches && operSummary.FHIRMatches.length > 0) {
-      for (const match of operSummary.FHIRMatches) {
+    if (operSummary.FHIRAutoMatches && operSummary.FHIRAutoMatches.length > 0) {
+      for (const match of operSummary.FHIRAutoMatches) {
         auditEvent.entity.push({
           name: 'match',
           what: {
@@ -223,6 +481,9 @@ const addPatient = (clientID, patientsBundle, callback) => {
         operSummary.outcomeDesc = 'An error occured while finding matches';
         return callback(error, responseBundle, operationSummary);
       }
+      operSummary.FHIRAutoMatches = FHIRAutoMatched.entry;
+      operSummary.FHIRPotentialMatches = FHIRPotentialMatches.entry;
+      operSummary.FHIRConflictsMatches = FHIRConflictsMatches.entry;
       operSummary.ESMatches = ESMatches;
 
       // if there is potential matches or conflict matches then add a tag
@@ -400,12 +661,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
                   let patientHistory;
                   let latestHistory = 0;
                   for(let entry of body.entry) {
-                    logger.error(entry.response.etag);
                     if(parseInt(entry.response.etag) > latestHistory && entry.response.location.startsWith(`Patient/${patient.id}/_history`)) {
                       patientHistory = entry.response.location;
                     }
                   }
-                  logger.error(patientHistory);
                   if(patientHistory) {
                     let provenance = {
                       resourceType: 'Provenance',
@@ -600,7 +859,9 @@ const addPatient = (clientID, patientsBundle, callback) => {
             });
           }
         }
-        operSummary.FHIRMatches = FHIRAutoMatched.entry;
+        operSummary.FHIRAutoMatches = FHIRAutoMatched.entry;
+        operSummary.FHIRPotentialMatches = FHIRPotentialMatches.entry;
+        operSummary.FHIRConflictsMatches = FHIRConflictsMatches.entry;
         operSummary.ESMatches = ESMatches;
         return callback(false);
       } else {
@@ -615,7 +876,11 @@ const addPatient = (clientID, patientsBundle, callback) => {
   logger.info('Searching to check if the patient exists');
   async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
     processCSVTag(newPatient.resource);
+    let csvCode = getCSVTag(newPatient.resource);
     const operSummary = {};
+    if(csvCode) {
+      operSummary.csvCode = csvCode.code;
+    }
     operSummary.cruid = [];
     const bundle = {};
     bundle.type = 'batch';
@@ -635,23 +900,24 @@ const addPatient = (clientID, patientsBundle, callback) => {
       if (!newPatient.resource.meta.tag) {
         newPatient.resource.meta.tag = [];
       }
+      newPatient.resource.meta.lastUpdated = moment().format('YYYY-MM-DDTHH:mm:ss.SSSZ');
       newPatient.resource.meta.tag.push({
         system: URI(config.get("systems:CRBaseURI")).segment('clientid').toString(),
         code: clientID,
         display: clientName
       });
     }
-    const internalIdURI = config.get("systems:internalid:uri");
-    if (!internalIdURI || internalIdURI.length === 0) {
-      operSummary.outcome = '8';
-      operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
-      logger.error('URI for internal id is not defined on configuration files, stop processing patient');
-      operationSummary.push(operSummary);
-      return nxtPatient();
-    }
+    // const internalIdURI = config.get("systems:internalid:uri");
+    // if (!internalIdURI || internalIdURI.length === 0) {
+    //   operSummary.outcome = '8';
+    //   operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
+    //   logger.error('URI for internal id is not defined on configuration files, stop processing patient');
+    //   operationSummary.push(operSummary);
+    //   return nxtPatient();
+    // }
 
     const validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
-      return internalIdURI.includes(identifier.system) && identifier.value;
+      return identifier.system === sourceIdURI && identifier.value;
     });
     if (!validSystem) {
       operSummary.outcome = '4';
@@ -836,7 +1102,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
                       }
                     ]
                   };
-                  logger.error(JSON.stringify(provenance,0,2));
                   provenanceBundle.entry.push({
                     resource: provenance,
                     request: {
@@ -892,69 +1157,68 @@ const processCSVTag = (patient) => {
     if(!csvTag || (csvTag && !csvTag.code)) {
       return resolve();
     }
-    redisClient.get(csvTag.code, (err, docRef) => {
-      if(docRef) {
-        try {
-          docRef = JSON.parse(docRef);
-        } catch (error) {
-          logger.error(error);
-        }
-        return resolve(docRef);
+    let docRef = crCache.get(`docRef_${csvTag.code}`);
+    if(docRef) {
+      try {
+        docRef = JSON.parse(docRef);
+      } catch (error) {
+        logger.error(error);
       }
-      fhirWrapper.getResource({
-        resource: 'DocumentReference',
-        query: `_id=${csvTag.code}`
-      }, (docRefBundle) => {
-        let docRef;
-        if(docRefBundle.entry.length > 0) {
-          docRef = docRefBundle.entry[0].resource;
-        } else {
-          docRef = {
-            resourceType: 'DocumentReference',
-            id: csvTag.code,
-            status: 'current',
-            type: {
-              coding: [{
-                system: URI(config.get("systems:CRBaseURI")).segment('CodeSystem').segment('doc-types').toString(),
-                code: 'csv_upload'
-              }],
-              text: 'CSV Upload'
-            },
-            date: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
-            description: csvTag.display,
-            content: [
-              {
-                attachment: {
-                  contentType: 'text/csv',
-                  title: csvTag.display
-                }
+      return resolve(docRef);
+    }
+    fhirWrapper.getResource({
+      resource: 'DocumentReference',
+      query: `_id=${csvTag.code}`
+    }, (docRefBundle) => {
+      let docRef;
+      if(docRefBundle.entry.length > 0) {
+        docRef = docRefBundle.entry[0].resource;
+      } else {
+        docRef = {
+          resourceType: 'DocumentReference',
+          id: csvTag.code,
+          status: 'current',
+          type: {
+            coding: [{
+              system: URI(config.get("systems:CRBaseURI")).segment('CodeSystem').segment('doc-types').toString(),
+              code: 'csv_upload'
+            }],
+            text: 'CSV Upload'
+          },
+          date: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
+          description: csvTag.display,
+          content: [
+            {
+              attachment: {
+                contentType: 'text/csv',
+                title: csvTag.display
               }
-            ]
-          };
-          let bundle = {
-            resourceType: 'Bundle',
-            type: 'batch',
-            entry: [{
-              resource: docRef,
-              request: {
-                method: 'PUT',
-                url: `DocumentReference/${docRef.id}`,
-              }
-            }]
-          };
-          logger.error(bundle);
-          fhirWrapper.saveResource({
-            resourceData: bundle
-          }, () => {});
-        }
-        redisClient.set(csvTag.code, JSON.stringify(docRef));
-        return resolve(docRef);
-      });
+            }
+          ]
+        };
+        let bundle = {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [{
+            resource: docRef,
+            request: {
+              method: 'PUT',
+              url: `DocumentReference/${docRef.id}`,
+            }
+          }]
+        };
+        fhirWrapper.saveResource({
+          resourceData: bundle
+        }, () => {});
+      }
+      crCache.set(`docRef_${csvTag.code}`, JSON.stringify(docRef));
+      return resolve(docRef);
     });
   });
 };
 
 module.exports = {
   addPatient,
-  createAddPatientAudEvent
+  createAddPatientAudEvent,
+  createCSVUploadAudEvent
 };

@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const https = require('https');
 const cacheFHIR = require('./tools/cacheFHIR');
+const generalMixin = require('./mixins/generalMixin');
 const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
@@ -15,6 +16,7 @@ const mediatorConfig = require(`${__dirname}/../config/mediator`);
 const userRouter = require('./routes/user');
 const fhirRoutes = require('./routes/fhir');
 const matchRoutes = require('./routes/match');
+const csvRoutes = require('./routes/csv');
 const configRoutes = require('./routes/config');
 
 const serverOpts = {
@@ -29,6 +31,7 @@ if (config.get('mediator:register')) {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
 }
 
+generalMixin.removeDir(`${__dirname}/../gui/tmp`);
 
 let authorized = false;
 /**
@@ -121,6 +124,7 @@ function appRoutes() {
   app.use('/user', userRouter);
   app.use('/fhir', fhirRoutes);
   app.use('/match', matchRoutes);
+  app.use('/csv', csvRoutes);
   app.use('/config', configRoutes);
 
   return app;

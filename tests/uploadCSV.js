@@ -86,7 +86,15 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (birthDate) {
           birthDate = birthDate.trim();
         }
-        const resource = {};
+        const resource = {
+          meta: {
+            tag: [{
+              system: "http://openclientregistry.org/fhir/tag/csv",
+              code: "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
+              display: "Uganda CSV Data"
+            }]
+          }
+        };
         resource.resourceType = 'Patient';
         if (sex == 'f') {
           resource.gender = 'female';
@@ -180,9 +188,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 password: 'openmrs'
               };
               const options = {
-                url: 'https://localhost:3000/fhir/Patient',
-                // auth,
-                agentOptions,
+                url: 'http://localhost:5001/fhir/Patient',
+                auth,
+                // agentOptions,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
@@ -193,14 +201,14 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 }
                 if(!res.headers) {
                   logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details;');
-                  return nxtEntry()
+                  return nxtEntry();
                 }
                 if(res.headers.location) {
                   logger.info('Assigned CRUID ' + res.headers.location);
                 } else {
                   logger.error('Something went wrong, no CRUID created');
                 }
-           ;     console.timeEnd('Processing Took')
+                ;     console.timeEnd('Processing Took');
                 return nxtEntry();
               });
             }, () => {

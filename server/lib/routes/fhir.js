@@ -29,6 +29,7 @@ router.get('/:resource?/:id?', (req, res) => {
     pixmRequest({
       req
     }, (resourceData, statusCode) => {
+      logger.error(JSON.stringify(resourceData,0,2));
       res.status(statusCode).send(resourceData);
     });
   } else {
@@ -115,7 +116,7 @@ function pixmRequest({
     }
   }
   if (outcome.issue.length > 0) {
-    return callback(outcome);
+    return callback(outcome, 400);
   }
   const query = `identifier=${sourceIdentifier}&_include:recurse=Patient:link`;
   fhirWrapper.getResource({
@@ -312,7 +313,7 @@ function saveResource(req, res) {
       const auditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
       fhirWrapper.saveResource({
         resourceData: auditBundle
-      }, () => {
+      }, (err) => {
         logger.info('Audit saved successfully');
         if (err) {
           res.status(500).send();
@@ -320,6 +321,24 @@ function saveResource(req, res) {
           res.setHeader('location', response.entry[0].response.location);
           res.status(201).send();
         }
+
+        let csvUploadAuditBundle = {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: []
+        };
+        async.eachSeries(operationSummary, (operSummary, nxtOper) => {
+          matchMixin.createCSVUploadAudEvent(operSummary, csvUploadAuditBundle, req).then(() => {
+            return nxtOper();
+          }).catch(() => {
+            return nxtOper();
+          });
+        }, () => {
+          fhirWrapper.saveResource({
+            resourceData: csvUploadAuditBundle
+          }, () => {});
+        });
+
       });
     });
   }

@@ -35,7 +35,24 @@ export const store = new Vuex.Store({
     errorTitle: '',
     errorDescription: '',
     errorColor: 'primary',
-    dynamicProgress: false
+    dynamicProgress: false,
+    csvs: [
+      {
+        "uid": "03861b8b-1112-45e7-bb33-529c8ae928f8",
+        "name": "EMR_1.csv",
+        "date": "2021-01-29T10:23:14Z",
+      },
+      {
+        "uid": "0e3a637f-e0b1-4fb1-8635-4cab46e33f07",
+        "name": "Labs.csv",
+        "date": "2021-02-02T14:41:28Z",
+      },
+      {
+        "uid": "2ac2c4ad-1893-40ed-9b54-5002ccc46e2b",
+        "name": "EMR_2.csv",
+        "date": "2021-01-14T08:56:31Z",
+      },
+    ]
   }
 })
 
