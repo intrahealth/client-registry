@@ -309,13 +309,13 @@ function saveResource(req, res) {
     //   const cert = req.connection.getPeerCertificate();
     //   clientID = cert.subject.CN;
     // }
-    matchMixin.addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+    matchMixin.addPatient(clientID, patientsBundle, (error, response, operationSummary) => {
       const auditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
       fhirWrapper.saveResource({
         resourceData: auditBundle
       }, (err) => {
         logger.info('Audit saved successfully');
-        if (err) {
+        if (error) {
           res.status(500).send();
         } else {
           res.setHeader('location', response.entry[0].response.location);

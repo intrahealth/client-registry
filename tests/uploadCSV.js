@@ -109,7 +109,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         }
         resource.identifier = [
           {
-            system: 'http://clientregistry.org/openmrs',
+            system: 'http://openclientregistry.org/fhir/sourceid',
             value: row['rec_id'].trim(),
           },
         ];
@@ -175,10 +175,10 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               console.log('Processing ' + count + ' of ' + totalRecords);
               const agentOptions = {
                 cert: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_cert.pem'
+                  '../server/sampleclientcertificates/datim_mediator_cert.pem'
                 ),
                 key: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_key.pem'
+                  '../server/sampleclientcertificates/datim_mediator_key.pem'
                 ),
                 ca: fs.readFileSync('../server/certificates/server_cert.pem'),
                 securityOptions: 'SSL_OP_NO_SSLv3',
@@ -188,9 +188,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 password: 'openmrs'
               };
               const options = {
-                url: 'http://localhost:5001/fhir/Patient',
-                auth,
-                // agentOptions,
+                url: 'https://localhost:3000/fhir/Patient',
+                // auth,
+                agentOptions,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {

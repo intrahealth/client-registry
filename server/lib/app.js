@@ -20,11 +20,11 @@ const csvRoutes = require('./routes/csv');
 const configRoutes = require('./routes/config');
 
 const serverOpts = {
-  key: fs.readFileSync(`${__dirname}/../certificates/server_key.pem`),
-  cert: fs.readFileSync(`${__dirname}/../certificates/server_cert.pem`),
+  key: fs.readFileSync(`${__dirname}/../serverCertificates/server_key.pem`),
+  cert: fs.readFileSync(`${__dirname}/../serverCertificates/server_cert.pem`),
   requestCert: true,
   rejectUnauthorized: false,
-  ca: [fs.readFileSync(`${__dirname}/../certificates/server_cert.pem`)]
+  ca: [fs.readFileSync(`${__dirname}/../serverCertificates/server_cert.pem`)]
 };
 
 if (config.get('mediator:register')) {

@@ -1187,7 +1187,7 @@ router.get(`/get-match-issues`, (req, res) => {
         link = link.split('/')[1];
       }
       const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
-        return internalIdURI.includes(identifier.system) && identifier.value;
+        return 'http://openclientregistry.org/fhir/sourceid' && identifier.value;
       });
 
       let matchTag = entry.resource.meta.tag.find((tag) => {

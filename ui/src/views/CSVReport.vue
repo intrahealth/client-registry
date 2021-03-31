@@ -82,7 +82,7 @@ export default {
       this.downloading = true
       axios.get(`/ocrux/csv/getCSVReport/${id}`).then((resp) => {
         this.downloading = false
-        window.open(resp.data, "_new");
+        window.open(resp.data, "_self");
       })
     }
   }
