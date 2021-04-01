@@ -31,5 +31,5 @@ ansible.p12
 # mac
 .DS_Store
 
-# notebook checkpoints
-*.ipynb_checkpoints/
+# venv
+venv/
