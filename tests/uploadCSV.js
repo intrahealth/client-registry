@@ -175,12 +175,12 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               console.log('Processing ' + count + ' of ' + totalRecords);
               const agentOptions = {
                 cert: fs.readFileSync(
-                  '../server/sampleclientcertificates/datim_mediator_cert.pem'
+                  '../server/clientCertificates/datim_mediator_cert.pem'
                 ),
                 key: fs.readFileSync(
-                  '../server/sampleclientcertificates/datim_mediator_key.pem'
+                  '../server/clientCertificates/datim_mediator_key.pem'
                 ),
-                ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+                ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
                 securityOptions: 'SSL_OP_NO_SSLv3',
               };
               const auth = {

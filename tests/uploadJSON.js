@@ -61,12 +61,12 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
   console.log('Processing ' + ++index + ' of ' + bundle.entry.length);
   const agentOptions = {
     cert: fs.readFileSync(
-      '../server/sampleclientcertificates/openmrs_cert.pem'
+      '../server/clientCertificates/openmrs_cert.pem'
     ),
     key: fs.readFileSync(
-      '../server/sampleclientcertificates/openmrs_key.pem'
+      '../server/clientCertificates/openmrs_key.pem'
     ),
-    ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+    ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
     securityOptions: 'SSL_OP_NO_SSLv3',
   };
   const auth = {
@@ -74,9 +74,9 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     password: 'openmrs'
   };
   const options = {
-    url: 'http://localhost:5001/fhir/' + entry.resource.resourceType,
+    url: 'https://localhost:3000/fhir/' + entry.resource.resourceType,
     agentOptions,
-    auth,
+    // auth,
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
