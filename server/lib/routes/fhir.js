@@ -7,21 +7,6 @@ const matchMixin = require('../mixins/matchMixin');
 const logger = require('../winston');
 const config = require('../config');
 
-// app.get('/ocrux/fhir/:resource?/:id?', (req, res) => {
-//   getResource({
-//     req,
-//     noCaching: true
-//   }, (resourceData, statusCode) => {
-//     for (const index in resourceData.link) {
-//       const urlArr = resourceData.link[index].url.split('fhir');
-//       if (urlArr.length === 2) {
-//         resourceData.link[index].url = '/ocrux/fhir' + urlArr[1];
-//       }
-//     }
-//     res.status(statusCode).json(resourceData);
-//   });
-// });
-
 router.get('/:resource?/:id?', (req, res) => {
   logger.info(`Received a request to get data for resource ${req.params.resource}`);
   const id = req.params.id;
@@ -334,9 +319,11 @@ function saveResource(req, res) {
             return nxtOper();
           });
         }, () => {
-          fhirWrapper.saveResource({
-            resourceData: csvUploadAuditBundle
-          }, () => {});
+          // matchMixin.saveCSVUploadAudiEvent(csvUploadAuditBundle).then(() => {
+          //   csvUploadAuditBundle = {};
+          // }).catch(() => {
+          //   csvUploadAuditBundle = {};
+          // });
         });
 
       });

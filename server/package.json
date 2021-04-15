@@ -4,7 +4,7 @@
   "description": "Client Registry",
   "main": "app.js",
   "scripts": {
-    "start": "env NODE_ENV=production node lib/app.js",
+    "start": "env NODE_ENV=production node --max-old-space-size=8192 lib/app.js",
     "dev": "env NODE_ENV=development node lib/app.js",
     "test": "env NODE_ENV=test jest --testPathIgnorePatterns=__tests__/e2e",
     "e2e": "env NODE_ENV=test node __tests__/e2e/resetTestData.js && jest --detectOpenHandles --testPathPattern=__tests__/e2e"
@@ -21,6 +21,7 @@
     "axios": "^0.19.2",
     "damerau-levenshtein": "^1.0.5",
     "double-metaphone": "^1.0.5",
+    "exceljs": "^4.2.1",
     "express": "^4.17.1",
     "fast-levenshtein": "^2.0.6",
     "fhir": "^4.7.0",

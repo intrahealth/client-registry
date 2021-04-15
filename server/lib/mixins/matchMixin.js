@@ -8,6 +8,7 @@ const _ = require('lodash');
 const moment = require('moment');
 const NodeCache = require( "node-cache" );
 const crCache = new NodeCache();
+const lodash = require('lodash');
 const fhirWrapper = require('../fhir')();
 const medMatching = require('../medMatching')();
 const esMatching = require('../esMatching');
@@ -18,9 +19,52 @@ const sourceIdURI = URI("http://openclientregistry.org/fhir").segment('sourceid'
 const matchIssuesURI = URI("http://openclientregistry.org/fhir").segment('matchIssues').toString();
 const humanAdjudURI = URI("http://openclientregistry.org/fhir").segment('humanAdjudication').toString();
 
+function closeCSVAuditEvent(event) {
+  let eventCopy = lodash.cloneDeep(event);
+  event.entity = [];
+  if(!event.extension) {
+    event.extension = [];
+  }
+  if(Array.isArray(eventCopy.extension)) {
+    for(let extInd in eventCopy.extension) {
+      if(eventCopy.extension[extInd].url === 'http://openclientregistry.org/fhir/extension/csvauditreport' ) {
+        eventCopy.extension.splice(extInd, 1);
+        break;
+      }
+    }
+  }
+  eventCopy.id = uuid4();
+  event.extension.push({
+    url: 'http://openclientregistry.org/fhir/extension/csvauditreport',
+    valueReference: {
+      reference: `AuditEvent/${eventCopy.id}`
+    }
+  });
+  let bundle = {
+    resourceType: 'Bundle',
+    type: 'batch',
+    entry: [{
+      resource: event,
+      request: {
+        method: 'PUT',
+        url: `AuditEvent/${event.id}`
+      }
+    }, {
+      resource: eventCopy,
+      request: {
+        method: 'PUT',
+        url: `AuditEvent/${eventCopy.id}`
+      }
+    }]
+  };
+  fhirWrapper.saveResource({
+    resourceData: bundle
+  }, () => {});
+}
 function createCSVUploadAudEvent(operSummary, auditBundle, req) {
   let processing = crCache.get(`processingCSVReport_${operSummary.csvCode}`);
-  if(processing) {
+  let saving = crCache.get(`savingCSVReport`);
+  if(processing || saving) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
         createCSVUploadAudEvent(operSummary, auditBundle, req).then(() => {
@@ -102,7 +146,8 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
           }
           fhirWrapper.getResource({
             resource: 'AuditEvent',
-            id: uuid5(operSummary.csvCode.toString(), '00b3ffab-450c-4407-9e59-05034a271da7')
+            id: uuid5(operSummary.csvCode.toString(), '00b3ffab-450c-4407-9e59-05034a271da7'),
+            noCaching: true
           }, (audit) => {
             if(audit && audit.resourceType !== 'OperationOutcome') {
               event = audit;
@@ -143,10 +188,10 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
               name: 'submittedResource',
               detail: [{
                 type: 'submittedPatient',
-                valueBase64Binary: Buffer.from(JSON.stringify(operSummary.submittedResource)).toString('base64')
+                valueString: JSON.stringify(operSummary.submittedResource)
               }, {
                 type: 'match',
-                valueBase64Binary: Buffer.from(JSON.stringify(matches)).toString('base64')
+                valueString: JSON.stringify(matches)
               }]
             }]
           };
@@ -156,7 +201,7 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
               valueString: operSummary.cruid[0]
             });
           }
-          crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 10000);
+          crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 300);
           auditBundle.entry.push({
             resource: event,
             request: {
@@ -165,7 +210,11 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
             }
           });
           crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+          saveCSVUploadAudiEvent(operSummary.csvCode);
           return resolve();
+        }
+        if(event.entity && event.entity.length >= 500) {
+          closeCSVAuditEvent(event);
         }
 
         //check if matches of this uploaded CSV are among the processed patients from this same CSV and add this patient to those matches
@@ -176,10 +225,10 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
           name: 'submittedResource',
           detail: [{
             type: 'submittedPatient',
-            valueBase64Binary: Buffer.from(JSON.stringify(operSummary.submittedResource)).toString('base64')
+            valueString: JSON.stringify(operSummary.submittedResource)
           }, {
             type: 'match',
-            valueBase64Binary: Buffer.from(JSON.stringify(matches)).toString('base64')
+            valueString: JSON.stringify(matches)
           }]
         };
         if(operSummary.cruid.length > 0) {
@@ -201,7 +250,7 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
                 if(detIndex === -1) {
                   continue;
                 }
-                let details = Buffer.from(entity.detail[detIndex].valueBase64Binary, 'base64').toString('ascii');
+                let details = entity.detail[detIndex].valueString;
                 try {
                   details = JSON.parse(details);
                 } catch (error) {
@@ -218,13 +267,13 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
                   score: auto.score,
                   threshold: auto.threshold
                 });
-                event.entity[index].detail[detIndex].valueBase64Binary = Buffer.from(JSON.stringify(details)).toString('base64');
+                event.entity[index].detail[detIndex].valueString = JSON.stringify(details);
               }
             }
           }
         }
 
-        for(let potential of operSummary.FHIRPotentialMatches) {
+        for(let potential of operSummary.FHIRPotentialMatches) {0
           let csvTag = getCSVTag(potential.resource);
           if(csvTag && csvTag.code === operSummary.csvCode) {
             for(let index in event.entity) {
@@ -236,7 +285,7 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
                 if(detIndex === -1) {
                   continue;
                 }
-                let details = Buffer.from(entity.detail[detIndex].valueBase64Binary, 'base64').toString('ascii');
+                let details = entity.detail[detIndex].valueString;
                 try {
                   details = JSON.parse(details);
                 } catch (error) {
@@ -253,12 +302,12 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
                   score: potential.score,
                   threshold: potential.threshold
                 });
-                event.entity[index].detail[detIndex].valueBase64Binary = Buffer.from(JSON.stringify(details)).toString('base64');
+                event.entity[index].detail[detIndex].valueString = JSON.stringify(details);
               }
             }
           }
         }
-        crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 10000);
+        crCache.set(`csvreport_${operSummary.csvCode}`, JSON.stringify(event), 300);
         if(eventIndexInBundle !== -1) {
           auditBundle.entry[eventIndexInBundle].resource = event;
         } else {
@@ -271,10 +320,59 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
           });
         }
         crCache.del(`processingCSVReport_${operSummary.csvCode}`);
+        saveCSVUploadAudiEvent(operSummary.csvCode);
         return resolve();
       });
     });
   }
+}
+
+function saveCSVUploadAudiEvent(csvCode) {
+  return new Promise((resolve, reject) => {
+    let scheduled = crCache.get(`scheduledSavingCSVReport`);
+    if(scheduled) {
+      // setTimeout(() => {
+      //   saveCSVUploadAudiEvent(csvUploadAuditBundle).then(() => {
+      //     resolve();
+      //   }).catch((err) => {
+      //     reject(err);
+      //   });
+      // }, 10000);
+      return resolve();
+    } else {
+      crCache.set(`scheduledSavingCSVReport`, true);
+      setTimeout(() => {
+        crCache.del(`scheduledSavingCSVReport`);
+        crCache.set(`savingCSVReport`, true);
+        let event = crCache.get(`csvreport_${csvCode}`);
+        try {
+          event = JSON.parse(event);
+        } catch (error) {
+          logger.error(error);
+        }
+        let csvUploadAuditBundle = {
+          resourceType: 'Bundle',
+          type: 'batch',
+          entry: [{
+            resource: event,
+            request: {
+              method: 'PUT',
+              url: `AuditEvent/${event.id}`
+            }
+          }]
+        };
+        fhirWrapper.saveResource({
+          resourceData: csvUploadAuditBundle
+        }, (err) => {
+          crCache.del(`savingCSVReport`);
+          if(err) {
+            return reject();
+          }
+          resolve();
+        });
+      }, 3000);
+    }
+  });
 }
 function createAddPatientAudEvent(operationSummary, req) {
   const auditBundle = {};
@@ -1220,5 +1318,6 @@ const processCSVTag = (patient) => {
 module.exports = {
   addPatient,
   createAddPatientAudEvent,
-  createCSVUploadAudEvent
+  createCSVUploadAudEvent,
+  saveCSVUploadAudiEvent
 };

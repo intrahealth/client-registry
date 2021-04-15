@@ -175,10 +175,10 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               console.log('Processing ' + count + ' of ' + totalRecords);
               const agentOptions = {
                 cert: fs.readFileSync(
-                  '../server/clientCertificates/datim_mediator_cert.pem'
+                  '../server/clientCertificates/openmrs_cert.pem'
                 ),
                 key: fs.readFileSync(
-                  '../server/clientCertificates/datim_mediator_key.pem'
+                  '../server/clientCertificates/openmrs_key.pem'
                 ),
                 ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
                 securityOptions: 'SSL_OP_NO_SSLv3',
@@ -208,7 +208,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
                 } else {
                   logger.error('Something went wrong, no CRUID created');
                 }
-                ;     console.timeEnd('Processing Took');
+                console.timeEnd('Processing Took');
                 return nxtEntry();
               });
             }, () => {
