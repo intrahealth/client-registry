@@ -63,7 +63,7 @@ function closeCSVAuditEvent(event) {
 }
 function createCSVUploadAudEvent(operSummary, auditBundle, req) {
   let processing = crCache.get(`processingCSVReport_${operSummary.csvCode}`);
-  let saving = crCache.get(`savingCSVReport`);
+  let saving = crCache.get(`savingCSVReport_${operSummary.csvCode}`);
   if(processing || saving) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -329,21 +329,14 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
 
 function saveCSVUploadAudiEvent(csvCode) {
   return new Promise((resolve, reject) => {
-    let scheduled = crCache.get(`scheduledSavingCSVReport`);
+    let scheduled = crCache.get(`scheduledSavingCSVReport_${csvCode}`);
     if(scheduled) {
-      // setTimeout(() => {
-      //   saveCSVUploadAudiEvent(csvUploadAuditBundle).then(() => {
-      //     resolve();
-      //   }).catch((err) => {
-      //     reject(err);
-      //   });
-      // }, 10000);
       return resolve();
     } else {
-      crCache.set(`scheduledSavingCSVReport`, true);
+      crCache.set(`scheduledSavingCSVReport_${csvCode}`, true);
       setTimeout(() => {
-        crCache.del(`scheduledSavingCSVReport`);
-        crCache.set(`savingCSVReport`, true);
+        crCache.del(`scheduledSavingCSVReport_${csvCode}`);
+        crCache.set(`savingCSVReport_${csvCode}`, true);
         let event = crCache.get(`csvreport_${csvCode}`);
         try {
           event = JSON.parse(event);
@@ -364,7 +357,7 @@ function saveCSVUploadAudiEvent(csvCode) {
         fhirWrapper.saveResource({
           resourceData: csvUploadAuditBundle
         }, (err) => {
-          crCache.del(`savingCSVReport`);
+          crCache.del(`savingCSVReport_${csvCode}`);
           if(err) {
             return reject();
           }

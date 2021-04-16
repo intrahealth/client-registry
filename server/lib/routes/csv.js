@@ -1,3 +1,5 @@
+'use strict';
+/*global __dirname */
 const express = require("express");
 const router = express.Router();
 const async = require('async');
@@ -123,7 +125,9 @@ router.get('/getCSVReport/:id', (req, res) => {
     let childrenEvents = auditEvent.extension && auditEvent.extension.filter((ext) => {
       return ext.url === 'http://openclientregistry.org/fhir/extension/csvauditreport';
     });
-
+    if(!childrenEvents) {
+      childrenEvents = [];
+    }
     let queries = [];
     let query = '';
     for(let event of childrenEvents) {
@@ -406,7 +410,7 @@ router.get('/getCSVReport/:id', (req, res) => {
   }
 
   function writeDataToExcel(auditEvent) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       for(let entity of auditEvent.entity) {
         let cruid = entity.detail.find((det) => {
           return det.type === 'CRUID';
