@@ -120,6 +120,10 @@ function pixmRequest({
         if (isGoldenRec) {
           continue;
         }
+        parameters.parameter.push({
+          name: 'targetId',
+          valueReference: entry.resource.fullUrl
+        });
         for (const identifier of entry.resource.identifier) {
           if (targetSystem) {
             if (targetSystem === identifier.system) {
