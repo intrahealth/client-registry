@@ -554,11 +554,7 @@ const fhir2ES = ({
                 }
               });
               promise.then(() => {
-                logger.info(
-                  'Writting resource data for resource ' +
-                  orderedResource.resource +
-                  ' into elastic search'
-                );
+                logger.info('Writting resource data for resource ' + orderedResource.resource + ' into elastic search');
                 const processedRecords = [];
                 let count = 1;
                 async.eachSeries(resourceData, (data, next) => {

@@ -5,7 +5,7 @@
     "resource": {
       "resourceType": "Patient",
       "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
+          "system": "http://openclientregistry.org/fhir/sourceid",
           "value": "patient1"
         },
         {
@@ -42,7 +42,7 @@
     "resource": {
       "resourceType": "Patient",
       "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
+          "system": "http://openclientregistry.org/fhir/sourceid",
           "value": "patient2"
         },
         {
@@ -79,7 +79,7 @@
     "resource": {
       "resourceType": "Patient",
       "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
+          "system": "http://openclientregistry.org/fhir/sourceid",
           "value": "patient3"
         }, {
           "system": "http://health.go.ug/cr/nationalid",

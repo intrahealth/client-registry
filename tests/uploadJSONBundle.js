@@ -47,12 +47,12 @@ console.time('Total Processing Time');
 console.time('Processing Took');
 const agentOptions = {
   cert: fs.readFileSync(
-    '../server/sampleclientcertificates/openmrs_cert.pem'
+    '../server/clientCertificates/openmrs_cert.pem'
   ),
   key: fs.readFileSync(
-    '../server/sampleclientcertificates/openmrs_key.pem'
+    '../server/clientCertificates/openmrs_key.pem'
   ),
-  ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+  ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
   securityOptions: 'SSL_OP_NO_SSLv3',
 };
 const auth = {
@@ -65,6 +65,16 @@ const options = {
   json: patients
 };
 request.post(options, (err, res, body) => {
+  logger.error(JSON.stringify(body,0,2));
+  logger.error(JSON.stringify(res.headers,0,2));
+  if(res.headers.location) {
+    logger.info({
+      'Patient ID': res.headers.location,
+      'Patient CRUID': res.headers.locationcruid
+    });
+  } else {
+    logger.error('Something went wrong, no CRUID created');
+  }
   if (err) {
     logger.error('An error has occured');
     logger.error(err);

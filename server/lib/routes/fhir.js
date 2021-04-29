@@ -172,20 +172,23 @@ router.post('/', (req, res) => {
       }
     });
   }
-  let patients = [];
-  for(let index in resource.entry) {
-    let entry = resource.entry[index];
-    if(entry.resource && entry.resource.resourceType === "Patient") {
-      patients.push(entry);
-      resource.entry.splice(index, 1);
-    }
-  }
+  let patients = resource.entry.filter((entry) => {
+    return entry.resource && entry.resource.resourceType === "Patient";
+  });
+  let otherResources = {
+    resourceType: resource.resourceType,
+    type: resource.type,
+    entry: []
+  };
+  otherResources.entry = resource.entry.filter((entry) => {
+    return entry.resource && entry.resource.resourceType !== "Patient";
+  });
   async.parallel({
     otherResources: (callback) => {
-      if(resource.entry.length === 0) {
+      if(otherResources.entry.length === 0) {
         return callback(null, {});
       }
-      fhirWrapper.create(resource, (code, err, response, body) => {
+      fhirWrapper.create(otherResources, (code, err, response, body) => {
         return callback(null, {code, err, response, body});
       });
     },
@@ -209,11 +212,11 @@ router.post('/', (req, res) => {
       //   const cert = req.connection.getPeerCertificate();
       //   clientID = cert.subject.CN;
       // }
-      matchMixin.addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+      matchMixin.addPatient(clientID, patientsBundle, (err, responseBundle, responseHeaders, operationSummary) => {
         if (err) {
-          return callback(null, {code: 500, err, response, body: operationSummary});
+          return callback(null, {code: 500, err, responseBundle, responseHeaders, body: operationSummary});
         }
-        return callback(null, {code: 201, err, response, body: operationSummary});
+        return callback(null, {code: 200, err, responseBundle, responseHeaders, body: operationSummary});
       });
     }
   }, (err, results) => {
@@ -226,8 +229,26 @@ router.post('/', (req, res) => {
     if(!code) {
       code = 500;
     }
-    res.setHeader('location', JSON.stringify(results.patients.response.entry));
-    return res.status(code).json([results.patients.body, results.patients.body]);
+    let filteredResponseBundle = [];
+    for(let entry of results.patients.responseBundle.entry) {
+      let exists = filteredResponseBundle.findIndex((fil) => {
+        return fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+      });
+      if(exists === -1) {
+        filteredResponseBundle.push(entry);
+      } else {
+        let replaceIndex = filteredResponseBundle.findIndex((fil) => {
+          return parseInt(fil.response.etag) < parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+        });
+        if(replaceIndex !== -1) {
+          filteredResponseBundle.splice(replaceIndex, 1);
+          filteredResponseBundle.push(entry);
+        }
+      }
+    }
+    res.setHeader('Location', JSON.stringify(results.patients.responseHeaders.patientID));
+    res.setHeader('LocationCRUID', JSON.stringify(results.patients.responseHeaders.CRUID));
+    return res.status(code).json(filteredResponseBundle);
   });
 });
 
@@ -298,17 +319,35 @@ function saveResource(req, res) {
     //   const cert = req.connection.getPeerCertificate();
     //   clientID = cert.subject.CN;
     // }
-    matchMixin.addPatient(clientID, patientsBundle, (error, response, operationSummary) => {
+    matchMixin.addPatient(clientID, patientsBundle, (error, responseBundle, responseHeaders, operationSummary) => {
       const auditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
       fhirWrapper.saveResource({
         resourceData: auditBundle
-      }, (err) => {
+      }, () => {
         logger.info('Audit saved successfully');
+        let filteredResponseBundle = [];
+        for(let entry of responseBundle.entry) {
+          let exists = filteredResponseBundle.findIndex((fil) => {
+            return fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+          });
+          if(exists === -1) {
+            filteredResponseBundle.push(entry);
+          } else {
+            let replaceIndex = filteredResponseBundle.findIndex((fil) => {
+              return parseInt(fil.response.etag) < parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+            });
+            if(replaceIndex !== -1) {
+              filteredResponseBundle.splice(replaceIndex, 1);
+              filteredResponseBundle.push(entry);
+            }
+          }
+        }
         if (error) {
-          res.status(500).send();
+          res.status(500).json(filteredResponseBundle);
         } else {
-          res.setHeader('location', response.entry[0].response.location);
-          res.status(201).send();
+          res.setHeader('Location', responseHeaders.patientID[0]);
+          res.setHeader('LocationCRUID', responseHeaders.CRUID[0]);
+          res.status(200).json(filteredResponseBundle);
         }
 
         let csvUploadAuditBundle = {

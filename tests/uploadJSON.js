@@ -90,7 +90,10 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
       return nxtEntry();
     }
     if (res.headers.location) {
-      logger.info('CRUID ' + res.headers.location);
+      logger.info({
+        'Patient ID': res.headers.location,
+        'Patient CRUID': res.headers.locationcruid
+      });
     } else {
       logger.error('Something went wrong, no CRUID created');
     }

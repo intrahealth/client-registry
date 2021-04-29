@@ -273,7 +273,7 @@ function createCSVUploadAudEvent(operSummary, auditBundle, req) {
           }
         }
 
-        for(let potential of operSummary.FHIRPotentialMatches) {0
+        for(let potential of operSummary.FHIRPotentialMatches) {0;
           let csvTag = getCSVTag(potential.resource);
           if(csvTag && csvTag.code === operSummary.csvCode) {
             for(let index in event.entity) {
@@ -481,6 +481,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
   const responseBundle = {
     resourceType: 'Bundle',
     entry: []
+  };
+  const responseHeaders = {
+    CRUID: [],
+    patientID: []
   };
   const operationSummary = [];
   if (!clientID) {
@@ -719,11 +723,8 @@ const addPatient = (clientID, patientsBundle, callback) => {
           if (!goldenRecord) {
             goldenRecord = fhirWrapper.createGoldenRecord();
           }
-          responseBundle.entry.push({
-            response: {
-              location: goldenRecord.resourceType + '/' + goldenRecord.id
-            }
-          });
+          responseHeaders.CRUID.push(goldenRecord.resourceType + '/' + goldenRecord.id);
+          responseHeaders.patientID.push(`Patient/${patient.id}`);
 
           // if both patient and golden record doesnt exist then add them to avoid error when adding links
           const promise = new Promise((resolve, reject) => {
@@ -747,6 +748,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
               fhirWrapper.saveResource({
                 resourceData: tmpBundle
               }, (err, body) => {
+                responseBundle.entry = responseBundle.entry.concat(body.entry);
                 let csvTag = getCSVTag(patient);
                 if(csvTag && csvTag.code && body && body.entry) {
                   let patientHistory;
@@ -842,11 +844,8 @@ const addPatient = (clientID, patientsBundle, callback) => {
         if(hasHumanAdjudTag && !autoMatchPatientWithHumanAdjudTag) {
           for (const currentLink of currentLinks) {
             operSummary.cruid.push(currentLink.resource.resourceType + '/' + currentLink.resource.id);
-            responseBundle.entry.push({
-              response: {
-                location: currentLink.resource.resourceType + '/' + currentLink.resource.id
-              }
-            });
+            responseHeaders.CRUID.push(currentLink.resource.resourceType + '/' + currentLink.resource.id);
+            responseHeaders.patientID.push(`Patient/${patient.id}`);
           }
           for (const goldenRecord of matchedGoldenRecords.entry) {
             let isSame = currentLinks.find((currLink) => {
@@ -929,11 +928,8 @@ const addPatient = (clientID, patientsBundle, callback) => {
           // adding new links now to the patient
           for (const goldenRecord of matchedGoldenRecords.entry) {
             operSummary.cruid.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
-            responseBundle.entry.push({
-              response: {
-                location: goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id
-              }
-            });
+            responseHeaders.CRUID.push(goldenRecord.resource.resourceType + '/' + goldenRecord.resource.id);
+            responseHeaders.patientID.push(`Patient/${patient.id}`);
             addLinks(patient, goldenRecord.resource);
             bundle.entry.push({
               resource: patient,
@@ -1151,6 +1147,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
             fhirWrapper.saveResource({
               resourceData: bundle,
             }, (err, body) => {
+              responseBundle.entry = responseBundle.entry.concat(body.entry);
               //create the Provenance resource
               let provenanceBundle = {};
               provenanceBundle.type = 'batch';
@@ -1229,10 +1226,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
   }, () => {
     if (responseBundle.entry.length === 0) {
       logger.error('An error has occured while adding patient');
-      return callback(true, responseBundle, operationSummary);
+      return callback(true, responseBundle, responseHeaders, operationSummary);
     }
     logger.info('Done adding patient');
-    return callback(false, responseBundle, operationSummary);
+    return callback(false, responseBundle, responseHeaders, operationSummary);
   });
 };
 
