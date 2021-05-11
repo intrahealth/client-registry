@@ -117,7 +117,7 @@
                 :items="match_items"
                 :items-per-page="20"
                 class="elevation-1 text-capitalize"
-                item-key="id"
+                item-key="fid"
                 show-select
               />
               <v-card-actions>

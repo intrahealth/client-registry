@@ -65,8 +65,6 @@ const options = {
   json: patients
 };
 request.post(options, (err, res, body) => {
-  logger.error(JSON.stringify(body,0,2));
-  logger.error(JSON.stringify(res.headers,0,2));
   if(res.headers.location) {
     logger.info({
       'Patient ID': res.headers.location,

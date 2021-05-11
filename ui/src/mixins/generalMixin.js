@@ -28,6 +28,12 @@ export const generalMixin = {
         });
     },
     getSystemURIDisplayName(systemURI) {
+      if(systemURI === 'http://openclientregistry.org/fhir/sourceid') {
+        return {
+          name: 'Internal ID',
+          id: 'internalid'
+        }
+      }
       let name, id
       for (let index in this.$store.state.systemURI) {
         let systemURIDet

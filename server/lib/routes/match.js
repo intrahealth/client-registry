@@ -1436,7 +1436,7 @@ router.post('/unbreak-match', (req, res) => {
                   resource: entry.resource
                 }]
               };
-              matchMixin.addPatient(clientID, patientsBundle, (err, response, operationSummary) => {
+              matchMixin.addPatient(clientID, patientsBundle, (err, response, operSum) => {
                 const tmpAuditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
                 auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
                 logger.info('Done rematching ' + entry.resource.id);
