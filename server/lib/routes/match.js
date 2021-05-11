@@ -927,10 +927,10 @@ router.post('/break-match', (req, res) => {
             system: 'http://dicom.nema.org/resources/ontology/DCM',
             code: '110110'
           },
-          subtype: {
+          subtype: [{
             system: 'http://hl7.org/fhir/restful-interaction',
             code: 'update',
-          },
+          }],
           action: 'U',
           recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
           agent: [{
@@ -1437,6 +1437,7 @@ router.post('/unbreak-match', (req, res) => {
                 }]
               };
               matchMixin.addPatient(clientID, patientsBundle, (err, response, operSum) => {
+                // operationSummary.push(operSum);
                 const tmpAuditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
                 auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
                 logger.info('Done rematching ' + entry.resource.id);
@@ -1476,6 +1477,7 @@ router.post('/unbreak-match', (req, res) => {
           });
         });
       }
+      logger.error(JSON.stringify(auditBundle,0,2));
     });
   } else {
     return res.status(400).json({

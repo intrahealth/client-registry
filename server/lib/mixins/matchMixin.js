@@ -387,10 +387,10 @@ function createAddPatientAudEvent(operationSummary, req) {
         system: 'http://dicom.nema.org/resources/ontology/DCM',
         code: '110110'
       },
-      subtype: {
+      subtype: [{
         system: 'http://hl7.org/fhir/restful-interaction',
         code: operSummary.action,
-      },
+      }],
       action,
       recorded: moment().format("YYYY-MM-DDThh:mm:ss.SSSZ"),
       agent: [{

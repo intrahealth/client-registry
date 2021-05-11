@@ -761,9 +761,11 @@ export default {
             );
           });
           let operation;
-          for (let subtype of event.resource.subtype) {
-            if (subtype.system === "http://hl7.org/fhir/restful-interaction") {
-              operation = subtype.code;
+          if(event.resource.subtype && Array.isArray(event.resource.subtype)) {
+            for (let subtype of event.resource.subtype) {
+              if (subtype.system === "http://hl7.org/fhir/restful-interaction") {
+                operation = subtype.code;
+              }
             }
           }
           modifiedEvent.operation = operation;

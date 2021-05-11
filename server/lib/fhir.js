@@ -105,7 +105,7 @@ module.exports = () => ({
         url = false;
         request.get(options, (err, res, body) => {
           statusCode = res.statusCode;
-          if (res && (res.statusCode < 200 || res.statusCode > 299)) {
+          if (res && (res.statusCode < 200 || res.statusCode > 299) && res.statusCode !== 404) {
             logger.error(body);
           }
           if (err) {
