@@ -16,3 +16,5 @@ jobs:
         run: sleep 240
       - name: wget
         run: wget --no-check-certificate  https://localhost:3000/crux/
+      - name: down
+        run: docker-compose -f docker-compose.cicd.yml down
