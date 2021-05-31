@@ -51,13 +51,6 @@
     ],
     "systems": {
       "CRBaseURI": "http://openclientregistry.org/fhir",
-      "internalid": {
-        "uri": [
-          "http://health.go.ug/cr/internalid",
-          "http://clientregistry.org/openmrs"
-        ],
-        "displayName": "Internal ID"
-      },
       "nationalid": {
         "uri": "http://health.go.ug/cr/natioanlid",
         "displayName": "National ID"

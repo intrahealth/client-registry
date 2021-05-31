@@ -524,15 +524,12 @@ export default {
                   let clientUserId;
                   if (patient.meta && patient.meta.tag) {
                     for (let tag of patient.meta.tag) {
-                      if (
-                        tag.system ===
-                        "http://openclientregistry.org/fhir/clientid"
-                      ) {
+                      if (tag.system === "http://openclientregistry.org/fhir/clientid") {
                         clientUserId = tag.code;
+                        systemName = tag.display;
                       }
                     }
                   }
-                  systemName = this.getClientDisplayName(clientUserId);
                   let identifiers = [];
                   if (patient.identifier) {
                     for (let id of patient.identifier) {
@@ -619,15 +616,12 @@ export default {
                   let clientUserId;
                   if (patient.meta && patient.meta.tag) {
                     for (let tag of patient.meta.tag) {
-                      if (
-                        tag.system ===
-                        "http://openclientregistry.org/fhir/clientid"
-                      ) {
+                      if (tag.system === "http://openclientregistry.org/fhir/clientid") {
                         clientUserId = tag.code;
+                        systemName = tag.display;
                       }
                     }
                   }
-                  systemName = this.getClientDisplayName(clientUserId);
                   let identifiers = [];
                   if (patient.identifier) {
                     for (let id of patient.identifier) {

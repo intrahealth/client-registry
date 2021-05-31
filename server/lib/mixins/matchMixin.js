@@ -976,7 +976,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
 
     // Tag this patient with an ID of the system that submitted
     const tagExist = newPatient.resource.meta && newPatient.resource.meta.tag && newPatient.resource.meta.tag.find((tag) => {
-      return tag.system === URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
+      return tag.system === "http://openclientregistry.org/fhir/clientid";
     });
     if (!tagExist) {
       if (!newPatient.resource.meta) {

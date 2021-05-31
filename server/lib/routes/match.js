@@ -1169,7 +1169,6 @@ router.get(`/get-match-issues`, (req, res) => {
     query: `_tag=${matchIssuesURI}|potentialMatches,${matchIssuesURI}|conflictMatches`,
     noCaching: true
   }, (issues) => {
-    const internalIdURI = config.get("systems:internalid:uri");
     let reviews = [];
     for(let entry of issues.entry) {
       let name = entry.resource.name.find((name) => {
