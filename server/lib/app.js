@@ -6,6 +6,7 @@ const prerequisites = require('./prerequisites');
 const medUtils = require('openhim-mediator-utils');
 const jwt = require('jsonwebtoken');
 const fs = require('fs');
+const async = require('async');
 const https = require('https');
 const cacheFHIR = require('./tools/cacheFHIR');
 const generalMixin = require('./mixins/generalMixin');
@@ -127,6 +128,47 @@ function appRoutes() {
   app.use('/csv', csvRoutes);
   app.use('/config', configRoutes);
 
+  app.post('/updateConfig', (req, res) => {
+    let configsPath;
+    try {
+      configsPath = JSON.parse(req.body);
+    } catch (err) {
+      configsPath = req.body;
+    }
+    const env = process.env.NODE_ENV || 'development';
+    const configFile = `${__dirname}/../config/config_${env}.json`;
+    const configData = require(configFile);
+    async.eachSeries(configsPath, (configPath, nxt) => {
+      let path = Object.keys(configPath)[0];
+      let value = Object.values(configPath)[0];
+      config.set(path, value);
+      setNestedKey(configData, path.split(":"), value, () => {
+        return nxt();
+      });
+    }, () => {
+      if(!configData) {
+        return res.status(500).send();
+      }
+      fs.writeFile(configFile, JSON.stringify(configData, 0, 2), (err) => {
+        if (err) {
+          logger.error(err);
+          return res.status(500).send(err);
+        }
+        logger.info('Done updating config file');
+        return res.status(200).send();
+      });
+    });
+
+    function setNestedKey (obj, path, value, callback) {
+      if (path.length === 1) {
+        obj[path] = value;
+        return callback();
+      }
+      setNestedKey(obj[path[0]], path.slice(1), value, () => {
+        return callback();
+      });
+    }
+  });
   return app;
 }
 

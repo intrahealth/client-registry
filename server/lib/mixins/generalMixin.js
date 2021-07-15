@@ -24,11 +24,13 @@ const getClientDisplayName = (clientid) => {
 };
 
 const getClientIdentifier = (resource) => {
+  const internalIdURI = config.get("systems:internalid:uri");
   const validSystem = resource.identifier && resource.identifier.find(identifier => {
-    return 'http://openclientregistry.org/fhir/sourceid' && identifier.value;
+    return internalIdURI.includes(identifier.system) && identifier.value;
   });
   return validSystem;
 };
+
 const setNestedKey = (obj, path, value, callback) => {
   if (path.length === 1) {
     obj[path] = value;

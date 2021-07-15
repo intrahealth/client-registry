@@ -8,8 +8,8 @@
     }]
   },
   "identifier": [{
-    "system": "http://openclientregistry.org/fhir/sourceid",
-    "value": "sourceid11"
+    "system": "http://clientregistry.org/openmrs",
+    "value": "sourceid17"
   }, {
     "system": "http://health.go.ug/cr/nationalid",
     "value": "228374844"

@@ -994,17 +994,17 @@ const addPatient = (clientID, patientsBundle, callback) => {
         display: clientName
       });
     }
-    // const internalIdURI = config.get("systems:internalid:uri");
-    // if (!internalIdURI || internalIdURI.length === 0) {
-    //   operSummary.outcome = '8';
-    //   operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
-    //   logger.error('URI for internal id is not defined on configuration files, stop processing patient');
-    //   operationSummary.push(operSummary);
-    //   return nxtPatient();
-    // }
+    const internalIdURI = config.get("systems:internalid:uri");
+    if (!internalIdURI || internalIdURI.length === 0) {
+      operSummary.outcome = '8';
+      operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
+      logger.error('URI for internal id is not defined on configuration files, stop processing patient');
+      operationSummary.push(operSummary);
+      return nxtPatient();
+    }
 
     const validSystem = newPatient.resource.identifier && newPatient.resource.identifier.find(identifier => {
-      return identifier.system === sourceIdURI && identifier.value;
+      return internalIdURI.includes(identifier.system) && identifier.value;
     });
     if (!validSystem) {
       operSummary.outcome = '4';
@@ -1045,13 +1045,14 @@ const addPatient = (clientID, patientsBundle, callback) => {
           }
           fhirWrapper.saveResource({
             resourceData: bundle,
-          }, (err) => {
+          }, (err, body) => {
             if (err) {
               operSummary.outcome = '8';
               operSummary.outcomeDesc = 'An error occured while saving a bundle that contians matches of a submitted resource and the submitted resource itself';
               operationSummary.push(operSummary);
               return nxtPatient();
             }
+            responseBundle.entry = responseBundle.entry.concat(body.entry);
             operSummary.what = newPatient.resource.resourceType + '/' + newPatient.resource.id;
             if (config.get("matching:tool") === "elasticsearch") {
               cacheFHIR.fhir2ES({
@@ -1140,10 +1141,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
             hasHumanAdjudTag: adjudTag,
             operSummary
           }, (err) => {
+            console.log('here');
             if (err) {
               operationSummary.push(operSummary);
               return nxtPatient();
             }
+            console.log('here1');
             fhirWrapper.saveResource({
               resourceData: bundle,
             }, (err, body) => {
