@@ -817,7 +817,7 @@ export default {
               for (let detail of entity.detail) {
                 if (detail.type === "resource") {
                   modifiedEvent.submittedResourceData = detail.valueString;
-                } else if (detail.type === "match") {
+                } else if (detail.type === "match" && detail.valueBase64Binary) {
                   let matches = new Buffer.from(detail.valueBase64Binary, "base64").toString("ascii");
                   matches = JSON.parse(matches);
                   let decRule = [];

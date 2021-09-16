@@ -1141,7 +1141,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
             hasHumanAdjudTag: adjudTag,
             operSummary
           }, (err) => {
-            console.log('here');
             if (err) {
               operationSummary.push(operSummary);
               return nxtPatient();

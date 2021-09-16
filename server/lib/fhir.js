@@ -6,7 +6,6 @@ const uuid4 = require('uuid/v4');
 const isJSON = require('is-json');
 const logger = require('./winston');
 const config = require('./config');
-const { reject } = require('lodash');
 
 class InvalidRequestError extends Error {
   constructor (message, status) {
