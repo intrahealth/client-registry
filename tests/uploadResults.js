@@ -101,26 +101,17 @@ const decisionRules2HTML = () => {
       <th>#</th><th>Field</th><th>Algorithm</th><th>Threshold</th>
     </tr>`
   let counter = 1
-  for (let decisionRule of decisionRules) {
-    let totalFields = Object.keys(decisionRule).length
-    let tr = `<tr><td rowspan=${totalFields}>${counter}</td>`
-    let innerCounter = 1;
-    for (const ruleField in decisionRule) {
-      if (innerCounter > 1) {
-        tr = `<tr>`
-      }
-      const rule = decisionRule[ruleField];
-      let threshold
-      if (!rule.threshold) {
-        threshold = '-'
-      } else {
-        threshold = rule.threshold
-      }
-      tr += `<td>${ruleField}</td><td>${rule.algorithm}</td><td>${threshold}</td>`
-      tr += `</tr>`
-      table += tr
-      innerCounter++
+  const fields = decisionRules[0]['fields'];
+  for (const ruleField in fields) {
+    const rule = fields[ruleField];
+    let threshold
+    if (!rule.threshold) {
+      threshold = '-'
+    } else {
+      threshold = rule.threshold
     }
+    let tr = `<tr></tr><tr><td>${counter}</td><td>${ruleField}</td><td>${rule.algorithm}</td><td>${threshold}</td></tr>`
+    table += tr
     counter++
   }
   table += `</table>`
