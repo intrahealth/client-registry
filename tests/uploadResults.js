@@ -117,6 +117,21 @@ const decisionRules2HTML = () => {
   table += `</table>`
   return table
 }
+const matchThresholds2HTML = () => {
+  const decisionRules = config.get('rules');
+  const potentialMatchThreshold = decisionRules[0]['potentialMatchThreshold'];
+  const autoMatchThreshold = decisionRules[0]['autoMatchThreshold'];
+  let table =
+    `<table border='1' cellspacing='0'>
+      <tr>
+        <th>Potential</th><th>Automatic</th>
+      </tr>
+      <tr>
+        <td>${potentialMatchThreshold}</td><td>${autoMatchThreshold}</td>
+      </tr>
+    </table>`
+  return table
+}
 const arraysEqual = (array1, array2) => {
   if (array1.length != array2.length) {
     return false;
@@ -407,6 +422,7 @@ const uploadResults = (csvFile) => {
             </tr>
           </table>`
           let rules = decisionRules2HTML()
+          let matchThresholds = matchThresholds2HTML()
           let matchDiagnostics =
             `<table border='1' cellspacing='0'>
             <tr>
@@ -423,6 +439,9 @@ const uploadResults = (csvFile) => {
             </tr>
             <tr>
               <td><center><b>Decision Rules</b>${rules}</center></td>
+            </tr>
+            <tr>
+              <td><center><b>Match Thresholds</b>${matchThresholds}</center></td>
             </tr>
             <tr>
               <td><center><b>Match Diagnostics</b><br>${matchDiagnostics}</center></td>
