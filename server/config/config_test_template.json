@@ -71,7 +71,7 @@
       "displayName": "Internal ID"
     },
     "nationalid": {
-      "uri": "http://clientregistry.org/cr/natioanlid",
+      "uri": "http://clientregistry.org/cr/nationalid",
       "displayName": "National ID"
     },
     "artnumber": {
