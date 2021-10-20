@@ -102,9 +102,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
           resource.gender = 'male';
         }
         if ( birthDate.match( /\d{8,8}/ ) ) {
-          const birthMoment = moment( birthDate );
-          if ( birthMoment.isValid() ) {
-            resource.birthDate = birthMoment.format("YYYY-MM-DD");
+          var dobFormatted = birthDate.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+          if (dobFormatted) {
+            resource.birthDate = dobFormatted;
           }
         }
         resource.identifier = [
