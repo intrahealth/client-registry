@@ -109,19 +109,19 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         }
         resource.identifier = [
           {
-            system: 'http://openclientregistry.org/fhir/sourceid',
+            system: 'http://clientregistry.org/openmrs',
             value: row['rec_id'].trim(),
           },
         ];
         if (nationalID) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/nationalid',
+            system: 'http://clientregistry.org/cr/nationalid',
             value: nationalID,
           });
         }
         if (ARTNumb) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/artnumber',
+            system: 'http://clientregistry.org/cr/artnumber',
             value: ARTNumb,
           });
         }

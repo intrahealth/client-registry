@@ -9,6 +9,8 @@ const logger = require('../server/lib/winston');
 const fhirWrapper = require('../server/lib/fhir')();
 const config = require('../server/lib/config');
 
+const internalIdSystem = 'http://clientregistry.org/openmrs'
+
 let noMatches = [];
 let missing = [];
 
@@ -173,7 +175,7 @@ const uploadResults = (csvFile) => {
                 getPatientLinks(patient.resource, dbPatients, (patientLinksData) => {
                   let linkedid1;
                   for (let ident of patient.resource.identifier) {
-                    if (ident.system === 'http://clientregistry.org/openmrs') {
+                    if (ident.system === internalIdSystem) {
                       linkedid1 = ident.value;
                     }
                   }
@@ -196,7 +198,7 @@ const uploadResults = (csvFile) => {
                     } else {
                       let id2;
                       for (let ident of linkedPatient.resource.identifier) {
-                        if (ident.system === 'http://clientregistry.org/openmrs') {
+                        if (ident.system === internalIdSystem) {
                           id2 = ident.value;
                         }
                       }
@@ -270,7 +272,7 @@ const uploadResults = (csvFile) => {
                           noIdentifier.push(linkedPatient);
                         } else {
                           for (let ident of linkedPatient.resource.identifier) {
-                            if (ident.system === 'http://clientregistry.org/openmrs') {
+                            if (ident.system === internalIdSystem) {
                               linkedIds2.push(ident.value);
                             }
                           }
