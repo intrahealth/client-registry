@@ -214,9 +214,9 @@ router.post('/', (req, res) => {
       // }
       matchMixin.addPatient(clientID, patientsBundle, (err, responseBundle, responseHeaders, operationSummary) => {
         if (err) {
-          return callback(null, {code: 500, err, responseBundle, responseHeaders, body: operationSummary});
+          return callback(null, {code: 500, err, responseBundle, responseHeaders, operationSummary});
         }
-        return callback(null, {code: 200, err, responseBundle, responseHeaders, body: operationSummary});
+        return callback(null, {code: 200, err, responseBundle, responseHeaders, operationSummary});
       });
     }
   }, (err, results) => {
@@ -248,7 +248,33 @@ router.post('/', (req, res) => {
     }
     res.setHeader('Location', JSON.stringify(results.patients.responseHeaders.patientID));
     res.setHeader('LocationCRUID', JSON.stringify(results.patients.responseHeaders.CRUID));
-    return res.status(code).json(filteredResponseBundle);
+    res.status(code).json(filteredResponseBundle);
+
+    const auditBundle = matchMixin.createAddPatientAudEvent(results.patients.operationSummary, req);
+    fhirWrapper.saveResource({
+      resourceData: auditBundle
+    }, () => {
+      logger.info('Audit saved successfully');
+    });
+
+    let csvUploadAuditBundle = {
+      resourceType: 'Bundle',
+      type: 'batch',
+      entry: []
+    };
+    async.eachSeries(results.patients.operationSummary, (operationSummary, nxtOper) => {
+      matchMixin.createCSVUploadAudEvent(operationSummary, csvUploadAuditBundle, req).then(() => {
+        return nxtOper();
+      }).catch(() => {
+        return nxtOper();
+      });
+    }, () => {
+      // matchMixin.saveCSVUploadAudiEvent(csvUploadAuditBundle).then(() => {
+      //   csvUploadAuditBundle = {};
+      // }).catch(() => {
+      //   csvUploadAuditBundle = {};
+      // });
+    });
   });
 });
 

@@ -11,7 +11,7 @@
     "system": "http://clientregistry.org/openmrs",
     "value": "sourceid17"
   }, {
-    "system": "http://health.go.ug/cr/nationalid",
+    "system": "http://clientregistry.org/nationalid",
     "value": "228374844"
   }, {
     "system": "http://system1.org",

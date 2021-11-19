@@ -1145,7 +1145,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
               operationSummary.push(operSummary);
               return nxtPatient();
             }
-            console.log('here1');
             fhirWrapper.saveResource({
               resourceData: bundle,
             }, (err, body) => {

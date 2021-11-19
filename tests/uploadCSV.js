@@ -109,7 +109,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         }
         resource.identifier = [
           {
-            system: 'http://openclientregistry.org/fhir/sourceid',
+            system: 'http://clientregistry.org/openmrs',
             value: row['rec_id'].trim(),
           },
         ];

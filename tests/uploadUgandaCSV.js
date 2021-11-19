@@ -154,10 +154,10 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
               }
               let auth = {
                 username: 'lims',
-                password: '4dpCe5MCve'
+                password: 'xxx'
               }
               const options = {
-                url: 'http://216.104.201.68/ocr/fhir/Patient',
+                url: 'http://uganda-ip/ocr/fhir/Patient',
                 auth,
                 json: entry.resource,
               };
