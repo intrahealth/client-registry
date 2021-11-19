@@ -354,7 +354,7 @@ function saveResource(req, res) {
         let filteredResponseBundle = [];
         for(let entry of responseBundle.entry) {
           let exists = filteredResponseBundle.findIndex((fil) => {
-            return fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+            return fil.response && entry.response && entry.response.location && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
           });
           if(exists === -1) {
             filteredResponseBundle.push(entry);
