@@ -8,6 +8,7 @@ const fhirWrapper = require('./fhir')();
 const logger = require('./winston');
 const config = require('./config');
 const generalMixin = require('./mixins/generalMixin');
+const axios = require('axios');
 const fhir = new Fhir();
 
 const refreshIndex = (callback) => {
@@ -186,6 +187,70 @@ const buildQuery = (sourceResource, decisionRule) => {
   return esquery;
 };
 
+const getESDocument = (query, callback) => {
+  let error = false;
+  let documents = [];
+  if(!query) {
+    query = {};
+  }
+  let url = URI(config.get('elastic:server'))
+    .segment(config.get('elastic:index'))
+    .segment('_search')
+    .addQuery('scroll', '1m')
+    .addQuery('size', 1000)
+    .toString();
+  let scroll_id = null;
+  async.doWhilst(
+    (callback) => {
+      axios({
+        method: 'POST',
+        url,
+        data: query,
+        auth: {
+          username: config.get('elastic:username'),
+          password: config.get('elastic.password'),
+        }
+      }).then((response) => {
+        if(response.data.hits && response.data.hits.hits && Array.isArray(response.data.hits.hits)) {
+          documents = documents.concat(response.data.hits.hits);
+        }
+        if(response.data.hits.hits.length === 0 || response.data.hits.total.value == documents.length || !response.data._scroll_id) {
+          scroll_id = null;
+        } else {
+          scroll_id = response.data._scroll_id;
+          url = URI(config.get('elastic:server'))
+            .segment('_search')
+            .segment('scroll')
+            .toString();
+          query = {
+            scroll: '1m',
+            scroll_id: scroll_id
+          };
+        }
+        return callback(null);
+      }).catch((err) => {
+        if(err.response && err.response.status === 429) {
+          logger.warn('ES is overloaded with too many requests, delaying for 2 seconds');
+          setTimeout(() => {
+            return callback(null);
+          }, 2000);
+        } else {
+          error = err;
+          logger.error(err);
+          scroll_id = null;
+          return callback(null);
+        }
+      });
+    },
+    (callback) => {
+      return callback(null, scroll_id !== null);
+    },
+    () => {
+      return callback(error, documents);
+    }
+  );
+};
+
 const performMatch = ({
   sourceResource,
   currentGoldenLink,
@@ -216,27 +281,14 @@ const performMatch = ({
       if (Object.keys(esquery).length === 0) {
         return callback(true);
       }
-      const url = URI(config.get('elastic:server'))
-        .segment(config.get('elastic:index'))
-        .segment('_search')
-        .toString();
-      const options = {
-        url,
-        auth: {
-          username: config.get('elastic:username'),
-          password: config.get('elastic.password'),
-        },
-        json: esquery,
-      };
-      request.get(options, (err, res, body) => {
-        if (!body || !body.hits || !body.hits.hits || !Array.isArray(body.hits.hits)) {
-          logger.error(JSON.stringify(body, 0, 2));
+      getESDocument(esquery, (err, documents) => {
+        if(documents.length === 0) {
           return nxtRule();
         }
         const potentialHits = [];
         const autoHits = [];
         const conflictsHits = [];
-        for (const hit of body.hits.hits) {
+        for (const hit of documents) {
           const id = hit['_id'];
           if (ignoreList.includes(id)) {
             continue;

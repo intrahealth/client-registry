@@ -139,27 +139,21 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
           async.eachSeries(
             bundle.entry,
             (entry, nxtEntry) => {
-              console.log(
-                'sending a bundle of ' + bundle.entry.length + ' resources'
-              );
-              let agentOptions = {
-                cert: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_cert.pem'
-                ),
-                key: fs.readFileSync(
-                  '../server/sampleclientcertificates/openmrs_key.pem'
-                ),
-                ca: fs.readFileSync('../server/certificates/server_cert.pem'),
+              console.log('sending a bundle of ' + bundle.entry.length + ' resources');
+              const agentOptions = {
+                cert: fs.readFileSync('../server/clientCertificates/openmrs_cert.pem'),
+                key: fs.readFileSync('../server/clientCertificates/openmrs_key.pem'),
+                ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
                 securityOptions: 'SSL_OP_NO_SSLv3',
-              }
-              let auth = {
-                username: 'lims',
-                password: 'xxx'
-              }
+              };
+              const auth = {
+                username: 'openmrs',
+                password: 'openmrs'
+              };
               const options = {
-                url: 'http://uganda-ip/ocr/fhir/Patient',
-                auth,
-                json: entry.resource,
+                url: 'https://localhost:3000/fhir/Patient',
+                agentOptions,
+                json: entry.resource
               };
               request.post(options, (err, res, body) => {
                 logger.info(res.headers);

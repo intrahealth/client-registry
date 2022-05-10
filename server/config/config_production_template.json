@@ -31,7 +31,8 @@
   },
   "matching": {
     "tool": "elasticsearch",
-    "autoMatchPatientWithHumanAdjudTag": false
+    "autoMatchPatientWithHumanAdjudTag": false,
+    "resolvePotentialOfPotentials": false
   },
   "codes": {
     "goldenRecord": "5c827da5-4858-4f3d-a50c-62ece001efea"

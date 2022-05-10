@@ -58,8 +58,8 @@
         "espath": "art"
       }
     },
-    "potentialMatchThreshold": 4,
-    "autoMatchThreshold": 6,
+    "potentialMatchThreshold": 1,
+    "autoMatchThreshold": 9,
     "filters": {
       "gender": {
         "fhirpath": "gender",

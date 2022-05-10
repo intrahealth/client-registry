@@ -37,7 +37,9 @@
       "reportRelationship": "patientreport"
     },
     "matching": {
-      "tool": "elasticsearch"
+      "tool": "elasticsearch",
+      "autoMatchPatientWithHumanAdjudTag": false,
+      "resolvePotentialOfPotentials": false
     },
     "clients": [
       {
