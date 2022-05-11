@@ -1087,10 +1087,6 @@ router.get('/potential-matches/:id', (req, res) => {
       };
       populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
       matchResults.push(primaryPatient);
-      // if(validSystem.value == 'rec-3292-dup-0') {
-      //   logger.error(JSON.stringify(FHIRPotentialMatches.entry.length, 0, 2));
-      //   process.exit();
-      // }
       if(level != 'childMatches' && !config.get('matching:resolvePotentialOfPotentials')) {
         return callback();
       }
