@@ -1,0 +1,54 @@
+# this is for testing versions of HAPI in CI, not for production
+version: '3'
+
+services:
+
+  opencr:
+    container_name: opencr
+    image: intrahealth/opencr
+    ports:
+      - "3000:3000"
+    depends_on:
+      - fhir
+      - es
+    restart: always
+    environment:
+      - NODE_ENV=cicd
+    # networks: 
+    #   - opencr
+
+  fhir:
+    container_name: hapi-fhir
+    image: hapiproject/hapi:${HAPI_VERSION}
+    ports:
+      - "8080:8080"
+    # networks:
+    #   - opencr
+
+  es:
+    container_name: es
+    image: intrahealth/elasticsearch:latest
+    environment:
+      - node.name=es01
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    # networks:
+    #   - opencr
+
+
+volumes:
+  data01:
+    driver: local
+
+# networks:
+#   opencr:
+#     driver: bridge
