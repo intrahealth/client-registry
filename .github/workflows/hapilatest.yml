@@ -1,0 +1,22 @@
+name: hapilatest
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+jobs:
+  hapilatest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: docker-compose up -d
+        run: HAPI_VERSION=latest  docker-compose -f docker-compose.cicd.hapi.yml up -d
+      - name: sleep
+        run: sleep 240
+      - name: wget
+        run: wget --no-check-certificate  https://localhost:3000/crux/
+      - name: down
+        run: docker-compose -f docker-compose.cicd.yml down

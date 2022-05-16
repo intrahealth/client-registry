@@ -1,12 +1,18 @@
-name: compose
+name: loginpage
+
 on:
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
   workflow_dispatch:
 
 jobs:
-  compose:
+  loginpage:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
