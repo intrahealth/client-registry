@@ -8,7 +8,103 @@ const Fhir = require('fhir').Fhir;
 
 const convert = new Fhir();
 
-const loadResources = (callback) => {
+const modifyRelationship = () => {
+  return new Promise((resolve, reject) => {
+    if(!config.get("structureDefinition:autoModifyRelationshipBasedOnDecisionRules")) {
+      return resolve();
+    }
+    const relId = config.get('structureDefinition:reportRelationship');
+    const promises = [];
+    const files = [];
+    let errorOccured = false;
+    fs.readdirSync(`${__dirname}/../../resources/Relationships`).forEach(file => {
+      promises.push(new Promise((resolve) => {
+        files.push(file);
+        resolve();
+      }));
+    });
+
+    Promise.all(promises).then(() => {
+      async.eachSeries(files, (file, nxtFile) => {
+        fs.readFile(`${__dirname}/../../resources/Relationships/${file}`, (err, data) => {
+          if (err) {
+            errorOccured = true;
+            logger.error(err);
+            return nxtFile();
+          }
+          let fhir;
+          if (file.substring(file.length - 3) === 'xml') {
+            fhir = convert.xmlToObj(data);
+          } else {
+            fhir = JSON.parse(data);
+          }
+          if(fhir.id !== relId) {
+            return nxtFile();
+          }
+          let detailsExt = fhir.extension && fhir.extension.find((ext) => {
+            return ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportDetails';
+          });
+          if(detailsExt) {
+            let decisionRules;
+            if(process.env.NODE_ENV === 'test') {
+              decisionRules = require('../config/decisionRulesTest.json');
+            } else {
+              decisionRules = require('../config/decisionRules.json');
+            }
+            for(let rule of decisionRules.rules) {
+              for(let field in rule.fields) {
+                let rule_fhirpath = rule.fields[field].fhirpath;
+                let rule_espath = rule.fields[field].espath;
+                let fieldExists = false;
+                for(let el_ext of detailsExt.extension) {
+                  if(el_ext.url === 'http://ihris.org/fhir/StructureDefinition/iHRISReportElement') {
+                    for(let ext of el_ext.extension) {
+                      if(ext.url === 'label' && ext.valueString === rule_espath) {
+                        fieldExists = true;
+                        break;
+                      }
+                    }
+                  }
+                }
+                if(!fieldExists) {
+                  detailsExt.extension.push({
+                    url: "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+                    extension: [{
+                      url: "label",
+                      valueString: rule_espath
+                    }, {
+                      url: "name",
+                      valueString: rule_fhirpath
+                    }]
+                  });
+                }
+              }
+            }
+            let relationship;
+            if (file.substring(file.length - 3) === 'xml') {
+              relationship = convert.objToXml(fhir);
+            } else {
+              relationship = JSON.stringify(fhir, 0, 2);
+            }
+            fs.writeFile(`${__dirname}/../../resources/Relationships/${file}`, relationship, (err) => {
+              if(err) {
+                logger.error(err);
+                return reject();
+              }
+              if(errorOccured) {
+                return reject();
+              }
+              return resolve();
+            });
+          }
+        });
+      });
+    });
+  });
+};
+
+const loadResources = async (callback) => {
+  await modifyRelationship();
   let processingError = false;
   const folders = [
     `${__dirname}/../../resources/StructureDefinition`,

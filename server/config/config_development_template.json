@@ -39,7 +39,8 @@
   },
   "structureDefinition": {
     "uri": "http://openclientregistry.org/fhir",
-    "reportRelationship": "patientreport"
+    "reportRelationship": "patientreport",
+    "autoModifyRelationshipBasedOnDecisionRules": true
   },
   "clients": [
     {
