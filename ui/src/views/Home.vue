@@ -49,9 +49,6 @@ export default {
     return {
       debug: "",
       pos: "",
-      search_family: "",
-      search_given: "",
-      search_uid: "",
       search_terms: [],
       loading: false,
       totalPatients: 0,
@@ -87,7 +84,6 @@ export default {
       });
     },
     searchPOS() {
-      console.log(this.pos);
       if(this.pos) {
         this.searchData('_tag', 'http://openclientregistry.org/fhir/clientid|' + this.pos)
       } else if(this.pos === null) {
@@ -202,64 +198,65 @@ export default {
             })
           }
         }
-      })
-      this.$http.get(url).then(response => {
-        this.patients = [];
-        if (response.data.total > 0) {
-          this.link = response.data.link;
-          for (let entry of response.data.entry) {
-            if (
-              !entry.resource.link ||
-              (entry.resource.link &&
-                Array.isArray(entry.resource.link) &&
-                entry.resource.link.length === 0) ||
-              (entry.resource.link && !Array.isArray(entry.resource.link))
-            ) {
-              continue;
-            }
-            let name =
-              entry.resource.name &&
-              entry.resource.name.find(name => name.use === "official");
-            if (!name) {
-              name = {};
-            }
-            let nin = entry.resource.identifier.find(
-              id => id.system === process.env.VUE_APP_SYSTEM_NIN
-            );
-            if (!nin) {
-              nin = {};
-            }
-            let clientUserId;
-            if (entry.resource.meta && entry.resource.meta.tag) {
-              for (let tag of entry.resource.meta.tag) {
-                if (
-                  tag.system === "http://openclientregistry.org/fhir/clientid"
-                ) {
-                  clientUserId = tag.code;
+
+        this.$http.get(url).then(response => {
+          this.patients = [];
+          if (response.data.total > 0) {
+            this.link = response.data.link;
+            for (let entry of response.data.entry) {
+              if (
+                !entry.resource.link ||
+                (entry.resource.link &&
+                  Array.isArray(entry.resource.link) &&
+                  entry.resource.link.length === 0) ||
+                (entry.resource.link && !Array.isArray(entry.resource.link))
+              ) {
+                continue;
+              }
+              let name =
+                entry.resource.name &&
+                entry.resource.name.find(name => name.use === "official");
+              if (!name) {
+                name = {};
+              }
+              let nin = entry.resource.identifier.find(
+                id => id.system === process.env.VUE_APP_SYSTEM_NIN
+              );
+              if (!nin) {
+                nin = {};
+              }
+              let clientUserId;
+              if (entry.resource.meta && entry.resource.meta.tag) {
+                for (let tag of entry.resource.meta.tag) {
+                  if (
+                    tag.system === "http://openclientregistry.org/fhir/clientid"
+                  ) {
+                    clientUserId = tag.code;
+                  }
                 }
               }
-            }
-            let systemName = this.getClientDisplayName(clientUserId);
-            let patient = {
-              id: entry.resource.id,
-              pos: systemName
-            }
-            for(let col of columns_info) {
-              let val = this.$fhirpath.evaluate(entry.resource, col.fhirpath)
-              if(Array.isArray(val)) {
-                val = val.join(', ')
+              let systemName = this.getClientDisplayName(clientUserId);
+              let patient = {
+                id: entry.resource.id,
+                pos: systemName
               }
-              if(val.split('/').length === 2) {
-                val = val.split('/')[1]
+              for(let col of columns_info) {
+                let val = this.$fhirpath.evaluate(entry.resource, col.fhirpath)
+                if(Array.isArray(val)) {
+                  val = val.join(', ')
+                }
+                if(val.split('/').length === 2) {
+                  val = val.split('/')[1]
+                }
+                patient[col.text] = val
               }
-              patient[col.text] = val
+              this.patients.push(patient)
             }
-            this.patients.push(patient)
           }
-        }
-        this.totalPatients = response.data.total;
-        this.loading = false;
-      });
+          this.totalPatients = response.data.total;
+          this.loading = false;
+        });
+      })
     }
   }
 };
