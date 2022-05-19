@@ -2,33 +2,15 @@
   <v-card>
     <v-card-title>
       <v-spacer />
-      <v-text-field
-        v-model="search_family"
-        label="Search Surname"
-        hide-details
-        outlined
-        shaped
-        clearable
-        @change="searchData()"
-      />
-      <v-text-field
-        v-model="search_given"
-        label="Search Given Name(s)"
-        hide-details
-        outlined
-        shaped
-        clearable
-        @change="searchData()"
-      />
-      <v-text-field
-        v-model="search_uid"
-        label="Exact CRUID"
-        hide-details
-        outlined
-        shaped
-        clearable
-        @change="searchData()"
-      />
+      <template v-for="filter in filters">
+        <searchTerm
+          :label="filter.label" 
+          :key="filter.searchparameter" 
+          :expression="filter.searchparameter" 
+          :binding="filter.binding"
+          @termChange="searchData"
+        />
+      </template>
       <v-autocomplete
         v-model="pos"
         :items="$store.state.clients"
@@ -39,7 +21,8 @@
         hide-details
         outlined
         shaped
-        @change="searchData()"
+        @click:clear="searchPOS"
+        @change="searchPOS"
       />
     </v-card-title>
     <v-data-table
@@ -58,6 +41,7 @@
 
 <script>
 import { generalMixin } from "@/mixins/generalMixin";
+import searchTerm from "../components/search-term"
 export default {
   name: "Home",
   mixins: [generalMixin],
@@ -75,38 +59,8 @@ export default {
       link: [],
       options: { itemsPerPage: 10, sortBy: ["family"] },
       rowsPerPageItems: [5, 10, 20, 50],
-      headers: [
-        {
-          text: "Surname",
-          value: "family"
-        },
-        {
-          text: "Given Name(s)",
-          value: "given"
-        },
-        {
-          text: "NIN",
-          value: "nin",
-          sortable: false
-        },
-        {
-          text: "Gender",
-          value: "gender"
-        },
-        {
-          text: "Birth Date",
-          value: "birthdate"
-        },
-        {
-          text: "CRUID",
-          value: "uid",
-          sortable: false
-        },
-        {
-          text: "Point of Service",
-          value: "pos"
-        }
-      ],
+      headers: [],
+      filters: [],
       patients: []
     };
   },
@@ -121,6 +75,9 @@ export default {
   mounted() {
     this.getData();
   },
+  components: {
+    'searchTerm': searchTerm
+  },
   methods: {
     clickIt: function(client) {
       this.$router.push({
@@ -129,29 +86,30 @@ export default {
         query: { pos: this.pos }
       });
     },
-    searchData() {
-      this.search_terms = [];
-      if (this.search_family) {
+    searchPOS() {
+      console.log(this.pos);
+      if(this.pos) {
+        this.searchData('_tag', 'http://openclientregistry.org/fhir/clientid|' + this.pos)
+      } else if(this.pos === null) {
+        this.searchData('_tag', [])
+      }
+    },
+    searchData(expression, value) {
+      if(value === null || this.search_terms.indexOf(expression + '=' + encodeURIComponent(value)) !== -1 ) {
+        return
+      }
+      if(Array.isArray(value) && value.length === 0) {
+        for(let index in this.search_terms) {
+          if(this.search_terms[index].startsWith(expression + '=')) {
+            this.search_terms.splice(index, 1)
+          }
+        }
+      } else if(expression) {
         this.search_terms.push(
-          "family:contains=" + encodeURIComponent(this.search_family)
-        );
+          expression + '=' + encodeURIComponent(value)
+        )
       }
-      if (this.search_given) {
-        this.search_terms.push(
-          "given:contains=" + encodeURIComponent(this.search_given)
-        );
-      }
-      if (this.search_uid) {
-        this.search_terms.push("link=" + encodeURIComponent(this.search_uid));
-      }
-      if (this.pos) {
-        this.search_terms.push(
-          "_tag=" +
-            encodeURIComponent(
-              "http://openclientregistry.org/fhir/clientid|" + this.pos
-            )
-        );
-      }
+      console.log(this.search_terms);
       this.getData(true);
     },
     getData(restart) {
@@ -189,6 +147,62 @@ export default {
       }
       this.prevPage = this.options.page;
 
+      let columns_info = []
+      this.$http.get("/ocrux/fhir/Basic/patientdisplaypage").then(response => {
+        let extension_report = response.data.extension && response.data.extension.find((ext) => {
+          return ext.url === 'http://ihris.org/fhir/StructureDefinition/opencrReportDisplay'
+        })
+        this.headers = []
+        this.filters = []
+        if(extension_report) {
+          let display = extension_report.extension && extension_report.extension.filter((display) => {
+            return display.url === 'http://ihris.org/fhir/StructureDefinition/display'
+          })
+          if(display) {
+            for(let disp of display) {
+              let label = disp.extension && disp.extension.find((ext) => {
+                return ext.url === 'label'
+              })
+              let fhirpath = disp.extension && disp.extension.find((ext) => {
+                return ext.url === 'fhirpath'
+              })
+              let valueset = disp.extension && disp.extension.find((ext) => {
+                return ext.url === 'valueset'
+              })
+              let searchable = disp.extension && disp.extension.find((ext) => {
+                return ext.url === 'searchable'
+              })
+              let searchparameter = disp.extension && disp.extension.find((ext) => {
+                return ext.url === 'searchparameter'
+              })
+              if(label && fhirpath) {
+                columns_info.push({
+                  text: label.valueString,
+                  fhirpath: fhirpath.valueString
+                })
+                this.headers.push({
+                  text: label.valueString,
+                  value: label.valueString
+                })
+              }
+              if(searchable && searchparameter) {
+                let filter = {
+                  searchparameter: searchparameter.valueString,
+                  label: 'Search ' + label.valueString
+                }
+                if(valueset && valueset.valueString) {
+                  filter.binding = valueset.valueString
+                }
+                this.filters.push(filter)
+              }
+            }
+            this.headers.push({
+              text: "Point of Service",
+              value: "pos"
+            })
+          }
+        }
+      })
       this.$http.get(url).then(response => {
         this.patients = [];
         if (response.data.total > 0) {
@@ -226,19 +240,21 @@ export default {
               }
             }
             let systemName = this.getClientDisplayName(clientUserId);
-            this.patients.push({
+            let patient = {
               id: entry.resource.id,
-              family: name.family,
-              given: name.given,
-              birthdate: entry.resource.birthDate,
-              gender: entry.resource.gender,
-              nin: nin.value,
-              uid: entry.resource.link[0].other.reference.replace(
-                "Patient/",
-                ""
-              ),
               pos: systemName
-            });
+            }
+            for(let col of columns_info) {
+              let val = this.$fhirpath.evaluate(entry.resource, col.fhirpath)
+              if(Array.isArray(val)) {
+                val = val.join(', ')
+              }
+              if(val.split('/').length === 2) {
+                val = val.split('/')[1]
+              }
+              patient[col.text] = val
+            }
+            this.patients.push(patient)
           }
         }
         this.totalPatients = response.data.total;

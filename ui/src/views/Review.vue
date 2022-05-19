@@ -62,13 +62,14 @@ export default {
   },
   methods: {
     getReviews() {
+      this.loading = true
       axios.get('/ocrux/match/get-match-issues').then((resp) => {
         this.reviews = resp.data
+        this.loading = false
       })
     },
     clickIt: function(client) {
       this.$router.push({ name: "review", params: { clientId: client.uid } });
-      //alert(patient.nin)
     }
   },
   created() {

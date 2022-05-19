@@ -1,0 +1,100 @@
+{
+  "resourceType": "Basic",
+  "id": "patientdisplaypage",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2022-05-18T09:17:24.098+00:00",
+    "profile": [
+      "http://ihris.org/fhir/StructureDefinition/opencrDisplay"
+    ]
+  },
+  "extension": [{
+    "url": "http://ihris.org/fhir/StructureDefinition/opencrReportDisplay",
+    "extension": [{
+      "url": "label",
+      "valueString": "Search Patients"
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/display",
+      "extension": [{
+        "url": "label",
+        "valueString": "Given Names(s)"
+      }, {
+        "url": "fhirpath",
+        "valueString": "name.where(use='official').last().given"
+      }, {
+        "url": "searchable",
+        "valueBoolean": true
+      }, {
+        "url": "searchparameter",
+        "valueString": "given:contains"
+      }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/display",
+      "extension": [{
+        "url": "label",
+        "valueString": "Surname"
+      }, {
+        "url": "fhirpath",
+        "valueString": "name.where(use='official').last().family"
+      }, {
+        "url": "searchable",
+        "valueBoolean": true
+      }, {
+        "url": "searchparameter",
+        "valueString": "family:contains"
+      }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/display",
+      "extension": [{
+        "url": "label",
+        "valueString": "Gender"
+      }, {
+        "url": "fhirpath",
+        "valueString": "gender"
+      }, {
+        "url": "valueset",
+        "valueString": "http://hl7.org/fhir/ValueSet/administrative-gender"
+      }, {
+        "url": "searchable",
+        "valueBoolean": true
+      }, {
+        "url": "searchparameter",
+        "valueString": "gender"
+      }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/display",
+      "extension": [{
+        "url": "label",
+        "valueString": "Birth Date"
+      }, {
+        "url": "fhirpath",
+        "valueString": "birthDate"
+      }]
+    }, {
+      "url": "http://ihris.org/fhir/StructureDefinition/display",
+      "extension": [{
+        "url": "label",
+        "valueString": "CRUID"
+      }, {
+        "url": "fhirpath",
+        "valueString": "link.where(type='refer').other.reference"
+      }, {
+        "url": "searchable",
+        "valueBoolean": true
+      }, {
+        "url": "searchparameter",
+        "valueString": "link"
+      }]
+    }]
+  }],
+  "code": {
+    "coding": [{
+      "system": "http://opencr.org/fhir/ValueSet/opencr-resource",
+      "code": "opencrReportPageView"
+    }],
+    "text": "openCR Report And Page View"
+  },
+  "subject": {
+    "reference": "StructureDefinition/Patient"
+  }
+}

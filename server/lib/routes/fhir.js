@@ -3,9 +3,26 @@ const router = express.Router();
 const URI = require('urijs');
 const async = require('async');
 const fhirWrapper = require('../fhir')();
+const fhirAxios = require('../modules/fhirAxios');
 const matchMixin = require('../mixins/matchMixin');
 const logger = require('../winston');
 const config = require('../config');
+
+router.get("/ValueSet/:id/\\$expand", (req, res) => {
+  fhirAxios.expand( req.params.id, req.query ).then( (resource) => {
+    return res.status(200).json(resource);
+  } ).catch( () => {
+    return res.status(500).json();
+  } );
+} );
+
+router.get("/CodeSystem/\\$lookup", (req, res) => {
+  fhirAxios.lookup( req.query ).then( (resource) => {
+    return res.status(200).json(resource);
+  } ).catch( () => {
+    return res.status(500).json();
+  } );
+} );
 
 router.get('/:resource?/:id?', (req, res) => {
   logger.info(`Received a request to get data for resource ${req.params.resource}`);

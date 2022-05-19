@@ -552,6 +552,11 @@ export default {
                   }
                   try {
                     name = patient.name.find(name => name.use === "official");
+                    if(!name) {
+                      name = { family: "", given: [] };
+                    } else if(!name.given) {
+                      name.given = []
+                    }
                   } catch (err) {
                     name = { family: "", given: [] };
                   }
@@ -644,6 +649,11 @@ export default {
                   }
                   try {
                     name = patient.name.find(name => name.use === "official");
+                    if(!name) {
+                      name = { family: "", given: [] };
+                    } else if(!name.given) {
+                      name.given = []
+                    }
                   } catch (err) {
                     name = { family: "", given: [] };
                   }
