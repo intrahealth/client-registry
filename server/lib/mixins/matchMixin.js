@@ -15,9 +15,11 @@ const esMatching = require('../esMatching');
 const cacheFHIR = require('../tools/cacheFHIR');
 const logger = require('../winston');
 const config = require('../config');
-const sourceIdURI = URI("http://openclientregistry.org/fhir").segment('sourceid').toString();
 const matchIssuesURI = URI("http://openclientregistry.org/fhir").segment('matchIssues').toString();
+const reprocessingURI = URI("http://openclientregistry.org/fhir").segment('require-reprocess').toString();
 const humanAdjudURI = URI("http://openclientregistry.org/fhir").segment('humanAdjudication').toString();
+const processingPatients = [];
+let reprocessing_running = false;
 
 function closeCSVAuditEvent(event) {
   let eventCopy = lodash.cloneDeep(event);
@@ -961,7 +963,24 @@ const addPatient = (clientID, patientsBundle, callback) => {
   };
 
   logger.info('Searching to check if the patient exists');
+  const processIndex = (processID) => {
+    return processingPatients.findIndex((pr) => {
+      return pr === processID;
+    });
+  };
+  const deleteProcess = (processID) => {
+    let index = processIndex(processID);
+    if(index !== -1) {
+      processingPatients.splice(index, 1);
+    }
+  };
   async.eachSeries(patientsBundle.entry, (newPatient, nxtPatient) => {
+    let markForReprocessing = false;
+    const processID = uuid4();
+    processingPatients.push(processID);
+    if(processingPatients.length > 1) {
+      markForReprocessing = true;
+    }
     processCSVTag(newPatient.resource);
     let csvCode = getCSVTag(newPatient.resource);
     const operSummary = {};
@@ -1000,6 +1019,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
       operSummary.outcomeDesc = 'URI for internal id is not defined on configuration files';
       logger.error('URI for internal id is not defined on configuration files, stop processing patient');
       operationSummary.push(operSummary);
+      deleteProcess(processID);
       return nxtPatient();
     }
 
@@ -1011,6 +1031,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
       operSummary.outcomeDesc = 'Patient resource has no identifier for internalid registered by client registry';
       operationSummary.push(operSummary);
       logger.error('Patient resource has no identifier for internalid registered by client registry, stop processing');
+      deleteProcess(processID);
       return nxtPatient();
     }
 
@@ -1032,6 +1053,24 @@ const addPatient = (clientID, patientsBundle, callback) => {
         if(!newPatient.resource.id) {
           newPatient.resource.id = uuid4();
         }
+        if(markForReprocessing) {
+          if(!newPatient.resource.meta) {
+            newPatient.resource.meta = {};
+          }
+          if(!newPatient.resource.meta.tag) {
+            newPatient.resource.meta.tag = [];
+          }
+          let exist = newPatient.resource.meta.tag.find((tag) => {
+            return tag.code === 'require-reprocess';
+          });
+          if(!exist) {
+            newPatient.resource.meta.tag.push({
+              system: reprocessingURI,
+              code: 'require-reprocess',
+              display: 'Reprocess Patient'
+            });
+          }
+        }
         operSummary.submittedResource = newPatient.resource;
         findMatches({
           patient: newPatient.resource,
@@ -1041,6 +1080,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
         }, (err) => {
           if (err) {
             operationSummary.push(operSummary);
+            deleteProcess(processID);
             return nxtPatient();
           }
           fhirWrapper.saveResource({
@@ -1050,6 +1090,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
               operSummary.outcome = '8';
               operSummary.outcomeDesc = 'An error occured while saving a bundle that contians matches of a submitted resource and the submitted resource itself';
               operationSummary.push(operSummary);
+              deleteProcess(processID);
               return nxtPatient();
             }
             responseBundle.entry = responseBundle.entry.concat(body.entry);
@@ -1063,10 +1104,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
                   operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
                 }
                 operationSummary.push(operSummary);
+                deleteProcess(processID);
                 return nxtPatient();
               });
             } else {
               operationSummary.push(operSummary);
+              deleteProcess(processID);
               return nxtPatient();
             }
           });
@@ -1079,6 +1122,24 @@ const addPatient = (clientID, patientsBundle, callback) => {
         operSummary.what = existingPatient.resource.resourceType + '/' + existingPatient.resource.id;
         logger.info(`Patient ${JSON.stringify(newPatient.resource.identifier)} exists, updating database records`);
 
+        if(markForReprocessing) {
+          if(!existingPatient.resource.meta) {
+            existingPatient.resource.meta = {};
+          }
+          if(!existingPatient.resource.meta.tag) {
+            existingPatient.resource.meta.tag = [];
+          }
+          let exist = existingPatient.resource.meta.tag.find((tag) => {
+            return tag.code === 'require-reprocess';
+          });
+          if(!exist) {
+            existingPatient.resource.meta.tag.push({
+              system: reprocessingURI,
+              code: 'require-reprocess',
+              display: 'Reprocess Patient'
+            });
+          }
+        }
         let adjudTag = existingPatient.resource.meta && existingPatient.resource.meta.tag && existingPatient.resource.meta.tag.find((tag) => {
           return tag.system === humanAdjudURI && tag.code === 'humanAdjudication';
         });
@@ -1143,6 +1204,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
           }, (err) => {
             if (err) {
               operationSummary.push(operSummary);
+              deleteProcess(processID);
               return nxtPatient();
             }
             fhirWrapper.saveResource({
@@ -1213,10 +1275,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
                     operSummary.outcomeDesc = 'An error has occured while caching patient changes into elasticsearch';
                   }
                   operationSummary.push(operSummary);
+                  deleteProcess(processID);
                   return nxtPatient();
                 });
               } else {
                 operationSummary.push(operSummary);
+                deleteProcess(processID);
                 return nxtPatient();
               }
             });
@@ -1231,6 +1295,56 @@ const addPatient = (clientID, patientsBundle, callback) => {
     }
     logger.info('Done adding patient');
     return callback(false, responseBundle, responseHeaders, operationSummary);
+  });
+};
+
+const reprocessPatients = () => {
+  return new Promise((resolve, reject) => {
+    if(reprocessing_running) {
+      return resolve();
+    }
+    reprocessing_running = true;
+    fhirWrapper.getResource({
+      resource: 'Patient',
+      query: '_tag=require-reprocess'
+    }, (patients) => {
+      if(patients.entry.length === 0) {
+        return resolve();
+      }
+      async.eachSeries(patients.entry, (patient, nxtPatient) => {
+        let client = patient.resource.meta && patient.resource.meta.tag && patient.resource.meta.tag.find((tag) => {
+          return tag.system === 'http://openclientregistry.org/fhir/clientid';
+        });
+        if(!client) {
+          return reject();
+        }
+        addPatient(client.code, {entry: [patient]}, (err) => {
+          if(!err) {
+            let parameters = {
+              resourceType: 'Parameters',
+              parameter: [{
+                name: 'meta',
+                valueMeta: {
+                  tag: {
+                    system: reprocessingURI,
+                    code: 'require-reprocess',
+                    display: 'Reprocess Patient'
+                  }
+                }
+              }]
+            };
+            fhirWrapper["$meta-delete"]({
+              resourceParameters: parameters,
+              resourceType: 'Patient',
+              resourceID: patient.resource.id
+            });
+          }
+          return nxtPatient();
+        });
+      }, () => {
+        reprocessing_running = false;
+      });
+    });
   });
 };
 
@@ -1308,6 +1422,7 @@ const processCSVTag = (patient) => {
 
 module.exports = {
   addPatient,
+  reprocessPatients,
   createAddPatientAudEvent,
   createCSVUploadAudEvent,
   saveCSVUploadAudiEvent

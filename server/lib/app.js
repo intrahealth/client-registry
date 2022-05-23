@@ -14,6 +14,7 @@ const logger = require('./winston');
 const config = require('./config');
 const mediatorConfig = require(`${__dirname}/../config/mediator`);
 
+require('./modules/cronjobs');
 const userRouter = require('./routes/user');
 const fhirRoutes = require('./routes/fhir');
 const matchRoutes = require('./routes/match');

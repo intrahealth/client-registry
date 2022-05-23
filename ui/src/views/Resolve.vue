@@ -9,7 +9,12 @@
       >
       <v-list>
         <v-list-item>
-          <v-btn @click="showMatrix = true; $vuetify.goTo($refs.scoreMatrix);" color="accent">Show Scores Matrix</v-btn>
+          <v-btn 
+            @click="showMatrix = true; $vuetify.goTo($refs.scoreMatrix);" 
+            color="accent"
+          >
+            Show Scores Matrix
+          </v-btn>
         </v-list-item>
         <v-list-item>
           <v-btn
