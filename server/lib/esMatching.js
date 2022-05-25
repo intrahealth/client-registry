@@ -66,16 +66,16 @@ const buildQuery = (sourceResource, decisionRule) => {
     const rule = decisionRule.fields[ruleField];
     let null_handling;
     let null_handling_both;
-    if(rule.nullHandling) {
-      null_handling = rule.nullHandling;
-    } else if(decisionRule.nullHandling) {
-      null_handling = decisionRule.nullHandling;
+    if(rule.null_handling) {
+      null_handling = rule.null_handling;
+    } else if(decisionRule.null_handling) {
+      null_handling = decisionRule.null_handling;
     }
 
-    if(rule.nullHandlingBothFields) {
-      null_handling_both = rule.nullHandlingBothFields;
-    } else if(decisionRule.nullHandlingBothFields) {
-      null_handling_both = decisionRule.nullHandlingBothFields;
+    if(rule.null_handling_both) {
+      null_handling_both = rule.null_handling_both;
+    } else if(decisionRule.null_handling_both) {
+      null_handling_both = decisionRule.null_handling_both;
     }
     let path = rule.espath;
     let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
