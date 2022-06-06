@@ -17,6 +17,9 @@
       },
       "register": false
     },
+    "cronJobs": {
+      "patientReprocessing": "0 21 * * *"
+    },
     "fhirServer": {
       "baseURL": "http://fhir:8080/fhir",
       "username": "hapi",
