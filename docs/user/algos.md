@@ -30,8 +30,8 @@ Methods that assist in matching based on phonetic transformations to remedy spel
 
 Methods that compare string similarity:
 
-* **Levenshtein edit distance** is a measure of the number of edits (insertions and deletions) that would be required to change one string to another.
-* **Jaro-Winkler** comparator/distance is similar to Levenshtein, but it gives more weight to strings that match on the beginning of the string. 0 is an exact match. Lower scores are better than higher scores. If the beginning of the string is misspelled, this will not work as well.
+* **Levenshtein edit distance** is a measure of the number of edits (insertions and deletions) that would be required to change one string to another, and then normalised using the length of the longer string.
+* **Jaro-Winkler** comparator/distance is similar to Levenshtein, but it gives more weight to strings that match on the beginning of the string. 1 is an exact match. Higher scores are better than lower scores. Of the starting letters letters, typically limited to four, the more sequentially they match, the larger the bonus is attributed. After a non-matching letter, the proceeding letters are not considered.
 * **Longest common subsequence** matches subsequences within strings. Subsequences do not need to match positions.
 
 ## Types of Probabilistic Matching
