@@ -49,6 +49,7 @@ nav:
     - 'dev/docs.md'
     - 'dev/license.md'
     - 'dev/contributing.md'
+    - 'dev/roadmap.md'
 
   - Sysadmin:
     - 'Introduction': 

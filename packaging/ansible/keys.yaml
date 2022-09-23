@@ -8,11 +8,11 @@
   vars_prompt:
 
     - name: "user"
-      prompt: "Existing user whom new keys will be added to"
+      prompt: "Existing user on target host whom new keys will be added to"
       private: no
 
     - name: "add"
-      prompt: "Sender who wants their keys added to the existing user's account"
+      prompt: "GitHub username whose keys will be added to the existing user's account"
       private: no
 
 
