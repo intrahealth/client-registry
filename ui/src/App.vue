@@ -45,6 +45,13 @@
         </v-btn>
         <v-btn
           color="primary"
+          to="/changePassword"
+          v-if='!$store.state.denyAccess'
+        >
+          <v-icon>mdi-account-plus</v-icon> Change Password
+        </v-btn>
+        <v-btn
+          color="primary"
           to="/logout"
           v-if='!$store.state.denyAccess'
         >

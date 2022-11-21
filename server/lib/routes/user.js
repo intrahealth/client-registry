@@ -100,6 +100,111 @@ router.post("/addUser", function (req, res, next) {
     });
   });
 });
+
+router.post("/changepassword", (req, res) => {
+  const form = new formidable.IncomingForm();
+  form.parse(req, (err, fields, files) => {
+    let url = URI(config.get('fhirServer:baseURL')).segment("Person");
+    url.addQuery('username:exact', fields.username);
+    url = url.toString();
+
+    const options = {
+      url,
+      withCredentials: true,
+      auth: {
+        username: config.get('fhirServer:username'),
+        password: config.get('fhirServer:password'),
+      },
+      headers: {
+        'Cache-Control': 'no-cache',
+      }
+    };
+    request.get(options, (err, response, body) => {
+      if (!isJSON(body)) {
+        logger.error(body);
+        logger.error('Non JSON has been returned while getting user information for user ' + req.query.username);
+        return res.status(500).json({
+          info: "Internal Error Occured"
+        });
+      }
+      body = JSON.parse(body);
+      const numMatches = body.total;
+      if (numMatches == 0) {
+        return res.status(400).send("Cant find user " + fields.username);
+      } else {
+        const user = body.entry[0].resource;
+        const extensions = user.extension;
+  
+        for (var i in extensions) {
+          if (extensions[i].url.includes("OCRUserDetails")) {
+            const userDetails = extensions[i].extension;
+            let password = null;
+            let salt = null;
+  
+            for (var j in userDetails) {
+              if (userDetails[j].url == "password") {
+                password = userDetails[j].valueString;
+              }
+  
+              if (userDetails[j].url == "salt") {
+                salt = userDetails[j].valueString;
+              }
+            }
+  
+            const hash = crypto.pbkdf2Sync(
+              fields.password,
+              salt,
+              1000,
+              64,
+              "sha512"
+            ).toString("hex");
+  
+            // matching password
+            if (hash === password) {
+              const salt = crypto.randomBytes(16).toString('hex');
+              const password = crypto.pbkdf2Sync(
+                fields.newpassword,
+                salt,
+                1000,
+                64,
+                "sha512"
+              ).toString("hex");
+              for (const j in userDetails) {
+                if (userDetails[j].url == "password") {
+                  userDetails[j].valueString = password;
+                }
+                if (userDetails[j].url == "salt") {
+                  userDetails[j].valueString = salt;
+                }
+              }
+              const url = URI(config.get('fhirServer:baseURL')).segment("Person").segment(user.id).toString();
+              const options = {
+                url,
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                withCredentials: true,
+                auth: {
+                  username: config.get('fhirServer:username'),
+                  password: config.get('fhirServer:password'),
+                },
+                json: user
+              };
+              request.put(options, (err, resp, body) => {
+                if (err) {
+                  return res.status(400).json(err);
+                }
+                return res.status(200).send("Password Changed");
+              });
+            } else {
+              return res.status(400).json("Password mismatch");
+            }
+          }
+        }
+      }
+    });
+  });
+});
 /**
  * Check login credentials
  */

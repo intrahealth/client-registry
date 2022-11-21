@@ -3,6 +3,7 @@ const URI = require('urijs');
 const async = require('async');
 const config = require('./config');
 const logger = require('./winston');
+const mixin = require('./mixins/generalMixin');
 const fs = require('fs');
 const Fhir = require('fhir').Fhir;
 
@@ -105,6 +106,10 @@ const modifyRelationship = () => {
 
 const loadResources = async (callback) => {
   await modifyRelationship();
+  const installed = config.get('app:installed');
+  if (installed) {
+    return callback(false);
+  }
   let processingError = false;
   const folders = [
     `${__dirname}/../../resources/StructureDefinition`,
@@ -354,7 +359,10 @@ const init = (callback) => {
       });
     }
   }, () => {
-    return callback(errFound);
+    mixin.updateConfigFile(['app', 'installed'], true, () => {
+      logger.info('Done loading Default data');
+      return callback(errFound);
+    });
   });
 };
 module.exports = {
