@@ -215,7 +215,7 @@ function start(callback) {
           logger.info('Successfully registered mediator!');
           prerequisites.init((err) => {
             if (err) {
-              process.exit();
+              // process.exit();
             }
             if (config.get("matching:tool") === "elasticsearch") {
               const runsLastSync = config.get("sync:lastFHIR2ESSync");
