@@ -210,9 +210,7 @@ const checkInstalledPlugins = (callback) => {
       password: config.get('elastic:password'),
     }
   };
-  console.error(JSON.stringify(options, 0, 2));
   request.get(options, (err, res, body) => {
-    logger.error(err);
     if (!body) {
       logger.error('It seems like opensearch/elasticsearch is not running, please check to ensure it is up and running');
       return callback(true);

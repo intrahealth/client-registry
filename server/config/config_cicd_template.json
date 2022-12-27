@@ -26,7 +26,7 @@
       "password": "hapi"
     },
     "elastic": {
-      "server": "http://es:9200",
+      "server": "http://opensearch:9200",
       "username": "",
       "password": "",
       "max_compilations_rate": "10000/1m",
