@@ -105,7 +105,6 @@ export default {
           expression + '=' + encodeURIComponent(value)
         )
       }
-      console.log(this.search_terms);
       this.getData(true);
     },
     getData(restart) {
@@ -118,6 +117,8 @@ export default {
         } else if (this.options.page === this.prevPage + 1) {
           url = this.link.find(link => link.relation === "next").url;
         }
+        let query = url.split('?')[1]
+        url = "/ocrux/fhir?" + query
       }
       if (url === "") {
         let count = this.options.itemsPerPage || 10;
