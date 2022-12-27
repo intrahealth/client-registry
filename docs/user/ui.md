@@ -11,7 +11,7 @@ The OpenCR User Interface is a key way to monitor the operation of OpenCR. With 
 * View matches, break matches, revert broken matches
 * Conduct human adjudication to correct matches and create new ones.
 
-## Login 
+## Login
 
 User must be added to the CRUX to be able to login.
 
@@ -19,15 +19,15 @@ User must be added to the CRUX to be able to login.
 
 ## Landing Page
 
-On landing inside CRUX, it display the records submitted in a row. These are individual records for POS that submit them. 
+On landing inside CRUX, it display the records submitted in a row. These are individual records for POS that submit them.
 
 ![](../images/home.png)
 
-It is easy to search for records. 
+It is easy to search for records.
 
 ![](../images/search.png)
 
-In the below example, there are two records submitted that share the same CRUID. 
+In the below example, there are two records submitted that share the same CRUID.
 
 ![](../images/cruxdupes.png)
 
@@ -46,18 +46,17 @@ On clicking on an single record, a great deal of information is revealed.
 
 ![](../images/cruxrecord.png)
 
-
 ## Matched Records and Break Match
 
-Matched records are listed in a compact table with links to other record. 
+Matched records are listed in a compact table with links to other record.
 
-There is also an option to break one or all matches. 
+There is also an option to break one or all matches.
 
 ![](../images/cruxbreakmatch.png)
 
 ### Break and Revert Matches
 
-A match can be broken. When a match is broken, the patient record is no longer linked to it, therefore its CRUID changes. 
+A match can be broken. When a match is broken, the patient record is no longer linked to it, therefore its CRUID changes.
 
 Once a match is broken, it may be reverted, meaning that the match can be reinstated.
 
@@ -65,7 +64,7 @@ Once a match is broken, it may be reverted, meaning that the match can be reinst
 
 ## History
 
-The history card shows the set of decision rules and overall submission information about each history event. All events include any decision rules that were used to make those matches and the specific ElasticSearch query.
+The history card shows the set of decision rules and overall submission information about each history event. All events include any decision rules that were used to make those matches and the specific Opensearch/ElasticSearch query.
 
 ![](../images/cruxhistoryoverall.png)
 

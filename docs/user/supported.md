@@ -1,8 +1,8 @@
 # Supported Algorithms
 
-A number of algorithms are supported using ElasticSearch with the [analysis-phonetic plugin]() and the OpenCR Service (alone).
+A number of algorithms are supported using Opensearch/ElasticSearch with the [analysis-phonetic plugin]() and the OpenCR Service (alone).
 
-Algorithm | OpenCR Service | ElasticSearch
+Algorithm | OpenCR Service | OpenSearch/ElasticSearch
 --- | --- | ---
 **Exact** | Yes | Yes
 [**Metaphone**](https://en.wikipedia.org/wiki/Metaphone) | Yes | Yes
@@ -12,10 +12,10 @@ Algorithm | OpenCR Service | ElasticSearch
 [**Jaro-Winkler**](https://en.wikipedia.org/wiki/Jaro%E2%80%93Winkler_distance) | Yes | No
 [**Soundex**](https://en.wikipedia.org/wiki/Soundex) | Yes | Yes
 
-For more advanced string similarity matching, the similarity-scoring plugin for ElasticSearch can provide more features, and is based on the https://github.com/tdebatty/java-string-similarity library. 
-The library is open source. 
+For more advanced string similarity matching, the similarity-scoring plugin for ElasticSearch can provide more features, and is based on the <https://github.com/tdebatty/java-string-similarity> library.
+The library is open source.
 
-For more information, see the [similarity-scoring repository](https://github.com/intrahealth/similarity-scoring):
+For more information, see the [similarity-scoring repository](https://github.com/DigitalSQR/record-linkage) for OpenSearch or [similarity-scoring repository](https://github.com/intrahealth/similarity-scoring) for elasticsearch:
 
 Matcher Parameter for Query| Algorithm | Type | Normalized?
 ---|---|---|---

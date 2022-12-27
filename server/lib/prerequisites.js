@@ -207,20 +207,20 @@ const checkInstalledPlugins = (callback) => {
     url,
     auth: {
       username: config.get('elastic:username'),
-      password: config.get('elastic.password'),
+      password: config.get('elastic:password'),
     }
   };
   request.get(options, (err, res, body) => {
     if (!body) {
-      logger.error('It seems like elasticsearch is not running, please check to ensure elasticsearch is up and running');
+      logger.error('It seems like opensearch/elasticsearch is not running, please check to ensure it is up and running');
       return callback(true);
     }
     if (!body.includes('analysis-phonetic')) {
-      logger.error('Phonetic plugin is missing, to install run sudo bin/elasticsearch-plugin install analysis-phonetic and restart elasticsearch');
+      logger.error('Phonetic plugin is missing, to install run sudo bin/elasticsearch-plugin install analysis-phonetic and restart opensearch/elasticsearch');
       return callback(true);
     }
-    if (!body.includes('string-similarity-scoring')) {
-      logger.error('String similarity plugin is missing, refer https://github.com/intrahealth/similarity-scoring for installation then restart elasticsearch');
+    if (!body.includes('string-similarity-scoring') && !body.includes('record-linkage')) {
+      logger.error('String similarity plugin is missing, refer to https://github.com/intrahealth/similarity-scoring or https://github.com/DigitalSQR/record-linkage/releases for installation then restart opensearch/elasticsearch');
       return callback(true);
     }
     logger.info('All plugins are available');
@@ -322,7 +322,7 @@ const loadESScripts = (callback) => {
   };
   request.post(options, (err, res, body) => {
     if (err) {
-      logger.error('An error has occured while adding pro;babilistic jaro winkler script for elasticsearch');
+      logger.error('An error has occured while adding probabilistic jaro winkler script for elasticsearch');
       return callback(err);
     } else {
       logger.info('Jaro winkler loaded successfully');

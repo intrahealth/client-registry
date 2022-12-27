@@ -5,11 +5,14 @@ Often there are many records of the same person but in many people in different 
 !!! caution
     The Client Registry does not store clinical information. Having the Client Registry enables the ability to create a Shared Health Record in the future.
 
+!!! note
+    OpenSearch and ElasticSearch uses exactly the same technology and have almost the same configuration, i.e ports etc. The configuration file of OpenCR uses parameter elasticsearch to refer to either ElasticSearch or OpenSearch.
+
 The Client Registry stores the patient demographic data submitted to it in queries. The Client Registry stores demographic data at least in the HAPI FHIR Server, which can have any database backend an implementer chooses to use.
 
-ElasticSearch (ES) is an optional search engine, and requires configuration. ES can also store patient data fields selectably.
+OpenSearch/ElasticSearch (ES) is a required search engine for matching, and may requires configuration.
 
-JSON files are used to configure the system. Later iterations will support environment variables and a graphical interface. See https://github.com/openhie/client-registry/tree/master/server/config for example configuration files discussed here.
+JSON files are used to configure the system. Later iterations will support environment variables and a graphical interface. See <https://github.com/openhie/client-registry/tree/master/server/config> for example configuration files discussed here.
 
 ## Deciding Between a Standalone or Mediator Configuration
 
@@ -42,7 +45,7 @@ In standalone mode, the server runs TLS by default, and requires signed certific
 The default ports are as follows:
 
 - **3000**: Client Registry Service
-- **9200**: ElasticSearch (closed to external)
+- **9200**: OpenSearch/ElasticSearch (closed to external)
 - **8080**: HAPI FHIR Server (closed to external)
 
 In `server/config/config_development_template.json` there is a template for configuration.
@@ -128,7 +131,7 @@ Contents of `server/config/config_development_template.json`
 
 The currently supported FHIR version is R4.
 
-`fhirServer.baseURL` is the default. Note that it may change depending on the way HAPI is installed. It may, for example, default to a baseURL of http://localhost:8080/baseR4/.
+`fhirServer.baseURL` is the default. Note that it may change depending on the way HAPI is installed. It may, for example, default to a baseURL of <http://localhost:8080/baseR4/>.
 
 `fhirServer.username | password` must be changed from defaults in HAPI.
 
@@ -170,9 +173,9 @@ This syntax works for deeper nested config as well. For example, let's configure
 
 The syntax to change the field from **openhim-password** to **newPassword** would be `mediator__api__password=newPassword`
 
-### ElasticSearch Configuration
+### OpenSearch/ElasticSearch Configuration
 
-For ES, the relationship between patient resources in FHIR and what fields are synchronized in ES must be explicitly defined. This is termed the Report Relationship mapping. One must define what resource to be used (patient) and what fields need to be available in ES. After this, the Client Registry reads these fields, and populates ES with the information.
+For OpenSearch/ElasticSearch, the relationship between patient resources in FHIR and what fields are synchronized in OpenSearch/ElasticSearch must be explicitly defined. This is termed the Report Relationship mapping. One must define what resource to be used (patient) and what fields need to be available in OpenSearch/ElasticSearch. After this, the Client Registry reads these fields, and populates OpenSearch/ElasticSearch with the information.
 
 In `resources/Relationships/PatientRelationship.json` there is a template for configuration.
 

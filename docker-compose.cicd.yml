@@ -9,7 +9,7 @@ services:
       - "3000:3000"
     depends_on:
       - fhir
-      - es
+      - opensearch
     restart: always
     environment:
       - NODE_ENV=cicd
@@ -24,22 +24,29 @@ services:
     # networks:
     #   - opencr
 
-  es:
-    container_name: es
-    image: intrahealth/elasticsearch:latest
+  opensearch:
+    container_name: opensearch
+    image: intrahealth/opensearch:latest
     environment:
-      - node.name=es01
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - plugins.security.disabled=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       memlock:
         soft: -1
         hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     volumes:
-      - data01:/usr/share/elasticsearch/data
+      - data01:/usr/share/opensearch/data
+      
     ports:
       - 9200:9200
+      - 9600:9600
     # networks:
     #   - opencr
 

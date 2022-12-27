@@ -25,6 +25,7 @@ The only required dependency is Java >= 8 (1.8).
 See [HAPI FHIR CLI](https://smilecdr.com/hapi-fhir/docs/tools/hapi_fhir_cli.html) for instructions for the OS of choice.
 
 The Client Registry requires FHIR version R4 and HAPI must be started for this version. To run HAPI:
+
 ```
 hapi-fhir-cli run-server -v r4
 ```
@@ -34,45 +35,76 @@ The HAPI Web Testing UI is available at [http://localhost:8080/](http://localhos
 The FHIR Base URL is at [http://localhost:8080/baseR4/](http://localhost:8080/baseR4/)
 
 Visit [http://localhost:8080/](http://localhost:8080/) to ensure HAPI is up and running or
+
 ```sh
 curl -X GET "localhost:8080/baseR4/Patient?"
 ```
 
-## ElasticSearch
+## Indexing
+
+openCR supports both elasticsearch and opensearch, you are free to use either of them but we do recommend opensearch because of elasticsearch license restrictions. Follow instructions below to either install opensearch or elasticsearch
+
+### OpenSearch
+
+Install and start opensearch for the intended OS. See the [install instructions here](https://opensearch.org/docs/latest/install-and-configure/install-opensearch/index/)
+
+The required version is >=2.1.
+
+The phonetic analysis package must be installed. For example:
+
+```
+/usr/share/opensearch/bin/opensearch-plugin install analysis-phonetic
+```
+
+The string similarity plugin must be installed. See: <https://github.com/DigitalSQR/record-linkage/releases>
+
+Once installed and started, ensure that opensearch is up and running:
+
+```sh
+curl -X GET "localhost:9200/_cat/health?v&pretty"
+```
+
+Status should be yellow for a single-node cluster.
+
+### ElasticSearch
 
 Install and start ES for the intended OS. See the [ES install instructions](https://www.elastic.co/guide/en/elasticsearch/reference/current/install-elasticsearch.html)
 
 The required version is >=7.6.
 
 The phonetic analysis package must be installed. For example:
+
 ```
 /usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 ```
 
-The string similarity plugin must be installed. See: https://github.com/intrahealth/similarity-scoring
-
+The string similarity plugin must be installed. See: <https://github.com/intrahealth/similarity-scoring>
 
 Once installed and started, ensure that ES is up and running:
+
 ```sh
 curl -X GET "localhost:9200/_cat/health?v&pretty"
 ```
-Status should be yellow for a single-node cluster.
 
+Status should be yellow for a single-node cluster.
 
 ## OpenCR Service and UI
 
 Clone the repository into a directory of choice.
+
 ```
 git clone https://github.com/intrahealth/client-registry.git
 ```
 
 Enter the server directory, install node packages.
+
 ```
 cd client-registry/server
 npm install
 ```
 
 Copy and edit the configuration file to your liking.
+
 ```
 cp config/config_development_template.json config/config_development.json
 # edit the servers...
@@ -83,14 +115,15 @@ The minimum changes to start a running standalone system are:
 * Change `fhirServer.baseURL` to "http://localhost:8080/baseR4/"
 
 Run the server from inside client-registry/server:
+
 ```
 # from client-registry/server
 sudo NODE_ENV=development node lib/app.js
 ```
 
 * Visit the UI at: [https://localhost:3000/crux](https://localhost:3000/crux)
-    * **Default username**: root@intrahealth.org 
-    * **Default password**: intrahealth
+  * **Default username**: root@intrahealth.org
+  * **Default password**: intrahealth
 
 OpenCR may require access to /var/log for logging. This requirement may be changed in the future.
 
