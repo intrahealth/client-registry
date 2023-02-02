@@ -62,6 +62,18 @@
               color="deep-purple"
               label="Username*"
             />
+            <v-autocomplete
+              v-model="role"
+              :items="roles"
+              item-text="name"
+              item-value="value"
+              @blur="$v.role.$touch()"
+              @change="$v.role.$touch()"
+              :error-messages="roleErrors"
+              filled
+              color="deep-purple"
+              label="Role"
+            ></v-autocomplete>
             <v-text-field
               required
               @blur="$v.password.$touch()"
@@ -119,6 +131,7 @@ import { required } from "vuelidate/lib/validators";
 export default {
   validations: {
     userName: { required },
+    role: { required },
     retype_password: { required },
     password: { required },
     firstName: { required },
@@ -130,8 +143,16 @@ export default {
       otherName: "",
       surname: "",
       userName: "",
+      role: "",
       password: "",
-      retype_password: ""
+      retype_password: "",
+      roles: [{
+        name: 'Admin',
+        value: 'admin'
+      }, {
+        name: 'Deduplication',
+        value: 'deduplication'
+      }]
     };
   },
 
@@ -165,6 +186,12 @@ export default {
       if (!this.$v.retype_password.$dirty) return errors;
       !this.$v.retype_password.required && errors.push("Re-type Password");
       return errors;
+    },
+    roleErrors() {
+      const errors = [];
+      if (!this.$v.role.$dirty) return errors;
+      !this.$v.role.required && errors.push("Role is missing");
+      return errors;
     }
   },
   methods: {
@@ -183,6 +210,7 @@ export default {
       formData.append("otherName", this.otherName);
       formData.append("password", this.password);
       formData.append("userName", this.userName);
+      formData.append("role", this.role);
       formData.append("surname", this.surname);
       axios
         .post("/ocrux/user/addUser/", formData, {

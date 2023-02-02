@@ -36,20 +36,34 @@
         >
           <v-icon>mdi-file-chart</v-icon> CSV Reports
         </v-btn>
-        <v-btn
-          color="primary"
-          to="/addUser"
-          v-if='!$store.state.denyAccess'
+        <v-menu
+          bottom
+          v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'
         >
-          <v-icon>mdi-account-plus</v-icon> Add User
-        </v-btn>
-        <v-btn
-          color="primary"
-          to="/changePassword"
-          v-if='!$store.state.denyAccess'
-        >
-          <v-icon>mdi-account-plus</v-icon> Change Password
-        </v-btn>
+          <template v-slot:activator="{ on, attrs }">
+            <v-btn
+              color="primary"
+              dark
+              v-bind="attrs"
+              v-on="on"
+            >
+              <v-icon>mdi-account-outline</v-icon>
+              Accounts
+            </v-btn>
+          </template>
+
+          <v-list>
+            <v-list-item to="/addUser" v-if='!$store.state.denyAccess'>
+              <v-icon>mdi-account-plus</v-icon> Add User
+            </v-list-item>
+            <v-list-item to="/usersList" v-if='!$store.state.denyAccess'>
+              <v-icon>mdi-account-plus</v-icon> Users List
+            </v-list-item>
+            <v-list-item to="/changePassword" v-if='!$store.state.denyAccess'>
+              <v-icon>mdi-account-plus</v-icon> Change Password
+            </v-list-item>
+          </v-list>
+        </v-menu>
         <v-btn
           color="primary"
           to="/logout"
@@ -139,3 +153,9 @@ export default {
   }
 };
 </script>
+<style scoped>
+.menuText {
+  color: black;
+  cursor: pointer;
+}
+</style>

@@ -66,6 +66,9 @@ router.post("/addUser", function (req, res, next) {
             url: "username",
             valueString: fields.userName
           }, {
+            url: "role",
+            valueString: fields.role
+          }, {
             url: "password",
             valueString: password
           }, {
@@ -98,6 +101,144 @@ router.post("/addUser", function (req, res, next) {
         res.status(201).json(body);
       });
     });
+  });
+});
+
+router.post('/editUser', (req, res) => {
+  const form = new formidable.IncomingForm();
+  form.parse(req, (err, fields, files) => {
+    let url = URI(config.get('fhirServer:baseURL')).segment("Person").segment(fields.id);
+    url = url.toString();
+
+    const options = {
+      url,
+      withCredentials: true,
+      auth: {
+        username: config.get('fhirServer:username'),
+        password: config.get('fhirServer:password'),
+      }
+    };
+    request.get(options, (err, response, body) => {
+      if (!isJSON(body)) {
+        logger.error(options);
+        logger.error(body);
+        logger.error('Non JSON has been returned while getting data for resource ');
+        return res.status(401).json(body);
+      }
+      body = JSON.parse(body);
+      const name = {
+        given: [fields.firstName],
+        family: fields.surname
+      };
+      if (fields.otherName) {
+        name.given.push(fields.otherName);
+      }
+      body.name = [name];
+      let userExt = body.extension.find((ext) => {
+        return ext.url === 'http://openclientregistry.org/fhir/StructureDefinition/OCRUserDetails';
+      });
+      let roleUpdated = false;
+      let statusUpdated = false;
+      for(let ext of userExt.extension) {
+        if(ext.url === 'role') {
+          ext.valueString = fields.role;
+          roleUpdated = true;
+        }
+        if(ext.url === 'status') {
+          ext.valueString = fields.status;
+          statusUpdated = true;
+        }
+      }
+      if(!roleUpdated) {
+        userExt.extension.push({
+          url: 'role',
+          valueString: fields.role
+        });
+      }
+      if(!statusUpdated) {
+        userExt.extension.push({
+          url: 'status',
+          valueString: fields.status
+        });
+      }
+      const url = URI(config.get('fhirServer:baseURL')).segment("Person").segment(fields.id).toString();
+      const options = {
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        withCredentials: true,
+        auth: {
+          username: config.get('fhirServer:username'),
+          password: config.get('fhirServer:password'),
+        },
+        json: body
+      };
+      request.put(options, (err, resp, body) => {
+        if (err) {
+          return res.status(400).json(err);
+        }
+        console.log('saved');
+        return res.status(200).send("User Changed");
+      });
+    });
+  });
+});
+
+router.get('/getUsers', (req, res) => {
+  let url = URI(config.get('fhirServer:baseURL')).segment("Person");
+  url.addQuery('_count', 50);
+  url = url.toString();
+
+  const options = {
+    url,
+    withCredentials: true,
+    auth: {
+      username: config.get('fhirServer:username'),
+      password: config.get('fhirServer:password'),
+    }
+  };
+  const users = [];
+  request.get(options, (err, response, body) => {
+    if(err) {
+      console.log(err);
+      return res.status(500).json();
+    }
+    body = JSON.parse(body);
+    for(const entry of body.entry) {
+      let userExt = entry.resource.extension.find((ext) => {
+        return ext.url === 'http://openclientregistry.org/fhir/StructureDefinition/OCRUserDetails';
+      });
+      let user = {};
+      if(entry.resource.name && Array.isArray(entry.resource.name) && entry.resource.name.length > 0) {
+        let names = entry.resource.name[0].given;
+        user.firstName = names.shift();
+        user.otherName = names.join(" ");
+        user.surname = entry.resource.name[0].family;
+      }
+      user.userName = userExt.extension.find((ext) => {
+        return ext.url === 'username';
+      }).valueString;
+      const role = userExt.extension.find((ext) => {
+        return ext.url === 'role';
+      });
+      const status = userExt.extension.find((ext) => {
+        return ext.url === 'status';
+      });
+      if(status) {
+        user.status = status.valueString;
+      } else {
+        user.status = 'active';
+      }
+      if(role) {
+        user.role = role.valueString;
+      } else {
+        user.role = 'admin';
+      }
+      user.id = entry.resource.id;
+      users.push(user);
+    }
+    res.status(200).json(users);
   });
 });
 
@@ -248,8 +389,16 @@ router.post("/authenticate", function (req, res, next) {
           const userDetails = extensions[i].extension;
           let password = null;
           let salt = null;
+          let status = null;
+          let role = null;
 
           for (var j in userDetails) {
+            if (userDetails[j].url == "status") {
+              status = userDetails[j].valueString;
+            }
+            if (userDetails[j].url == "role") {
+              role = userDetails[j].valueString;
+            }
             if (userDetails[j].url == "password") {
               password = userDetails[j].valueString;
             }
@@ -257,6 +406,10 @@ router.post("/authenticate", function (req, res, next) {
             if (userDetails[j].url == "salt") {
               salt = userDetails[j].valueString;
             }
+          }
+
+          if(status === 'inactive') {
+            return res.status(401).json({});
           }
 
           const hash = crypto.pbkdf2Sync(
@@ -280,7 +433,8 @@ router.post("/authenticate", function (req, res, next) {
             return res.status(200).json({
               token,
               userID: user.id,
-              username: req.query.username
+              username: req.query.username,
+              role
             });
           } else {
             return res.status(400).json({});

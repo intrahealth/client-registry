@@ -6,6 +6,7 @@ import Review from "../views/Review.vue";
 import Resolve from "../views/Resolve.vue";
 import CSVReport from "../views/CSVReport.vue";
 import AddUser from "../views/AddUser.vue";
+import usersList from "../views/usersList.vue"
 import ChangePassword from "../views/ChangePassword.vue"
 import Login from '@/views/Login.vue'
 import Logout from '@/components/Logout.vue'
@@ -45,6 +46,11 @@ const routes = [{
     path: '/addUser',
     name: 'AddUser',
     component: AddUser
+  },
+  {
+    path: '/usersList',
+    name: 'usersList',
+    component: usersList
   },
   {
     path: '/changePassword',

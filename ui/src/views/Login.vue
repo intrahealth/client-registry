@@ -133,6 +133,7 @@ export default {
           this.$store.state.auth.token = authResp.data.token;
           this.$store.state.auth.username = this.username;
           this.$store.state.auth.userID = authResp.data.userID;
+          this.$store.state.auth.role = authResp.data.role;
           VueCookies.config("30d");
           VueCookies.set("token", this.$store.state.auth.token, "infinity");
           VueCookies.set("userID", this.$store.state.auth.userID, "infinity");
@@ -152,6 +153,11 @@ export default {
           }
         })
         .catch(err => {
+          this.$store.state.progress.enable = false;
+          this.$store.state.alert.show = true;
+          this.$store.state.alert.width = "500px";
+          this.$store.state.alert.msg = "Login Failed"
+          this.$store.state.alert.type = "error";
           if (err.hasOwnProperty("response")) {
             throw err;
           }
