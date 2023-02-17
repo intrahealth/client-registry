@@ -25,6 +25,7 @@
     "express": "^4.17.1",
     "fast-levenshtein": "^2.0.6",
     "fhir": "^4.7.0",
+    "fhirpath": "^3.3.1",
     "formidable": "^1.2.1",
     "is-json": "^2.0.1",
     "jaro-winkler": "^0.2.8",

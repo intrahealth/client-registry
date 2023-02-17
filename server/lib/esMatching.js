@@ -3,13 +3,12 @@ const request = require('request');
 const URI = require('urijs');
 const async = require('async');
 const _ = require('lodash');
-const Fhir = require('fhir').Fhir;
+const fhirpath = require('fhirpath');
 const fhirWrapper = require('./fhir')();
 const logger = require('./winston');
 const config = require('./config');
 const generalMixin = require('./mixins/generalMixin');
 const axios = require('axios');
-const fhir = new Fhir();
 
 const refreshIndex = (callback) => {
   logger.info('Refreshing index ' + config.get('elastic:index'));
@@ -78,7 +77,7 @@ const buildQuery = (sourceResource, decisionRule) => {
       null_handling_both = decisionRule.null_handling_both;
     }
     let path = rule.espath;
-    let pathValue = fhir.evaluate(sourceResource, rule.fhirpath);
+    let pathValue = fhirpath.evaluate(sourceResource, rule.fhirpath);
     const values = [];
     if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
       if (pathValue.length === 0) {
@@ -155,7 +154,7 @@ const buildQuery = (sourceResource, decisionRule) => {
       const block = decisionRule.filters[filterField];
       const term = {};
       const path = block.espath;
-      let pathValue = fhir.evaluate(sourceResource, block.fhirpath);
+      let pathValue = fhirpath.evaluate(sourceResource, block.fhirpath);
       if (Array.isArray(pathValue) && !(pathValue.length === 1 && pathValue[0] === undefined)) {
         if (pathValue.length === 0) {
           term[path] = '';
