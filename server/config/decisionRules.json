@@ -1,0 +1,70 @@
+{
+  "__comments": {
+    "path": "Its a fhir path, for syntax refer to https://www.hl7.org/fhir/fhirpath.html",
+    "matchingType": "Must be specified, it can either",
+    "threshold": {
+      "levenshtein": "Lower the number, the closer the match, 0 being exact match, max threshold is 2",
+      "jaro-winkler": "number between 0 and 1, where 0 for no match and 1 for exact match"
+    },
+    "supported_algorithms": {
+      "elasticsearch": ["https://github.com/intrahealth/similarity-scoring"]
+    }
+  },
+  "rules": [{
+    "matchingType": "deterministic",
+    "fields": {
+      "given": {
+        "algorithm": "jaro-winkler-similarity",
+        "threshold": 0.8,
+        "fhirpath": "name.where(use='official').given",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "given"
+      },
+      "family": {
+        "algorithm": "jaro-winkler-similarity",
+        "threshold": 0.9,
+        "fhirpath": "name.where(use='official').family",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "family"
+      },
+      "birthdate": {
+        "algorithm": "exact",
+        "fhirpath": "birthDate",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "birthDate"
+      },
+      "phone": {
+        "algorithm": "exact",
+        "fhirpath": "telecom.where(system='phone').value",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "phone"
+      },
+      "nationalid": {
+        "algorithm": "exact",
+        "fhirpath": "identifier.where(system='http://clientregistry.org/nationalid').value",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "nationalid"
+      },
+      "art": {
+        "algorithm": "exact",
+        "fhirpath": "identifier.where(system='http://clientregistry.org/artnumber').value",
+        "null_handling": "moderate",
+        "null_handling_both": "moderate",
+        "espath": "art"
+      }
+    },
+    "potentialMatchThreshold": 4,
+    "autoMatchThreshold": 6,
+    "filters": {
+      "gender": {
+        "fhirpath": "gender",
+        "espath": "gender"
+      }
+    }
+  }]
+}
