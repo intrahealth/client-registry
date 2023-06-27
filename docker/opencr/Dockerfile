@@ -1,4 +1,4 @@
-FROM node:erbium-slim
+FROM node:16-slim
 
 RUN mkdir -p /var/log
 ARG branch=master
