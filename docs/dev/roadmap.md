@@ -11,3 +11,5 @@ Priority areas for feedback are the following:
 * **Support Keycloak and similar:** This feature would allow for using authentication and authorization realms managed by Keycloak, a popular open source engine. The point in here is to enhance authentication in opencr which currently it only do basic authentication
 
 * **Support for deduplication without submitting a patient:** Currently opencr runs the deduplication service every time a new patient is submitted or an existing patient is updated. This feature will allow openCR to be run without waiting for patient submission, especially when decision rules are changed.
+
+* **Make openCR easily customizable:** The plan is to use iHRIS technology.
