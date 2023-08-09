@@ -143,7 +143,7 @@ const buildQuery = (sourceResource, decisionRule) => {
   }
   esfunction.script_score.script.params.matchers = matchers;
   esquery.query.function_score.functions.push(esfunction);
-  if (!decisionRule.filters || Object.keys(decisionRule.filters).length === 0) {
+  if ((!decisionRule.filters || Object.keys(decisionRule.filters).length === 0) && Object.keys(esquery.query.function_score.query.bool).length === 0) {
     esquery.query.function_score.query = {
       match_all: {}
     };
