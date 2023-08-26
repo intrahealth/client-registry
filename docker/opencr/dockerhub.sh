@@ -6,3 +6,7 @@ docker build --no-cache -t intrahealth/opencr:$(git rev-parse --short HEAD) .
 docker tag intrahealth/opencr:$(git rev-parse --short HEAD) intrahealth/opencr
 docker push intrahealth/opencr:$(git rev-parse --short HEAD)
 docker push intrahealth/opencr:latest
+
+
+docker build --no-cache -t intrahealth/opencr:mans .
+docker tag intrahealth/opencr:mans intrahealth/opencr

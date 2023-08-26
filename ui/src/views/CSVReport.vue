@@ -1,7 +1,7 @@
 <template>
     <v-card>
     <v-card-title>
-      Action Required
+      Action requise
       <v-spacer />
     </v-card-title>
     <v-data-table

@@ -50,7 +50,7 @@
               v-model="surname"
               filled
               color="deep-purple"
-              label="Surname*"
+              label="Nom de famille*"
             />
             <v-text-field
               required
@@ -166,7 +166,7 @@ export default {
     surnameErrors() {
       const errors = [];
       if (!this.$v.surname.$dirty) return errors;
-      !this.$v.surname.required && errors.push("Surname is required");
+      !this.$v.surname.required && errors.push("Nom de famille is required");
       return errors;
     },
     usernameErrors() {

@@ -17,7 +17,7 @@
       "url": "http://ihris.org/fhir/StructureDefinition/display",
       "extension": [{
         "url": "label",
-        "valueString": "Given Names(s)"
+        "valueString": "Prénom(s)"
       }, {
         "url": "fhirpath",
         "valueString": "name.where(use='official').last().given"
@@ -32,7 +32,7 @@
       "url": "http://ihris.org/fhir/StructureDefinition/display",
       "extension": [{
         "url": "label",
-        "valueString": "Surname"
+        "valueString": "Nom de famille"
       }, {
         "url": "fhirpath",
         "valueString": "name.where(use='official').last().family"
@@ -47,7 +47,7 @@
       "url": "http://ihris.org/fhir/StructureDefinition/display",
       "extension": [{
         "url": "label",
-        "valueString": "Gender"
+        "valueString": "Genre"
       }, {
         "url": "fhirpath",
         "valueString": "gender"
@@ -65,7 +65,7 @@
       "url": "http://ihris.org/fhir/StructureDefinition/display",
       "extension": [{
         "url": "label",
-        "valueString": "Birth Date"
+        "valueString": "Date de naissance"
       }, {
         "url": "fhirpath",
         "valueString": "birthDate"

@@ -4,7 +4,7 @@ RUN mkdir -p /var/log
 ARG branch=master
 RUN apt-get -qq update && apt-get install -y -qq git && apt-get install -y --no-install-recommends wget
 #RUN git clone --branch ${branch} https://github.com/intrahealth/client-registry /src/
-COPY ../../ /src/
+COPY . /src/
 
 WORKDIR /src/server
 RUN npm install

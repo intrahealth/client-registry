@@ -17,7 +17,7 @@
         item-text="displayName"
         item-value="id"
         clearable
-        label="Point of Service"
+        label="Point de service"
         hide-details
         outlined
         shaped
@@ -194,7 +194,7 @@ export default {
               }
             }
             this.headers.push({
-              text: "Point of Service",
+              text: "Point de service",
               value: "pos"
             })
           }

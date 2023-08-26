@@ -64,7 +64,7 @@ const routes = [{
   },
   {
     path: '/logout',
-    name: 'Logout',
+    name: 'Se déconnecter',
     component: Logout
   }
 ];

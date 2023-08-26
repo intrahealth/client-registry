@@ -56,7 +56,7 @@
                   v-model="surname"
                   filled
                   color="deep-purple"
-                  label="Surname*"
+                  label="Nom de famille*"
                 />
                 <v-autocomplete
                   v-model="role"
@@ -136,7 +136,7 @@
           color="white"
           style="font-weight: bold; font-size: 18px;"
         >
-          Users List
+          Liste des utilisateurs
           <v-spacer></v-spacer>
           <v-text-field
             v-model="searchUsers"
@@ -298,7 +298,7 @@ export default {
     usersHeader() {
       return [
         { text: `First Name`, value: 'firstName' },
-        { text: `Surname`, value: 'surname' },
+        { text: `Nom de famille`, value: 'surname' },
         { text: `Other Name`, value: 'otherName' },
         { text: `User Name`, value: 'username' },
         { text: `Role`, value: 'role' },
@@ -314,7 +314,7 @@ export default {
     surnameErrors() {
       const errors = [];
       if (!this.$v.surname.$dirty) return errors;
-      !this.$v.surname.required && errors.push("Surname is required");
+      !this.$v.surname.required && errors.push("Nom de famille is required");
       return errors;
     },
     roleErrors() {

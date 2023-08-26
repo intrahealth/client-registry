@@ -1,7 +1,7 @@
 <template>
     <v-card>
     <v-card-title>
-      Action Required
+      Action requise
       <v-spacer />
     </v-card-title>
     <v-data-table
@@ -51,11 +51,11 @@ export default {
       rowsPerPageItems: [5, 10, 20, 50],
       headers: [
         { text: "CR ID", value: "uid" },
-        { text: "Surname", value: "family" },
-        { text: "Given Names", value: "given" },
+        { text: "Nom de famille", value: "family" },
+        { text: "Prénoms", value: "given" },
         { text: "Source", value: "source" },
         { text: "Source ID", value: "source_id" },
-        { text: "Reason", value: "reason" },
+        { text: "Raison", value: "reason" },
         { text: "Date Flagged", value: "date" }
       ],
     };

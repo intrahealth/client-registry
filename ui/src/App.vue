@@ -14,7 +14,7 @@
           to="/"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-home</v-icon> Home
+          <v-icon>mdi-home</v-icon> Maison
         </v-btn>
         <v-btn
           color="primary"
@@ -26,7 +26,7 @@
             :value="displayActionRequiredBadge"
             offset-x="100"
           >
-          <v-icon>mdi-alert</v-icon> Action Required
+          <v-icon>mdi-alert</v-icon> Action requise
           </v-badge>
         </v-btn>
         <v-btn
@@ -34,7 +34,7 @@
           to="/csvreport"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-file-chart</v-icon> CSV Reports
+          <v-icon>mdi-file-chart</v-icon> Rapports CSV
         </v-btn>
         <v-menu
           bottom
@@ -48,19 +48,19 @@
               v-on="on"
             >
               <v-icon>mdi-account-outline</v-icon>
-              Accounts
+              Comptes
             </v-btn>
           </template>
 
           <v-list>
             <v-list-item to="/addUser" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Add User
+              <v-icon>mdi-account-plus</v-icon> Ajouter un utilisateur
             </v-list-item>
             <v-list-item to="/usersList" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Users List
+              <v-icon>mdi-account-plus</v-icon> Liste des utilisateurs
             </v-list-item>
             <v-list-item to="/changePassword" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Change Password
+              <v-icon>mdi-account-plus</v-icon> Changer le mot de passe
             </v-list-item>
           </v-list>
         </v-menu>
@@ -69,7 +69,7 @@
           to="/logout"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-logout</v-icon> Logout
+          <v-icon>mdi-logout</v-icon> Se déconnecter
         </v-btn>
       </v-toolbar-items>
       <v-spacer />

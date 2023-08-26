@@ -72,7 +72,7 @@
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>Birth Date:</v-list-item-content>
+                        <v-list-item-content>Date de naissance:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.birthdate }}
                         </v-list-item-content>
@@ -460,7 +460,7 @@ export default {
           value: "id"
         },
         {
-          text: "Surname",
+          text: "Nom de famille",
           value: "family"
         },
         {
@@ -472,7 +472,7 @@ export default {
           value: "gender"
         },
         {
-          text: "Birth Date",
+          text: "Date de naissance",
           value: "birthdate"
         }
       ],
