@@ -1,0 +1,9 @@
+{
+    "extension_http://example.com/date": "Status Date",
+    "extension_http://example.com/status": "Status",
+    "identifier_http://openelis-global.org/pat_nationalId": "National ID",
+    "identifier_https://openmrs.org/UPI": "UPID",
+    "identifier_http://clientregistry.org/openmrs": "Internal ID",
+    "http://clientregistry.org/artnumber":"ART Number",
+    "http://clientregistry.org/nationalid":"National ID"
+  }

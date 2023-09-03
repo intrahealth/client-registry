@@ -97,6 +97,15 @@
                           {{ id.value }}
                         </v-list-item-content>
                       </v-list-item>
+                      <v-list-item
+                        v-for="(id, l) in patient.extension"
+                        :key="`${l}-${id.name}`"
+                      >
+                        <v-list-item-content>{{ id.name }}:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          {{ id.value }}
+                        </v-list-item-content>
+                      </v-list-item>
                     </v-list>
                   </v-card>
                 </v-carousel-item>
@@ -647,6 +656,15 @@ export default {
                       }
                     }
                   }
+                  let extensions = [];
+                  if (patient.extension) {
+                    for (let id of patient.extension) {
+                        extensions.push({
+                          name: id.url,
+                          value: ( id.valueString ? id.valueString : id.valueDate )
+                        });
+                    }
+                  }
                   try {
                     name = patient.name.find(name => name.use === "official");
                     if(!name) {
@@ -678,6 +696,7 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
+                      extension: extensions,                      
                       family: name.family,
                       given: name.given.join(" "),
                       phone: phone
@@ -693,6 +712,7 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
+                      extension: extensions,                      
                       family: name.family,
                       given: name.given.join(" "),
                       phone: phone

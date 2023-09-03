@@ -10,6 +10,8 @@ import fhirpath from "fhirpath"
 import {
   store
 } from './store/store'
+import VueI18n from 'vue-i18n'
+import en from './locales/en.json'
 
 Object.defineProperty(Vue.prototype, '$fhirpath', {
   value: fhirpath
@@ -22,9 +24,21 @@ Vue.config.productionTip = false;
 Vue.use(VueAxios, axios)
 Vue.use(Vuelidate)
 Vue.use(require('vue-moment'));
+Vue.use(VueI18n)
+
+const messages = {
+  en
+}
+
+const i18n = new VueI18n({
+  locale: 'en', // Set the default locale here
+  messages
+})
+
 new Vue({
   router,
   store,
   vuetify,
+  i18n,
   render: h => h(App)
 }).$mount("#app");

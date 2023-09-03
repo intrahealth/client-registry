@@ -1070,6 +1070,25 @@ router.get('/potential-matches/:id', (req, res) => {
           }
         }
       }
+      let extensions = [];
+      let extensionStatus;
+      let extensionDate;
+
+      if (patient.extension) {
+        for (let id of patient.extension) {
+          if(id.url === 'http://example.com/status') {
+            extensionStatus = id.valueString;
+          } else if(id.url === 'http://example.com/date') {
+            extensionDate = id.valueDate;
+          }
+
+            extensions.push({
+              name: id.url,
+              value: ( id.valueString ? id.valueString : id.valueDate )
+            });
+        }
+      }            
+
       let primaryPatient = {
         id: patient.id,
         gender: patient.gender,
@@ -1079,12 +1098,43 @@ router.get('/potential-matches/:id', (req, res) => {
         phone,
         nationalid,
         artnumber,
+        extensionDate,
+        extensionStatus,
+        extensions : extensions,
         uid: goldenLink,
         ouid: goldenLink,
         source_id: validSystem.value,
         source: systemName,
         scores: {}
       };
+
+      if (patient.extension) {
+        for (let id of patient.extension) {
+          if(id.url === 'http://example.com/status') {
+            extensionStatus = id.valueString;
+          } else if(id.url === 'http://example.com/date') {
+            extensionDate = id.valueDate;
+          }
+
+          // Dynamically construct the property name
+          let propertyName = "extension_" + id.url;
+          primaryPatient[propertyName]= ( id.valueString ? id.valueString : id.valueDate );
+            extensions.push({
+              name: id.url,
+              value: ( id.valueString ? id.valueString : id.valueDate )
+            });
+        }
+      }   
+
+      if(patient.identifier) {
+        for(let identifier of patient.identifier) {
+          
+          // Dynamically construct the property name
+          let propertyName = "identifier_" + identifier.system;
+          primaryPatient[propertyName]= identifier.value;
+        }
+      }
+
       populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
       matchResults.push(primaryPatient);
       if(level != 'childMatches' && !config.get('matching:resolvePotentialOfPotentials')) {
