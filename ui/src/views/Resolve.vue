@@ -276,7 +276,7 @@ export default {
       ],
       dates: { birthDate: true },
       fields: { source: "Submitting System", source_id: "System ID", family: "Family Name", given: "Given Name",
-        gender: "Gender", birthDate: "Birth Date", phone: "Phone", "artnumber": "ART Number", "nationalid": "National ID"
+        gender: "Gender", birthDate: "Birth Date", phone: "Phone"
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
@@ -319,28 +319,22 @@ export default {
     this.$store.state.progress.width = "300px";
     this.$store.state.progress.title = "Loading potential Matches"
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
-      
-            // Define a regex pattern to match keys starting with "extension_"
         let extRegexPattern = /^extension_/;
 
-        // Initialize an empty array to store matching keys
         let matchingKeys = [];
 
-        // Iterate over the keys of the object
-        for (let key in resp.data[0]) {
-          // Check if the key matches the regex pattern
-          if (extRegexPattern.test(key)) {
-            // If it matches, add it to the matchingKeys array
-            matchingKeys.push(key);
-                         this.$set(this.fields, key, this.$t(key));
-
-          }
+        for (let i = 0; i < resp.data.length; i++) {
+          const dataObject = resp.data[i];
+            for (let key in dataObject) {
+              if (extRegexPattern.test(key)) {
+                matchingKeys.push(key);
+                this.$set(this.fields, key, this.$t(key));
+              }
+            }
         }
 
 
-     // Define a regex pattern to match keys starting with "extension_"
         let idRegexPattern = /^identifier/;
-// Get all the keys
         for (let key in resp.data[0]) {
           if (idRegexPattern.test(key)) {
               this.$set(this.fields, key, this.$t(key));
@@ -350,8 +344,6 @@ export default {
 
 
       this.resolves = resp.data
-      console.log(this.resolves);
-            this.resolves = resp.data
 
       shuffle(this.available_nicknames)
       this.organizeResolves(true)

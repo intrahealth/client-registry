@@ -101,7 +101,7 @@
                         v-for="(id, l) in patient.extension"
                         :key="`${l}-${id.name}`"
                       >
-                        <v-list-item-content>{{ id.name }}:</v-list-item-content>
+                        <v-list-item-content>{{ $t(id.name) }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ id.value }}
                         </v-list-item-content>
