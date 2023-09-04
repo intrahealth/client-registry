@@ -8,5 +8,5 @@
     "http://clientregistry.org/nationalid":"National ID",
     "http://example.com/status": "Status",
     "http://example.com/date": "Status Date",
-    "http://openelis-global.org/pat_nationalId":"ART ID"
+    "http://openelis-global.org/pat_nationalId":"ART Number"
 }
