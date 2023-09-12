@@ -1080,6 +1080,196 @@ router.get(`/count-new-auto-matches`, (req, res) => {
     return res.status(200).json({total: autoCount.total});
   });
 });
+router.post('/potential-matches', (req, res) => {
+  logger.info("Received a request to get potential matches");
+  let matchResults = [];
+  const patientJson = req.body;
+
+  generateScoreMatrix({patient: patientJson, level: 'childMatches'}, () => {
+    return res.status(200).send(matchResults);
+  });
+
+  function matrixExist(sourceID) {
+    let found = false;
+    for(let matrix of matchResults) {
+      if(matrix.source_id === sourceID) {
+        found = true;
+        break;
+      }
+      if(found) {
+        break;
+      }
+    }
+    return found;
+  }
+
+  function generateScoreMatrix({patient, level}, callback) {
+    let matchingTool;
+    if (config.get("matching:tool") === "mediator") {
+      matchingTool = medMatching;
+    } else if (config.get("matching:tool") === "elasticsearch") {
+      matchingTool = esMatching;
+    }
+
+    matchingTool.performMatch({
+      sourceResource: patient,
+      ignoreList: [],
+    }, ({
+      error,
+      FHIRAutoMatched,
+      FHIRPotentialMatches,
+      FHIRConflictsMatches,
+      ESMatches
+    }) => {
+
+      let link = patient.link && patient.link.length > 0 ? patient.link[0].other.reference : null;
+      let goldenLink = null;
+
+      if (link) {
+         goldenLink = link.split('/')[1];
+      } else {
+
+      }
+
+      const validSystem = generalMixin.getClientIdentifier(patient);
+      let name = patient.name.find((name) => {
+        return name.use === 'official';
+      });
+      let given = '';
+      if(name && name.given) {
+        given = name.given.join(' ');
+      }
+      let clientUserId;
+      if (patient.meta && patient.meta.tag) {
+        for (let tag of patient.meta.tag) {
+          if (
+            tag.system === "http://openclientregistry.org/fhir/clientid"
+          ) {
+            clientUserId = tag.code;
+          }
+        }
+      }
+      let systemName = generalMixin.getClientDisplayName(clientUserId);
+      let phone;
+      if(patient.telecom) {
+        for(let telecom of patient.telecom) {
+          if(telecom.system === 'phone') {
+            phone = telecom.value;
+          }
+        }
+      }
+      
+      let primaryPatient = {
+        id: patient.id,
+        gender: patient.gender,
+        given,
+        family: name.family,
+        birthDate: patient.birthDate,
+        phone,
+        uid: goldenLink,
+        ouid: goldenLink,
+        source_id: validSystem && validSystem.value  ? validSystem.value : null,
+        source: systemName ? systemName: null,
+        scores: {}
+      };
+
+      if (patient.extension) {
+        for (let id of patient.extension) {
+          let propertyName = "extension_" + id.url;
+          primaryPatient[propertyName]= ( id.valueString ? id.valueString : id.valueDate );
+          
+        }
+      }   
+
+      if(patient.identifier) {
+        for(let identifier of patient.identifier) {
+          let propertyName = "identifier_" + identifier.system;
+          primaryPatient[propertyName]= identifier.value;
+        }
+      }
+
+      populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
+      matchResults.push(primaryPatient);
+      if(level != 'childMatches' && !config.get('matching:resolvePotentialOfPotentials')) {
+        return callback();
+      }
+      async.series({
+        auto: (callback) => {
+          async.eachSeries(FHIRAutoMatched.entry, (autoMatched, nxtAutoMatched) => {
+            const validSystem = generalMixin.getClientIdentifier(autoMatched.resource);
+            if(matrixExist(validSystem.value)) {
+              return nxtAutoMatched();
+            }
+            generateScoreMatrix({patient: autoMatched.resource, level: 'grandChildMatches'}, () => {
+              return nxtAutoMatched();
+            });
+          }, () => {
+            return callback(null);
+          });
+        },
+        potential: (callback) => {
+          async.eachSeries(FHIRPotentialMatches.entry, (potentialMatch, nxtPotMatch) => {
+            const validSystem = generalMixin.getClientIdentifier(potentialMatch.resource);
+            if(matrixExist(validSystem.value)) {
+              return nxtPotMatch();
+            }
+            generateScoreMatrix({patient: potentialMatch.resource, level: 'grandChildMatches'}, () => {
+              return nxtPotMatch();
+            });
+          }, () => {
+            return callback(null);
+          });
+        },
+        conflicts: (callback) => {
+          async.eachSeries(FHIRConflictsMatches.entry, (conflictMatch, nxtConflictMatch) => {
+            const validSystem = generalMixin.getClientIdentifier(conflictMatch.resource);
+            if(matrixExist(validSystem.value)) {
+              return nxtConflictMatch();
+            }
+            generateScoreMatrix({patient: conflictMatch.resource, level: 'grandChildMatches'}, () => {
+              return nxtConflictMatch();
+            });
+          }, () => {
+            return callback(null);
+          });
+        }
+      }, () => {
+        return callback();
+      });
+    });
+  }
+  function populateScores(patient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches) {
+    for(let esmatch of ESMatches) {
+      for(let autoMatch of esmatch.autoMatchResults) {
+        let patResource = FHIRAutoMatched.entry.find((entry) => {
+          return entry.resource.id === autoMatch['_id'];
+        });
+        const validSystem = generalMixin.getClientIdentifier(patResource.resource);
+        patient.scores[validSystem.value] = autoMatch['_score'];
+      }
+      for(let potMatch of esmatch.potentialMatchResults) {
+        let patResource = FHIRPotentialMatches.entry.find((entry) => {
+          return entry.resource.id === potMatch['_id'];
+        });
+        if(!patResource) {
+          continue;
+        }
+        const validSystem = generalMixin.getClientIdentifier(patResource.resource);
+        patient.scores[validSystem.value] = potMatch['_score'];
+      }
+      for(let conflMatch of esmatch.conflictsMatchResults) {
+        let patResource = FHIRConflictsMatches.entry.find((entry) => {
+          return entry.resource.id === conflMatch['_id'];
+        });
+        if(!patResource) {
+          continue;
+        }
+        const validSystem = generalMixin.getClientIdentifier(patResource.resource);
+        patient.scores[validSystem.value] = conflMatch['_score'];
+      }
+    }
+  }
+});
 
 router.get('/potential-matches/:id', (req, res) => {
   logger.info("Received a request to get potential matches");
