@@ -1082,28 +1082,36 @@ router.get(`/count-new-auto-matches`, (req, res) => {
 });
 router.post('/potential-matches', (req, res) => {
   logger.info("Received a request to get potential matches");
-  let matchResults = [];
+  let matchResults = {
+    parent: [],
+    auto: [],
+    potential: [],
+    conflict: []
+  };
   const patientJson = req.body;
 
-  generateScoreMatrix({patient: patientJson, level: 'childMatches'}, () => {
+  generateScoreMatrix({patient: patientJson, level: 'childMatches',type: 'parent'}, () => {
     return res.status(200).send(matchResults);
   });
 
   function matrixExist(sourceID) {
     let found = false;
-    for(let matrix of matchResults) {
-      if(matrix.source_id === sourceID) {
-        found = true;
-        break;
+    for (let key in matchResults) {
+      let matrixArray = matchResults[key];
+      for (let matrix of matrixArray) {
+          if (matrix.source_id === sourceID) {
+              found = true;
+              break;
+          }
       }
-      if(found) {
-        break;
+      if (found) {
+          break;
       }
-    }
+  }
     return found;
   }
 
-  function generateScoreMatrix({patient, level}, callback) {
+  function generateScoreMatrix({patient, level, type}, callback) {
     let matchingTool;
     if (config.get("matching:tool") === "mediator") {
       matchingTool = medMatching;
@@ -1189,7 +1197,17 @@ router.post('/potential-matches', (req, res) => {
       }
 
       populateScores(primaryPatient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches);
-      matchResults.push(primaryPatient);
+      if (type == 'parent'){
+        matchResults.parent.push(primaryPatient);
+      } else if (type == 'auto') {
+        matchResults.auto.push(primaryPatient);
+      } else if (type == 'potential') {
+          matchResults.potential.push(primaryPatient);
+      } else if (type == 'conflict') {
+          matchResults.conflict.push(primaryPatient);
+      } else {
+          // Handle cases where 'type' doesn't match any of the known values.
+      }
       if(level != 'childMatches' && !config.get('matching:resolvePotentialOfPotentials')) {
         return callback();
       }
@@ -1200,7 +1218,7 @@ router.post('/potential-matches', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtAutoMatched();
             }
-            generateScoreMatrix({patient: autoMatched.resource, level: 'grandChildMatches'}, () => {
+            generateScoreMatrix({patient: autoMatched.resource, level: 'grandChildMatches', type: 'auto'}, () => {
               return nxtAutoMatched();
             });
           }, () => {
@@ -1213,7 +1231,7 @@ router.post('/potential-matches', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtPotMatch();
             }
-            generateScoreMatrix({patient: potentialMatch.resource, level: 'grandChildMatches'}, () => {
+            generateScoreMatrix({patient: potentialMatch.resource, level: 'grandChildMatches', type: 'potential'}, () => {
               return nxtPotMatch();
             });
           }, () => {
@@ -1226,7 +1244,7 @@ router.post('/potential-matches', (req, res) => {
             if(matrixExist(validSystem.value)) {
               return nxtConflictMatch();
             }
-            generateScoreMatrix({patient: conflictMatch.resource, level: 'grandChildMatches'}, () => {
+            generateScoreMatrix({patient: conflictMatch.resource, level: 'grandChildMatches', type: 'conflict'}, () => {
               return nxtConflictMatch();
             });
           }, () => {
