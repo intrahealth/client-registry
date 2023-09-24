@@ -8,5 +8,7 @@
     "http://clientregistry.org/nationalid":"National ID",
     "http://example.com/status": "Status",
     "http://example.com/date": "Status Date",
-    "http://openelis-global.org/pat_nationalId":"ART Number"
+    "http://openelis-global.org/pat_nationalId":"ART Number",
+    "patient_date_enrollement": "Enrollment Date",
+    "patient_date_Initiation_ARV": "ART Initiation Date"
 }
