@@ -45,11 +45,7 @@
                       <v-spacer />
                       {{ selected+1 }} / {{ match_count }}
                     </v-toolbar>
-                    <v-list
-                      dense
-                      light
-                      height="100%"
-                    >
+                    <v-list dense light style="max-height: 400px; overflow-y: auto;">
                       <v-list-item>
                         <v-list-item-content>Submitting System:</v-list-item-content>
                         <v-list-item-content class="align-end">
