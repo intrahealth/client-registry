@@ -8,6 +8,13 @@ export const generalMixin = {
         }
       })
     },
+    countNewAutoMatches() {
+      axios.get(`/ocrux/match/count-new-auto-matches`).then((response) => {
+        if(response.data) {
+          this.$store.state.totalAutoMatches = response.data.total
+        }
+      })
+    },
     getClientDisplayName(clientid) {
       let clientDet = this.$store.state.clients.find((client) => {
         return client.id === clientid

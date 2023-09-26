@@ -469,6 +469,7 @@ export default {
       }
       axios.post('/ocrux/match/resolve-match-issue', body).then(() => {
         this.countMatchIssues();
+        this.countNewAutoMatches();
         this.showReview = false
         this.$store.state.progress.enable = false
         this.$store.state.alert.show = true;

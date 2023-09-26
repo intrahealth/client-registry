@@ -15,6 +15,7 @@ const esMatching = require('../esMatching');
 const cacheFHIR = require('../tools/cacheFHIR');
 const logger = require('../winston');
 const config = require('../config');
+const matchAutoURI = URI("http://openclientregistry.org/fhir").segment('automatch').toString();
 const matchIssuesURI = URI("http://openclientregistry.org/fhir").segment('matchIssues').toString();
 const reprocessingURI = URI("http://openclientregistry.org/fhir").segment('require-reprocess').toString();
 const humanAdjudURI = URI("http://openclientregistry.org/fhir").segment('humanAdjudication').toString();
@@ -582,6 +583,68 @@ const addPatient = (clientID, patientsBundle, callback) => {
       operSummary.FHIRPotentialMatches = FHIRPotentialMatches.entry;
       operSummary.FHIRConflictsMatches = FHIRConflictsMatches.entry;
       operSummary.ESMatches = ESMatches;
+
+
+      // if there is auto matches  then add a tag
+      let existsAutoMatches = false;
+      for(const auto of FHIRAutoMatched.entry) {
+        let isCurrentLink = currentLinks.find((currentLink) => {
+          return auto.resource.link.find((link) => {
+            return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
+          });
+        });
+        // if this auto match is currently linked to this patient and patient has human adjudication tag then this will be kept as a link, dont count as auto
+        if(isCurrentLink && hasHumanAdjudTag && !autoMatchPatientWithHumanAdjudTag) {
+          continue;
+        } else {
+          existsAutoMatches = true;
+        }
+      }
+      if(existsAutoMatches) {
+        if(!patient.meta) {
+          patient.meta = {};
+        }
+        if(!patient.meta.tag) {
+          patient.meta.tag = [];
+        }
+        let tagExist = patient.meta.tag.find((tag) => {
+          return tag.system === matchAutoURI && tag.code === 'autoMatches';
+        });
+        if(!tagExist) {
+          patient.meta.tag.push({
+            system: matchAutoURI,
+            code: 'autoMatches',
+            display: 'Auto Matches'
+          });
+        }
+      } else {
+        // remove the auto match tag
+        for(let tagIndex in patient.meta.tag) {
+          let tag = patient.meta.tag[tagIndex];
+          if(tag.system === matchAutoURI && tag.code === 'autoMatches') {
+            patient.meta.tag.splice(tagIndex, 1);
+          }
+        }
+
+        let parameters = {
+          resourceType: 'Parameters',
+          parameter: [{
+            name: 'meta',
+            valueMeta: {
+              tag: {
+                system: matchAutoURI,
+                code: 'autoMatches',
+                display: 'Auto Matches'
+              }
+            }
+          }]
+        };
+        await fhirWrapper["$meta-delete"]({
+          resourceParameters: parameters,
+          resourceType: 'Patient',
+          resourceID: patient.id
+        });
+      }
 
       // if there is potential matches or conflict matches then add a tag
       let existsPotentialMatches = false;

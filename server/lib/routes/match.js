@@ -12,6 +12,7 @@ const esMatching = require('../esMatching');
 const logger = require('../winston');
 const config = require('../config');
 const matchIssuesURI = URI(config.get("systems:CRBaseURI")).segment('matchIssues').toString();
+const matchAutoURI = URI("http://openclientregistry.org/fhir").segment('automatch').toString();
 const humanAdjudicationURI = URI(config.get("systems:CRBaseURI")).segment('humanAdjudication').toString();
 
 router.post('/resolve-match-issue', async(req, res) => {
@@ -255,6 +256,68 @@ router.post('/resolve-match-issue', async(req, res) => {
             // end of removing any resolved potential matches
 
             async.parallel({
+              autoMatches: async (callback) => {
+                if(flagType === 'autoMatches' && removeFlag) {
+                  if(resolvePatientResource.resource.meta && resolvePatientResource.resource.meta.tag) {
+                    for(let tagIndex in resolvePatientResource.resource.meta.tag) {
+                      let tag = resolvePatientResource.resource.meta.tag[tagIndex];
+                      if(tag.system === matchAutoURI && tag.code === 'autoMatches') {
+                        resolvePatientResource.resource.meta.tag.splice(tagIndex, 1);
+                        resolvePatientResource.resource.meta.tag.push({
+                          system: humanAdjudicationURI,
+                          code: 'humanAdjudication',
+                          display: 'Matched By Human'
+                        });
+                      }
+                    }
+                    
+                    let parameters = {
+                      resourceType: 'Parameters',
+                      parameter: [{
+                        name: 'meta',
+                        valueMeta: {
+                          tag: {
+                            system: matchAutoURI,
+                            code: 'autoMatches',
+                            display: 'Auto Matches'
+                          }
+                        }
+                      }]
+                    };
+                    logger.info('Removing auto match tag');
+                    await fhirWrapper["$meta-delete"]({
+                      resourceParameters: parameters,
+                      resourceType: 'Patient',
+                      resourceID: resolvePatientResource.resource.id
+                    }).catch(() => {
+                      logger.error('An error has occured while removing auto match tag');
+                      errorOccured = true;
+                      return callback(null);
+                    });
+                    logger.info('Auto match tag removed');
+                  } else {
+                    return callback(null);
+                  }
+                } else {
+                  if(!resolvePatientResource.resource.meta) {
+                    resolvePatientResource.resource.meta = {};
+                  }
+                  if(!resolvePatientResource.resource.meta.tag) {
+                    resolvePatientResource.resource.meta.tag = [];
+                  }
+                  let tagExist = resolvePatientResource.resource.meta.tag.find((tag) => {
+                    return tag.system === matchAutoURI && tag.code === 'autoMatches';
+                  });
+                  if(!tagExist) {
+                    resolvePatientResource.resource.meta.tag.push({
+                      system: matchAutoURI,
+                      code: 'autoMatches',
+                      display: 'Auto Matches'
+                    });
+                  }
+                  return callback(null);
+                }
+              },
               potentialMatches: async (callback) => {
                 if(FHIRPotentialMatches.entry.length === 0 || (flagType === 'potentialMatches' && removeFlag)) {
                   if(resolvePatientResource.resource.meta && resolvePatientResource.resource.meta.tag) {
@@ -982,6 +1045,18 @@ router.get(`/count-match-issues`, (req, res) => {
   });
 });
 
+router.get(`/count-new-auto-matches`, (req, res) => {
+  logger.info("Received a request to count auto matches");
+  fhirWrapper.getResource({
+    resource: 'Patient',
+    query: `_tag=${matchAutoURI}|autoMatches&_summary=count`,
+    noCaching: true
+  }, (autoCount) => {
+    logger.info(`Returning ${autoCount.total} auto matches`);
+    return res.status(200).json({total: autoCount.total});
+  });
+});
+
 router.get('/potential-matches/:id', (req, res) => {
   logger.info("Received a request to get potential matches");
   let matchResults = [];
@@ -1201,6 +1276,57 @@ router.get(`/get-match-issues`, (req, res) => {
 
       let matchTag = entry.resource.meta.tag.find((tag) => {
         return tag.system === matchIssuesURI;
+      });
+      let clientsTag = entry.resource.meta.tag.find((tag) => {
+        return tag.system === clientIDURI;
+      });
+      let review = {
+        id: entry.resource.id,
+        gender: entry.resource.gender,
+        family: name.family,
+        given,
+        birthDate: entry.resource.birthDate,
+        uid: link,
+        source: clientsTag.code,
+        source_id: validSystem.value,
+        reason: matchTag.display,
+        reasonCode: matchTag.code
+      };
+      reviews.push(review);
+    }
+    return res.status(200).json(reviews);
+  });
+});
+
+router.get(`/get-new-auto-matches`, (req, res) => {
+  const clientIDURI = URI(config.get("systems:CRBaseURI")).segment('clientid').toString();
+  fhirWrapper.getResource({
+    resource: 'Patient',
+    query: `_tag=${matchAutoURI}|autoMatches`,
+    noCaching: true
+  }, (issues) => {
+    let reviews = [];
+    for(let entry of issues.entry) {
+      let name = entry.resource.name.find((name) => {
+        return name.use === 'official';
+      });
+      let given = '';
+      if(name && name.given) {
+        given = name.given.join(' ');
+      }
+      let link = '';
+      if(entry.resource.link) {
+        link = entry.resource.link[0].other.reference;
+      }
+      if(link) {
+        link = link.split('/')[1];
+      }
+      const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
+        return 'http://openclientregistry.org/fhir/sourceid' && identifier.value;
+      });
+
+      let matchTag = entry.resource.meta.tag.find((tag) => {
+        return tag.system === matchAutoURI;
       });
       let clientsTag = entry.resource.meta.tag.find((tag) => {
         return tag.system === clientIDURI;

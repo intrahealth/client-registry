@@ -31,6 +31,19 @@
         </v-btn>
         <v-btn
           color="primary"
+          to="/automatch"
+          v-if='!$store.state.denyAccess'
+        >
+          <v-badge color="error"
+            :content="$store.state.totalAutoMatches"
+            :value="displayAutoMatchBadge"
+            offset-x="100"
+          >
+          <v-icon>mdi-alert</v-icon> Review Required
+          </v-badge>
+        </v-btn>
+        <v-btn
+          color="primary"
           to="/csvreport"
           v-if='!$store.state.denyAccess'
         >
@@ -120,7 +133,8 @@ export default {
   mixins: [generalMixin],
   data() {
     return {
-      totalMatchIssues: 0
+      totalMatchIssues: 0,
+      countNewAutoMatches: 0
     }
   },
   created() {
@@ -142,10 +156,18 @@ export default {
       });
     }
     this.countMatchIssues();
+    this.countNewAutoMatches();
+
   },
   computed: {
     displayActionRequiredBadge() {
       if(this.$store.state.totalMatchIssues > 0) {
+        return true
+      }
+      return false
+    },
+    displayAutoMatchBadge() {
+      if(this.$store.state.totalAutoMatches > 0) {
         return true
       }
       return false
