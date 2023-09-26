@@ -39,7 +39,7 @@
             :value="displayAutoMatchBadge"
             offset-x="100"
           >
-          <v-icon>mdi-alert</v-icon> Review Required
+          <v-icon>mdi-alert</v-icon> Auto Match Review
           </v-badge>
         </v-btn>
         <v-btn
@@ -134,7 +134,7 @@ export default {
   data() {
     return {
       totalMatchIssues: 0,
-      countNewAutoMatches: 0
+      totalAutoMatches: 0
     }
   },
   created() {

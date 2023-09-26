@@ -736,6 +736,7 @@ export default {
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.countMatchIssues();
+          this.countNewAutoMatches();
           this.getPatient();
           this.getAuditEvents();
         });
@@ -759,6 +760,7 @@ export default {
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.countMatchIssues();
+          this.countNewAutoMatches();
           this.getPatient();
           this.getAuditEvents();
         });

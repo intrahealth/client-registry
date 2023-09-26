@@ -511,6 +511,30 @@ router.post('/resolve-match-issue', async(req, res) => {
         logger.error('An error has occured while removing conflict match tag');
         return res.status(500).send();
       });
+
+      parameters = {
+        resourceType: 'Parameters',
+        parameter: [{
+          name: 'meta',
+          valueMeta: {
+            tag: {
+              system: matchAutoURI,
+              code: 'autoMatches',
+              display: 'Auto Matches'
+            }
+          }
+        }]
+      };
+      logger.info('Removing auto match tag');
+      await fhirWrapper["$meta-delete"]({
+        resourceParameters: parameters,
+        resourceType: 'Patient',
+        resourceID: resolvingFrom
+      }).catch(() => {
+        logger.error('An error has occured while removing auto match tag');
+        return res.status(500).send();
+      });
+
       fhirWrapper.getResource({
         resource: 'Patient',
         id: resolvingFrom,
