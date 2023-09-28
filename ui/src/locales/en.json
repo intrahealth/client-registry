@@ -12,5 +12,57 @@
     "patient_status_date": "Status Date",
     "http://openelis-global.org/pat_nationalId":"ART Number",
     "patient_date_enrollement": "Enrollment Date",
-    "patient_date_Initiation_ARV": "ART Initiation Date"
+    "patient_date_Initiation_ARV": "ART Initiation Date",
+
+    "menu_home": "Home",
+    "menu_action_required": "Actions Required",
+    "menu_auto_matches":"Auto-Matches",
+    "menu_csv":"CSV Reports",
+    "menu_accounts":"Accounts",
+    "menu_logout":"Logout",
+
+    "account_add":"Add User",
+    "user":"User",
+    "account_list":"User List",
+    "account_change_password":"Change Password",
+
+    "login":"Login",
+    "auth_failed":"Authentication failed",
+    "labels_Password":"Password",
+    "current_password":"Current password",
+    "new_passord":"New password",
+    "retype_password": "Confirm password",
+    "labels_Username":"Username",
+
+    "clear":"Clear",
+    "back":"Back",
+    "close":"Close",
+        
+    "user.add":"Add",
+    "password_change":"Change",
+
+    "cr_id": "CR ID",
+    "surname": "Surname",
+    "given_names": "Given names",
+    "gender":"Gender",
+    "birth_date":"Date of Birth",
+    "middle_names":"Middle names",
+    "source": "Source",
+    "source_id": "Source ID",
+    "reason": "Reason",
+    "date_flagged": "Date flagged",
+    "username":"Username",
+    "submitting_system":"Submitting system",
+
+    "record":"Record",
+    "history":"History",
+    "review_potential_matches":"Review potential matches",
+    "matched_records":"Matched records",
+    "break_matches":"Break matches",
+    "break_matche":"Break match",
+    "broken_matches":"Broken matches",
+    "revert_break":" Revert break",
+    "submitted_resource":"Submitted resource",
+    "event":"Event",
+    "operation_time":"Operation time"
 }

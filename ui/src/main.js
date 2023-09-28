@@ -11,6 +11,7 @@ import {
   store
 } from './store/store'
 import VueI18n from 'vue-i18n'
+import fr from './locales/fr.json'
 import en from './locales/en.json'
 
 Object.defineProperty(Vue.prototype, '$fhirpath', {
@@ -27,11 +28,11 @@ Vue.use(require('vue-moment'));
 Vue.use(VueI18n)
 
 const messages = {
-  en
+  fr, en
 }
 
 const i18n = new VueI18n({
-  locale: 'en', // Set the default locale here
+  locale: 'fr', // Set the default locale here
   messages
 })
 

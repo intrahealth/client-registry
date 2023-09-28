@@ -6,15 +6,15 @@
       dark
     >
       <v-tabs-slider></v-tabs-slider>
-      <v-tab href="#record"><v-icon>mdi-account</v-icon>Record</v-tab>
-      <v-tab href="#history"><v-icon>mdi-history</v-icon>History</v-tab>
+      <v-tab href="#record"><v-icon>mdi-account</v-icon>{{  $t('record') }}</v-tab>
+      <v-tab href="#history"><v-icon>mdi-history</v-icon>{{  $t('history') }}</v-tab>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-if="uid === '6f2eac1b-5b1d-49ce-a4b7-f9089128f836'" color="warning" @click="$router.push('/resolve/590-57-2820')">
-          <v-badge icon="mdi-alert" color="error" >Review Potential Matches</v-badge>
+          <v-badge icon="mdi-alert" color="error" >{{ $t('review_potential_matches') }}</v-badge>
         </v-btn>
-        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">Back</v-btn>
-        <v-btn color="secondary" @click="close" v-else>Close</v-btn>
+        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">{{  $t('back') }}</v-btn>
+        <v-btn color="secondary" @click="close" v-else>{{  $t('close') }}</v-btn>
       </v-toolbar-items>
       <v-tab-item value="record">
         <v-row>
@@ -47,7 +47,7 @@
                     </v-toolbar>
                     <v-list dense light style="max-height: 400px; overflow-y: auto;">
                       <v-list-item>
-                        <v-list-item-content>Submitting System:</v-list-item-content>
+                        <v-list-item-content>{{ $t('submitting_system') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.system }}
                         </v-list-item-content>
@@ -56,19 +56,19 @@
                         v-for="(name, j) in patient.name"
                         :key="`${j}-${name.use}`"
                       >
-                        <v-list-item-content>Name ({{ name.use }})</v-list-item-content>
+                        <v-list-item-content>{{ $t('surname') }} ({{ name.use }})</v-list-item-content>
                         <v-list-item-content class="align-end text-capitalize">
                           {{ name.given.join(" ") }} {{ name.family }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>Gender:</v-list-item-content>
+                        <v-list-item-content>{{ $t('gender') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.gender }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>Birth Date:</v-list-item-content>
+                        <v-list-item-content>{{ $t('birth_date') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.birthdate }}
                         </v-list-item-content>
@@ -114,7 +114,7 @@
                 color="accent"
                 dark
               >
-                <v-toolbar-title>Matched Records</v-toolbar-title>
+                <v-toolbar-title>{{ $t('matched_records') }} </v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="breaks"
@@ -132,7 +132,7 @@
                   :disabled="breaks.length === 0 || match_items.length < 2"
                   @click="breakMatch()"
                 >
-                  Break Match(es)
+                {{ $t('break_matches') }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -143,7 +143,7 @@
                 color="warning"
                 dark
               >
-                <v-toolbar-title>Broken Matches</v-toolbar-title>
+                <v-toolbar-title> {{ $t('broken_matches') }}</v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="unbreaks"
@@ -161,7 +161,7 @@
                   :disabled="unbreaks.length === 0"
                   @click="revertBreak()"
                 >
-                  Revert Break
+                {{ $t('revert_break') }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -176,7 +176,7 @@
                 color="secondary"
                 dark
               >
-                <v-toolbar-title>History</v-toolbar-title>
+                <v-toolbar-title>{{  $t('history') }}</v-toolbar-title>
               </v-toolbar>
               <v-expansion-panels popout>
                 <v-expansion-panel
@@ -185,22 +185,22 @@
                 >
                   <v-expansion-panel-header>
                     <template v-if="event.type === 'submittedResource'">
-                      Submitted Resource
+                      {{  $t('submitted_resource') }}
                     </template>
                     <template v-if="event.type === 'breakMatch'">
-                      Break Match
+                      {{  $t('break_matche') }}
                     </template>
                     <template v-if="event.type === 'unBreak'">
-                      Revert Break
+                      {{  $t('revert_break') }}
                     </template>
-                    Event {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
+                    {{  $t('event') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <template v-if="event.type !== 'submittedResource'">
-                      User: {{ event.username }} <br>
+                      {{  $t('user') }}: {{ event.username }} <br>
                     </template>
                     Operation: <b>{{ event.operation }}</b> <br>
-                    Operation Time {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
-                    Status:
+                    {{  $t('operation_time') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
+                    {{  $t('patient_status') }} :
                     <template v-if="event.outcomeCode === '0'">
                       <v-chip
                         color="green"
@@ -736,7 +736,6 @@ export default {
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.countMatchIssues();
-          this.countNewAutoMatches();
           this.getPatient();
           this.getAuditEvents();
         });
@@ -760,7 +759,6 @@ export default {
         this.$http.post(url, ids).then(() => {
           this.$store.state.progress.enable = false;
           this.countMatchIssues();
-          this.countNewAutoMatches();
           this.getPatient();
           this.getAuditEvents();
         });

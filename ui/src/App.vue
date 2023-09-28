@@ -14,7 +14,7 @@
           to="/"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-home</v-icon> Home
+          <v-icon>mdi-home</v-icon> {{ $t('menu_home') }}
         </v-btn>
         <v-btn
           color="primary"
@@ -26,7 +26,7 @@
             :value="displayActionRequiredBadge"
             offset-x="100"
           >
-          <v-icon>mdi-alert</v-icon> Action Required
+          <v-icon>mdi-alert</v-icon>{{ $t('menu_action_required') }}
           </v-badge>
         </v-btn>
         <v-btn
@@ -39,7 +39,7 @@
             :value="displayAutoMatchBadge"
             offset-x="100"
           >
-          <v-icon>mdi-alert</v-icon> Auto Match Review
+          <v-icon>mdi-alert</v-icon> {{ $t('menu_auto_matches') }}
           </v-badge>
         </v-btn>
         <v-btn
@@ -47,7 +47,7 @@
           to="/csvreport"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-file-chart</v-icon> CSV Reports
+          <v-icon>mdi-file-chart</v-icon>{{ $t('menu_csv') }}
         </v-btn>
         <v-menu
           bottom
@@ -61,19 +61,19 @@
               v-on="on"
             >
               <v-icon>mdi-account-outline</v-icon>
-              Accounts
+              {{ $t('menu_accounts') }}
             </v-btn>
           </template>
 
           <v-list>
             <v-list-item to="/addUser" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Add User
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_add') }}
             </v-list-item>
             <v-list-item to="/usersList" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Users List
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_list') }}
             </v-list-item>
             <v-list-item to="/changePassword" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Change Password
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_change_password') }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -82,7 +82,7 @@
           to="/logout"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-logout</v-icon> Logout
+          <v-icon>mdi-logout</v-icon> {{ $t('menu_logout') }}
         </v-btn>
       </v-toolbar-items>
       <v-spacer />
@@ -157,7 +157,6 @@ export default {
     }
     this.countMatchIssues();
     this.countNewAutoMatches();
-
   },
   computed: {
     displayActionRequiredBadge() {

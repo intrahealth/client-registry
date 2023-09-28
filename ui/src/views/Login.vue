@@ -10,8 +10,7 @@
           <v-alert
             type="error"
             :value="authStatus"
-          >
-            Authentication Failed
+          > {{ $t('auth_failed') }}
           </v-alert>
         </v-flex>
       </v-layout>
@@ -43,7 +42,7 @@
                 xs9
                 text-xs-right
               >
-                <b>Login</b>
+                <b>  {{ $t('login') }}</b>
               </v-flex>
             </v-layout>
           </v-toolbar>
@@ -58,7 +57,7 @@
               required
               filled
               color="deep-purple"
-              label="Username"
+              :label="$t('labels_Username')"
               @keyup.enter="authenticate()"
               @blur="$v.username.$touch()"
               @change="$v.username.$touch()"
@@ -70,7 +69,7 @@
               filled
               type="password"
               color="deep-purple"
-              label="Password"
+              :label="$t('labels_Password')"
               @keyup.enter="authenticate()"
               @blur="$v.password.$touch()"
               @change="$v.password.$touch()"
@@ -89,7 +88,7 @@
               :disabled="$v.$invalid"
             >
               <v-icon left>mdi-lock-open-variant</v-icon>
-              Login
+              {{ $t('login') }}
             </v-btn>
           </v-toolbar>
         </v-card-actions>

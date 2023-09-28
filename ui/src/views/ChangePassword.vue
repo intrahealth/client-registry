@@ -20,7 +20,7 @@
             dark
             flat
           >
-            <v-card-title class="title font-weight-regular">Add New User</v-card-title>
+            <v-card-title class="title font-weight-regular">{{ $t('account_change_password') }}</v-card-title>
           </v-toolbar>
           <v-form
             ref="form"
@@ -35,7 +35,7 @@
               type="password"
               filled
               color="deep-purple"
-              label="Current Password*"
+              :label="$t('current_password')"
             />
             <v-text-field
               required
@@ -46,11 +46,11 @@
               type="password"
               filled
               color="deep-purple"
-              label="New Password*"
+              :label="$t('new_passord')"
             />
             <v-text-field
               v-model="retype_newpassword"
-              label="Re-type New Password*"
+              :label="$t('retype_password')"
               required
               type="password"
               filled
@@ -66,7 +66,7 @@
               text
               @click="$refs.form.reset()"
             >
-              <v-icon>mdi-clear</v-icon>Clear
+              <v-icon>mdi-clear</v-icon>{{ $t('clear') }}
             </v-btn>
             <v-spacer />
             <v-btn
@@ -78,7 +78,7 @@
             >
               <v-icon left>
                 mdi-language
-              </v-icon>Change
+              </v-icon>{{ $t('password_change') }}
             </v-btn>
           </v-card-actions>
         </v-card>
