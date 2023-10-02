@@ -106,7 +106,9 @@
     "users_list": "Users list",
     "search": "Search",
     "row_per_page": "Rows per page : ",
-    "no_data": "No data available"
+    "no_data": "No data available",
+    "simplified_naming": "Use simplified naming?",
+     "include_real_crid": "Include Actual CR ID with Temporary CR ID?"
     
 
 }

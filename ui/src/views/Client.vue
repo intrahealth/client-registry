@@ -153,7 +153,10 @@
                 :headers="match_headers"
                 :items="break_items"
                 :items-per-page="20"
+                :footer-props="{ 
+                'items-per-page-text':this.$t('row_per_page')}"
                 class="elevation-1 text-capitalize"
+                :no-data-text="$t('no_data')"
                 item-key="id"
                 show-select
               />

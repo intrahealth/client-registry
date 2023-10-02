@@ -204,7 +204,7 @@ export default {
 
               if(label && fhirpath) {
                 columns_info.push({
-                  text: translatedHeader ? translatedHeader: label.valueString,
+                  text: label.valueString,
                   fhirpath: fhirpath.valueString
                 })
                 this.headers.push({
@@ -212,7 +212,7 @@ export default {
                   value: label.valueString
                 })
               }
-              console.log({searchparameter: searchparameter});
+
               if(searchable && searchparameter) {
                 let filter = {
                   searchparameter: searchparameter.valueString,
@@ -221,11 +221,9 @@ export default {
                 if(valueset && valueset.valueString) {
                   filter.binding = valueset.valueString
                 }
-                console.log({filter: filter});
                 this.filters.push(filter)
               }
             }
-            console.log({filters: this.filters});
             this.headers.push({
               text: this.$t('source'),
               value: "pos"

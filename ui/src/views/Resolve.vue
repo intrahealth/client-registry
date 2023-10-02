@@ -27,10 +27,10 @@
           <h3 class="white--text">Options</h3>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="useNickname" dark label="Use Simplified naming?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="useNickname" dark :label="$t('simplified_naming')" @change="setupCRIDList"></v-switch>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="includeCRID" dark label="Include Actual CR ID with Temporary CR ID?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="includeCRID" dark :label="$t('include_real_crid')" @change="setupCRIDList"></v-switch>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -57,6 +57,7 @@
           class="elevation-1"
           :disable-pagination="true"
           :hide-default-footer="true"
+          :no-data-text="$t('no_data')"
           >
         </v-data-table>
         <v-card-actions>

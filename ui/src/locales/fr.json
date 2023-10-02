@@ -108,6 +108,8 @@
     "users_list":"Liste des utilisateurs",
     "search":"Rechercher",
     "row_per_page":"Lignes par page :",
-    "no_data":"Aucune donnée disponible"
+    "no_data":"Aucune donnée disponible",
+    "simplified_naming":"Utiliser la dénomination simplifiée ?",
+    "include_real_crid":"Inclure l'ID CR actuel dans l'ID CR temporaire ?"
 
 }
