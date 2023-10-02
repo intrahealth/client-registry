@@ -1,7 +1,7 @@
 <template>
     <v-card>
     <v-card-title>
-      Action Required
+    {{ $t('menu_action_required') }}
       <v-spacer />
     </v-card-title>
     <v-data-table
@@ -9,7 +9,10 @@
       :headers="headers"
       :items="reviews"
       :options.sync="options"
-      :footer-props="{ 'items-per-page-options': [5,10,20,50] }"
+      :footer-props="{ 
+      'items-per-page-options': [5,10,20,50] ,
+      'items-per-page-text':this.$t('row_per_page')}"
+      :no-data-text="$t('no_data')"
       :loading="loading"
       class="elevation-1"
       @click:row="clickIt"
@@ -50,13 +53,13 @@ export default {
       options: { itemsPerPage: 10, sortBy: ["family"] },
       rowsPerPageItems: [5, 10, 20, 50],
       headers: [
-        { text: "CR ID", value: "uid" },
-        { text: "Surname", value: "family" },
-        { text: "Given Names", value: "given" },
-        { text: "Source", value: "source" },
-        { text: "Source ID", value: "source_id" },
-        { text: "Reason", value: "reason" },
-        { text: "Date Flagged", value: "date" }
+        { text:  this.$t('cr_id'), value: "uid" },
+        { text:  this.$t('surname'), value: "family" },
+        { text:  this.$t('given_names'), value: "given" },
+        { text:  this.$t('source'), value: "source" },
+        { text:  this.$t('source_id') , value: "source_id" },
+        { text:  this.$t('reason'), value: "reason" },
+        { text:  this.$t('date_flagged'), value: "date" }
       ],
     };
   },

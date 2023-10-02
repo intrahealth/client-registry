@@ -17,7 +17,7 @@
         item-text="displayName"
         item-value="id"
         clearable
-        label="Point of Service"
+        :label="$t('source')"
         hide-details
         outlined
         shaped
@@ -31,7 +31,10 @@
       :items="patients"
       :options.sync="options"
       :server-items-length="totalPatients"
-      :footer-props="{ 'items-per-page-options': [5,10,20,50] }"
+      :footer-props="{ 
+      'items-per-page-options': [5,10,20,50] ,
+      'items-per-page-text':this.$t('row_per_page')}"
+      :no-data-text="$t('no_data')"
       :loading="loading"
       class="elevation-1"
       @click:row="clickIt"
@@ -42,6 +45,15 @@
 <script>
 import { generalMixin } from "@/mixins/generalMixin";
 import searchTerm from "../components/search-term"
+
+export const headersNames = {
+  givenName: 'Given Names(s)',
+  surname: 'Surname',
+  gender: 'Gender',
+  birth: 'Birth Date',
+  cruid :'CRUID'
+}
+
 export default {
   name: "Home",
   mixins: [generalMixin],
@@ -172,29 +184,50 @@ export default {
               let searchparameter = disp.extension && disp.extension.find((ext) => {
                 return ext.url === 'searchparameter'
               })
+          
+              let translatedHeader ;
+              if (label.valueString === headersNames.givenName) {
+                translatedHeader = this.$t('given_names');
+              }
+              if (label.valueString === headersNames.surname) {
+                translatedHeader = this.$t('surname');
+              }
+              if (label.valueString === headersNames.gender) {
+                translatedHeader = this.$t('gender');
+              }
+              if (label.valueString === headersNames.birth) {
+                translatedHeader = this.$t('birth_date');
+              }
+              if (label.valueString === headersNames.cruid) {
+                translatedHeader = label.valueString;
+              }
+
               if(label && fhirpath) {
                 columns_info.push({
-                  text: label.valueString,
+                  text: translatedHeader ? translatedHeader: label.valueString,
                   fhirpath: fhirpath.valueString
                 })
                 this.headers.push({
-                  text: label.valueString,
+                  text: translatedHeader ? translatedHeader: label.valueString,
                   value: label.valueString
                 })
               }
+              console.log({searchparameter: searchparameter});
               if(searchable && searchparameter) {
                 let filter = {
                   searchparameter: searchparameter.valueString,
-                  label: 'Search ' + label.valueString
+                  label: this.$t('search')+ "_" + translatedHeader ? translatedHeader: label.valueString
                 }
                 if(valueset && valueset.valueString) {
                   filter.binding = valueset.valueString
                 }
+                console.log({filter: filter});
                 this.filters.push(filter)
               }
             }
+            console.log({filters: this.filters});
             this.headers.push({
-              text: "Point of Service",
+              text: this.$t('source'),
               value: "pos"
             })
           }

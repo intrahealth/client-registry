@@ -156,7 +156,7 @@ export default {
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
-          this.$store.state.alert.msg = "Login Failed"
+          this.$store.state.alert.msg = this.$t('login_failed');
           this.$store.state.alert.type = "error";
           if (err.hasOwnProperty("response")) {
             throw err;
@@ -168,13 +168,13 @@ export default {
     usernameErrors() {
       const errors = [];
       if (!this.$v.username.$dirty) return errors;
-      !this.$v.username.required && errors.push("Username is required");
+      !this.$v.username.required && errors.push(this.$t('username_required'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$t('password_required'));
       return errors;
     }
   }

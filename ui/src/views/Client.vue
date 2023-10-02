@@ -121,6 +121,9 @@
                 :headers="match_headers"
                 :items="match_items"
                 :items-per-page="20"
+                :footer-props="{ 
+                'items-per-page-text':this.$t('row_per_page')}"
+                :no-data-text="$t('no_data')"
                 class="elevation-1 text-capitalize"
                 item-key="fid"
                 show-select
@@ -447,37 +450,37 @@ export default {
       unbreaks: [],
       matchRuleHeaders: [
         {
-          text: "Field",
+          text: this.$t('field'),
           value: "name"
         },
         {
-          text: "Field Details",
+          text: this.$t('field_details'),
           value: "details"
         }
       ],
       match_headers: [
         {
-          text: "Submitting System",
+          text: this.$t('submitting_system'),
           value: "system"
         },
         {
-          text: "Record ID",
+          text: this.$t('record_id'),
           value: "id"
         },
         {
-          text: "Surname",
+          text: this.$t('surname'),
           value: "family"
         },
         {
-          text: "Given Name(s)",
+          text: this.$t('given_names'),
           value: "given"
         },
         {
-          text: "Gender",
+          text: this.$t('gender'),
           value: "gender"
         },
         {
-          text: "Birth Date",
+          text: this.$t('birth_date'),
           value: "birthdate"
         }
       ],

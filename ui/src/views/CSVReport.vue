@@ -8,7 +8,10 @@
       :headers="headers"
       :items="csvReport"
       :options.sync="options"
-      :footer-props="{ 'items-per-page-options': [5,10,20,50] }"
+      :footer-props="{ 
+      'items-per-page-options': [5,10,20,50] ,
+      'items-per-page-text':this.$t('row_per_page')}"
+      :no-data-text="$t('no_data')"
       :loading="loading"
       class="elevation-1"
       >
@@ -57,9 +60,9 @@ export default {
       rowsPerPageItems: [5, 10, 20, 50],
       headers: [
         { text: "CSV ID", value: "uuid" },
-        { text: "CSV Name", value: "name" },
+        { text: this.$t('csv_name'), value: "name" },
         { text: "Date", value: "date" },
-        { text: "Reports", value: "reports" }
+        { text: this.$t('reports'), value: "reports" }
       ],
       csvReport: [],
       downloading: false

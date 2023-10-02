@@ -172,13 +172,13 @@ export default {
     usernameErrors() {
       const errors = [];
       if (!this.$v.userName.$dirty) return errors;
-      !this.$v.userName.required && errors.push("Username is required");
+      !this.$v.userName.required && errors.push(this.$t('username_required'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$('password_required'));
       return errors;
     },
     retype_passwordErrors() {

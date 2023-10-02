@@ -109,19 +109,19 @@ export default {
     newpasswordErrors() {
       const errors = [];
       if (!this.$v.newpassword.$dirty) return errors;
-      !this.$v.newpassword.required && errors.push("New password is required");
+      !this.$v.newpassword.required && errors.push(this.$t('new_password_required'));
       return errors;
     },
     retype_newpasswordErrors() {
       const errors = [];
       if (!this.$v.retype_newpassword.$dirty) return errors;
-      !this.$v.retype_newpassword.required && errors.push("Must re-type New Password");
+      !this.$v.retype_newpassword.required && errors.push(this.$t('retype_new_password'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$t('password_required'));
       return errors;
     }
   },
@@ -130,13 +130,13 @@ export default {
       if (this.newpassword !== this.retype_newpassword) {
         this.$store.state.alert.show = true;
         this.$store.state.alert.width = "500px";
-        this.$store.state.alert.msg = "New password mismatch";
+        this.$store.state.alert.msg = this.$t('new_password_mismatch');
         this.$store.state.alert.type = "error";
         return;
       }
       this.$store.state.progress.enable = true;
       this.$store.state.progress.width = "300px";
-      this.$store.state.progress.title = "Changing password"
+      this.$store.state.progress.title = this.$t('changing_password')
       let formData = new FormData();
       formData.append("password", this.password);
       formData.append("username", this.$store.state.auth.username);
@@ -151,7 +151,7 @@ export default {
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
-          this.$store.state.alert.msg = "Password changed";
+          this.$store.state.alert.msg = this.$t('password_changed');
           this.$store.state.alert.type = "success";
           this.$refs.form.reset();
         })
@@ -164,7 +164,7 @@ export default {
           } else if(error.message) {
             msg = error.message
           } else {
-            msg = "An error occured"
+            msg = this.$t('error_occured')
           }
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
