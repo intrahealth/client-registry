@@ -13,6 +13,8 @@ import {
 import VueI18n from 'vue-i18n'
 import fr from './locales/fr.json'
 import en from './locales/en.json'
+import FlagIcon from 'vue-flag-icon';
+
 
 Object.defineProperty(Vue.prototype, '$fhirpath', {
   value: fhirpath
@@ -26,14 +28,11 @@ Vue.use(VueAxios, axios)
 Vue.use(Vuelidate)
 Vue.use(require('vue-moment'));
 Vue.use(VueI18n)
-
-const messages = {
-  fr, en
-}
+Vue.use(FlagIcon);
 
 const i18n = new VueI18n({
   locale: 'fr', // Set the default locale here
-  messages
+  messages: {  fr, en },
 })
 
 new Vue({

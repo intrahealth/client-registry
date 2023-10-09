@@ -4,6 +4,15 @@
      {{ $t('menu_auto_matches') }}
       <v-spacer />
     </v-card-title>
+    <v-card-title>
+      <v-text-field
+        v-model="search"
+        append-icon="mdi-magnify"
+        :label="$t('search')"
+        single-line
+        hide-details
+      ></v-text-field>
+    </v-card-title>
     <v-data-table
       style="cursor: pointer"
       :headers="headers"
@@ -15,6 +24,7 @@
       :no-data-text="$t('no_data')"
       :loading="loading"
       class="elevation-1"
+      :search="search"
       @click:row="clickIt"
     >
       <template v-slot:item.uid="{ item }">

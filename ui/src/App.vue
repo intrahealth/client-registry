@@ -84,6 +84,12 @@
         >
           <v-icon>mdi-logout</v-icon> {{ $t('menu_logout') }}
         </v-btn>
+        <div v-if='!$store.state.denyAccess' class="icon-div">
+          <button v-for="entry in languages" :key="entry.title" @click="$i18n.locale=entry.language">
+              <flag :iso="entry.flag" v-bind:squared=false /> {{entry.title}}
+          </button> 
+        </div>
+    
       </v-toolbar-items>
       <v-spacer />
     </v-app-bar>
@@ -128,13 +134,18 @@
 import VueCookies from "vue-cookies";
 import axios from "axios";
 import { generalMixin } from "@/mixins/generalMixin";
+
 export default {
   name: "App",
   mixins: [generalMixin],
   data() {
     return {
       totalMatchIssues: 0,
-      totalAutoMatches: 0
+      totalAutoMatches: 0,
+      languages: [
+            { flag: 'us', language: 'en', title: 'English' },
+            { flag: 'fr', language: 'fr', title: 'Francais' }
+        ]
     }
   },
   created() {
@@ -178,5 +189,9 @@ export default {
 .menuText {
   color: black;
   cursor: pointer;
+}
+.icon-div{
+  padding-top: 15px;
+  padding-left: 5px;
 }
 </style>

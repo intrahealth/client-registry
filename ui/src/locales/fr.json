@@ -12,7 +12,7 @@
     "patient_status": "Statut",
     "patient_status_date": "Date Statut",
     "http://openelis-global.org/pat_nationalId":"Numéro ARV",
-    "patient_date_enrollement": "Date d'Enrollment",
+    "patient_date_enrollement": "Date d'Enrollement",
     "patient_date_Initiation_ARV": "ARV  Date d'Initiation",
 
     "menu_home": "Accueil",
