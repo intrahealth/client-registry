@@ -30,7 +30,7 @@
     "is-json": "^2.0.1",
     "jaro-winkler": "^0.2.8",
     "jest": "^26.4.2",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "lodash": ">=4.17.21",
     "metaphone": "^1.0.6",
     "minimist": ">=1.2.2",
