@@ -617,33 +617,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
             display: 'Auto Matches'
           });
         }
-      } else {
-        // remove the auto match tag
-        for(let tagIndex in patient.meta.tag) {
-          let tag = patient.meta.tag[tagIndex];
-          if(tag.system === matchAutoURI && tag.code === 'autoMatches') {
-            patient.meta.tag.splice(tagIndex, 1);
-          }
-        }
-
-        let parameters = {
-          resourceType: 'Parameters',
-          parameter: [{
-            name: 'meta',
-            valueMeta: {
-              tag: {
-                system: matchAutoURI,
-                code: 'autoMatches',
-                display: 'Auto Matches'
-              }
-            }
-          }]
-        };
-        await fhirWrapper["$meta-delete"]({
-          resourceParameters: parameters,
-          resourceType: 'Patient',
-          resourceID: patient.id
-        });
       }
 
       // if there is potential matches or conflict matches then add a tag
