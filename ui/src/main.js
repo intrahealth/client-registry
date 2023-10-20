@@ -31,7 +31,7 @@ Vue.use(VueI18n)
 Vue.use(FlagIcon);
 
 const i18n = new VueI18n({
-  locale: 'fr', // Set the default locale here
+  locale: 'en', // Set the default locale here
   messages: {  fr, en },
 })
 

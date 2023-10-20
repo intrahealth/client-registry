@@ -82,7 +82,7 @@ export default {
       })
     },
     clickIt: function(client) {
-      this.$router.push({ name: "review", params: { clientId: client.uid } });
+      this.$router.push({ name: "automatch", params: { clientId: client.uid } });
     }
   },
   created() {
