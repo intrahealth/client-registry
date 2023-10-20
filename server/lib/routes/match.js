@@ -1080,8 +1080,9 @@ router.get(`/count-new-auto-matches`, (req, res) => {
     return res.status(200).json({total: autoCount.total});
   });
 });
-router.post('/potential-matches', (req, res) => {
-  logger.info("Received a request to get potential matches");
+
+router.post('/general-matches', (req, res) => {
+  logger.info("Received a request to get all matches");
   let matchResults = {
     parent: [],
     auto: [],
