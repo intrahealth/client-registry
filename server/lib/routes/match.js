@@ -1081,7 +1081,7 @@ router.get(`/count-new-auto-matches`, (req, res) => {
   });
 });
 
-router.post('/general-matches', (req, res) => {
+router.post('/matches', (req, res) => {
   logger.info("Received a request to get all matches");
   let matchResults = {
     parent: [],

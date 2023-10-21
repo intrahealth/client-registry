@@ -189,7 +189,6 @@ const buildQuery = (sourceResource, decisionRule) => {
 const getESDocument = (query, callback) => {
   let error = false;
   let documents = [];
-  let callbackCalled = false; // Flag to track if callback has been called
   if(!query) {
     query = {};
   }
@@ -227,7 +226,6 @@ const getESDocument = (query, callback) => {
             scroll_id: scroll_id
           };
         }
-        callbackCalled = true; // Set the flag after calling the callback
         return callback(null);
       }).catch((err) => {
         if(err.response && err.response.status === 429) {
@@ -240,10 +238,7 @@ const getESDocument = (query, callback) => {
           error = err;
           logger.error(err);
           scroll_id = null;
-          if (!callbackCalled) {
-            callbackCalled = true;
-            return callback(null);
-          }
+          return callback(null);
         }
       });
     },
