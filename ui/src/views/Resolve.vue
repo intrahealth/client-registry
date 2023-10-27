@@ -12,16 +12,14 @@
           <v-btn 
             @click="showMatrix = true; $vuetify.goTo($refs.scoreMatrix);" 
             color="accent"
-          >
-            Show Scores Matrix
+          >{{ $t('show_scores_matrix') }}
           </v-btn>
         </v-list-item>
         <v-list-item>
           <v-btn
             @click="showReview = true"
             color="success"
-          >
-            Save Changes
+          >{{ $t('save_changes') }}
           </v-btn>
         </v-list-item>
         <v-divider></v-divider>
@@ -29,10 +27,10 @@
           <h3 class="white--text">Options</h3>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="useNickname" dark label="Use Simplified naming?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="useNickname" dark :label="$t('simplified_naming')" @change="setupCRIDList"></v-switch>
         </v-list-item>
         <v-list-item>
-          <v-switch v-model="includeCRID" dark label="Include Actual CR ID with Temporary CR ID?" @change="setupCRIDList"></v-switch>
+          <v-switch v-model="includeCRID" dark :label="$t('include_real_crid')" @change="setupCRIDList"></v-switch>
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
@@ -41,7 +39,7 @@
         <v-card-title>
           <v-toolbar color="primary" dark>
             <v-toolbar-title class="font-weight-bold">
-              Review Changes
+              {{ $t('review_changes') }}
             </v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
@@ -50,7 +48,7 @@
           </v-toolbar>
         </v-card-title>
         <v-card-text v-if="!bucketsModified">
-          No changes have been made, are you sure you want to go ahead and remove the flag?
+          {{ $t('confirm_remove_flag') }}
         </v-card-text>
         <v-data-table
           v-else
@@ -59,6 +57,7 @@
           class="elevation-1"
           :disable-pagination="true"
           :hide-default-footer="true"
+          :no-data-text="$t('no_data')"
           >
         </v-data-table>
         <v-card-actions>
@@ -66,14 +65,14 @@
             color="error"
             @click="showReview = false"
           >
-            Cancel
+          {{ $t('cancel') }}
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
             color="success"
             @click="saveChanges"
           >
-            Save
+          {{ $t('save') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -81,19 +80,19 @@
     <v-dialog :value="cohortPopup" width="500">
       <v-card light>
         <v-card-title class="secondary lighten-1" color="white" primary-title>
-          Move All?
+          {{ $t('move_all') }}
         </v-card-title>
+        {{ $t('confirm_move_all_to_new') }}
         <v-card-text>
-          Do you want to include all the other records from this CR ID and move them all to the new CR ID”
         </v-card-text>
         <v-card-actions>
-          <v-btn color="info" @click="copyClient">Move this one record</v-btn>
+          <v-btn color="info" @click="copyClient">{{ $t('move_one') }}</v-btn>
           <v-spacer></v-spacer>
-          <v-btn color="warning" @click="copyCohort">Move all records</v-btn>
+          <v-btn color="warning" @click="copyCohort">{{ $t('move_all_records') }}</v-btn>
         </v-card-actions>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error" @click="copyCohortInfo = null; cohortPopup = false">Cancel</v-btn>
+          <v-btn color="error" @click="copyCohortInfo = null; cohortPopup = false">{{ $t('cancel') }}</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -155,7 +154,7 @@
           <v-card-title>
             <v-toolbar color="accent" dark>
               <v-toolbar-title class="font-weight-bold">
-                Scores Matrix
+                {{ $t('scores_matrix') }}
               </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
@@ -231,6 +230,8 @@
 </template>
 
 <script>
+//const ADD_TEXT =  this.$t('assign_new_cr_id') ;
+//const NEW_PREFIX = this.$t('new_cr_id') ;
 // @ is an alias to /src
 //import draggable from 'vuedraggable'
 const ADD_TEXT = "Assign to new CR ID"
@@ -266,25 +267,25 @@ export default {
       headers: [
         { text: this.cridHeader, value: "uid", sortable: false },
         { text: "Source", value: "source" },
-        { text: "Source ID", value: "source_id" },
-        { text: "Surname", value: "family" },
-        { text: "Given Names", value: "given" },
-        { text: "Birth Date", value: "birthDate" },
-        { text: "Gender", value: "gender" },
-        { text: "Full View", value: "view", sortable: false },
+        { text: this.$t('source_id') , value: "source_id" },
+        { text: this.$t('surname'), value: "family" },
+        { text: this.$t('given_names'), value: "given" },
+        { text: this.$t('birth_date'), value: "birthDate" },
+        { text: this.$t('gender'), value: "gender" },
+        { text: this.$t('full_view'), value: "view", sortable: false },
         { text: "Scores", value: "score", sortable: false },
       ],
       dates: { birthDate: true },
-      fields: { source: "Submitting System", source_id: "System ID", family: "Family Name", given: "Given Name",
-        gender: "Gender", birthDate: "Birth Date", phone: "Phone", "artnumber": "ART Number", "nationalid": "National ID"
+      fields: { source: this.$t('submitting_system'), source_id: this.$t('source_id'), family: this.$t('surname'), given: this.$t('given_names'),
+        gender: this.$t('gender'), birthDate: this.$t('birth_date'), phone: this.$t('phone')
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
       review_headers: [
         { text: "Source", value: "source" },
-        { text: "Source ID", value: "source_id" },
-        { text: "Original CR ID", value: "ouid" },
-        { text: "New CR ID", value: "uid" }
+        { text: this.$t('source_id'), value: "source_id" },
+        { text: this.$t('original_cr_id'), value: "ouid" },
+        { text: this.$t('new_cr_id'), value: "uid" }
       ],
       review_list: [],
       copyCohortInfo: null,
@@ -317,9 +318,34 @@ export default {
   created: function() {
     this.$store.state.progress.enable = true;
     this.$store.state.progress.width = "300px";
-    this.$store.state.progress.title = "Loading potential Matches"
+    this.$store.state.progress.title =  this.$t('loading_potential');
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
+        let extRegexPattern = /^extension_/;
+
+        let matchingKeys = [];
+
+        for (let i = 0; i < resp.data.length; i++) {
+          const dataObject = resp.data[i];
+            for (let key in dataObject) {
+              if (extRegexPattern.test(key)) {
+                matchingKeys.push(key);
+                this.$set(this.fields, key, this.$t(key));
+              }
+            }
+        }
+
+
+        let idRegexPattern = /^identifier/;
+        for (let key in resp.data[0]) {
+          if (idRegexPattern.test(key)) {
+              this.$set(this.fields, key, this.$t(key));
+
+          }
+        }
+
+
       this.resolves = resp.data
+
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
       this.$store.state.progress.enable = false;
@@ -327,13 +353,13 @@ export default {
       this.$store.state.progress.enable = false;
       this.$store.state.alert.show = true;
       this.$store.state.alert.width = "500px";
-      this.$store.state.alert.msg = "Oops, something went wrong";
+      this.$store.state.alert.msg = this.$t('something_wrong');
       this.$store.state.alert.type = "error";
     })
   },
   computed: {
     cridHeader: function() {
-      return this.useNickname ? "Temporary CR ID" + ( this.includeCRID ? " / Actual CR ID" : "") : "CR ID"
+      return this.useNickname ?  this.$t('Temporary_cr_id') + ( this.includeCRID ? " / Actual CR ID" : "") : "CR ID"
     },
     bucketsModified () {
       for(let matrix of this.resolves) {
@@ -429,7 +455,7 @@ export default {
     },
     saveChanges() {
       this.$store.state.progress.enable = true
-      this.$store.state.progress.title = 'Saving...'
+      this.$store.state.progress.title = this.$t('saving');
       // if no changes made on buckets then remove the flag
       let removeFlag = true
       // if buckets have been modified, flag will be removed if changes made will results in no more issues
@@ -444,18 +470,19 @@ export default {
       }
       axios.post('/ocrux/match/resolve-match-issue', body).then(() => {
         this.countMatchIssues();
+        this.countNewAutoMatches();
         this.showReview = false
         this.$store.state.progress.enable = false
         this.$store.state.alert.show = true;
         this.$store.state.alert.width = "500px";
-        this.$store.state.alert.msg = "Operation successful";
+        this.$store.state.alert.msg = this.$t('operation_successful');
         this.$store.state.alert.type = "success";
       }).catch((err) => {
         this.showReview = false
         this.$store.state.progress.enable = false
         this.$store.state.alert.show = true;
         this.$store.state.alert.width = "500px";
-        this.$store.state.alert.msg = "Error occured, operation failed";
+        this.$store.state.alert.msg = this.$t('operation_failed');
         this.$store.state.alert.type = "error";
         console.log(err);
       })

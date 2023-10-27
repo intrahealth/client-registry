@@ -6,15 +6,15 @@
       dark
     >
       <v-tabs-slider></v-tabs-slider>
-      <v-tab href="#record"><v-icon>mdi-account</v-icon>Record</v-tab>
-      <v-tab href="#history"><v-icon>mdi-history</v-icon>History</v-tab>
+      <v-tab href="#record"><v-icon>mdi-account</v-icon>{{  $t('record') }}</v-tab>
+      <v-tab href="#history"><v-icon>mdi-history</v-icon>{{  $t('history') }}</v-tab>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-btn v-if="uid === '6f2eac1b-5b1d-49ce-a4b7-f9089128f836'" color="warning" @click="$router.push('/resolve/590-57-2820')">
-          <v-badge icon="mdi-alert" color="error" >Review Potential Matches</v-badge>
+          <v-badge icon="mdi-alert" color="error" >{{ $t('review_potential_matches') }}</v-badge>
         </v-btn>
-        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">Back</v-btn>
-        <v-btn color="secondary" @click="close" v-else>Close</v-btn>
+        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">{{  $t('back') }}</v-btn>
+        <v-btn color="secondary" @click="close" v-else>{{  $t('close') }}</v-btn>
       </v-toolbar-items>
       <v-tab-item value="record">
         <v-row>
@@ -45,13 +45,9 @@
                       <v-spacer />
                       {{ selected+1 }} / {{ match_count }}
                     </v-toolbar>
-                    <v-list
-                      dense
-                      light
-                      height="100%"
-                    >
+                    <v-list dense light style="max-height: 400px; overflow-y: auto;">
                       <v-list-item>
-                        <v-list-item-content>Submitting System:</v-list-item-content>
+                        <v-list-item-content>{{ $t('submitting_system') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.system }}
                         </v-list-item-content>
@@ -60,19 +56,19 @@
                         v-for="(name, j) in patient.name"
                         :key="`${j}-${name.use}`"
                       >
-                        <v-list-item-content>Name ({{ name.use }})</v-list-item-content>
+                        <v-list-item-content>{{ $t('surname') }} ({{ name.use }})</v-list-item-content>
                         <v-list-item-content class="align-end text-capitalize">
                           {{ name.given.join(" ") }} {{ name.family }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>Gender:</v-list-item-content>
+                        <v-list-item-content>{{ $t('gender') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.gender }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>Birth Date:</v-list-item-content>
+                        <v-list-item-content>{{ $t('birth_date') }}:</v-list-item-content>
                         <v-list-item-content class="align-end">
                           {{ patient.birthdate }}
                         </v-list-item-content>
@@ -97,6 +93,15 @@
                           {{ id.value }}
                         </v-list-item-content>
                       </v-list-item>
+                      <v-list-item
+                        v-for="(id, l) in patient.extension"
+                        :key="`${l}-${id.name}`"
+                      >
+                        <v-list-item-content>{{ $t(id.name) }}:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          {{ id.value }}
+                        </v-list-item-content>
+                      </v-list-item>
                     </v-list>
                   </v-card>
                 </v-carousel-item>
@@ -109,13 +114,16 @@
                 color="accent"
                 dark
               >
-                <v-toolbar-title>Matched Records</v-toolbar-title>
+                <v-toolbar-title>{{ $t('matched_records') }} </v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="breaks"
                 :headers="match_headers"
                 :items="match_items"
                 :items-per-page="20"
+                :footer-props="{ 
+                'items-per-page-text':this.$t('row_per_page')}"
+                :no-data-text="$t('no_data')"
                 class="elevation-1 text-capitalize"
                 item-key="fid"
                 show-select
@@ -127,7 +135,7 @@
                   :disabled="breaks.length === 0 || match_items.length < 2"
                   @click="breakMatch()"
                 >
-                  Break Match(es)
+                {{ $t('break_matches') }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -138,14 +146,17 @@
                 color="warning"
                 dark
               >
-                <v-toolbar-title>Broken Matches</v-toolbar-title>
+                <v-toolbar-title> {{ $t('broken_matches') }}</v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="unbreaks"
                 :headers="match_headers"
                 :items="break_items"
                 :items-per-page="20"
+                :footer-props="{ 
+                'items-per-page-text':this.$t('row_per_page')}"
                 class="elevation-1 text-capitalize"
+                :no-data-text="$t('no_data')"
                 item-key="id"
                 show-select
               />
@@ -156,7 +167,7 @@
                   :disabled="unbreaks.length === 0"
                   @click="revertBreak()"
                 >
-                  Revert Break
+                {{ $t('revert_break') }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -171,7 +182,7 @@
                 color="secondary"
                 dark
               >
-                <v-toolbar-title>History</v-toolbar-title>
+                <v-toolbar-title>{{  $t('history') }}</v-toolbar-title>
               </v-toolbar>
               <v-expansion-panels popout>
                 <v-expansion-panel
@@ -180,22 +191,22 @@
                 >
                   <v-expansion-panel-header>
                     <template v-if="event.type === 'submittedResource'">
-                      Submitted Resource
+                      {{  $t('submitted_resource') }}
                     </template>
                     <template v-if="event.type === 'breakMatch'">
-                      Break Match
+                      {{  $t('break_matche') }}
                     </template>
                     <template v-if="event.type === 'unBreak'">
-                      Revert Break
+                      {{  $t('revert_break') }}
                     </template>
-                    Event {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
+                    {{  $t('event') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
                   <v-expansion-panel-content>
                     <template v-if="event.type !== 'submittedResource'">
-                      User: {{ event.username }} <br>
+                      {{  $t('user') }}: {{ event.username }} <br>
                     </template>
                     Operation: <b>{{ event.operation }}</b> <br>
-                    Operation Time {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
-                    Status:
+                    {{  $t('operation_time') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
+                    {{  $t('patient_status') }} :
                     <template v-if="event.outcomeCode === '0'">
                       <v-chip
                         color="green"
@@ -442,37 +453,37 @@ export default {
       unbreaks: [],
       matchRuleHeaders: [
         {
-          text: "Field",
+          text: this.$t('field'),
           value: "name"
         },
         {
-          text: "Field Details",
+          text: this.$t('field_details'),
           value: "details"
         }
       ],
       match_headers: [
         {
-          text: "Submitting System",
+          text: this.$t('submitting_system'),
           value: "system"
         },
         {
-          text: "Record ID",
+          text: this.$t('record_id'),
           value: "id"
         },
         {
-          text: "Surname",
+          text: this.$t('surname'),
           value: "family"
         },
         {
-          text: "Given Name(s)",
+          text: this.$t('given_names'),
           value: "given"
         },
         {
-          text: "Gender",
+          text: this.$t('gender'),
           value: "gender"
         },
         {
-          text: "Birth Date",
+          text: this.$t('birth_date'),
           value: "birthdate"
         }
       ],
@@ -647,6 +658,15 @@ export default {
                       }
                     }
                   }
+                  let extensions = [];
+                  if (patient.extension) {
+                    for (let id of patient.extension) {
+                        extensions.push({
+                          name: id.url,
+                          value: ( id.valueString ? id.valueString : id.valueDate )
+                        });
+                    }
+                  }
                   try {
                     name = patient.name.find(name => name.use === "official");
                     if(!name) {
@@ -678,6 +698,7 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
+                      extension: extensions,                      
                       family: name.family,
                       given: name.given.join(" "),
                       phone: phone
@@ -693,6 +714,7 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
+                      extension: extensions,                      
                       family: name.family,
                       given: name.given.join(" "),
                       phone: phone

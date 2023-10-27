@@ -3,6 +3,7 @@ import VueRouter from "vue-router";
 import Home from "../views/Home.vue";
 import Client from "../views/Client.vue";
 import Review from "../views/Review.vue";
+import AutoMatches from "../views/AutoMatches.vue";
 import Resolve from "../views/Resolve.vue";
 import CSVReport from "../views/CSVReport.vue";
 import AddUser from "../views/AddUser.vue";
@@ -31,6 +32,11 @@ const routes = [{
     path: "/review",
     name: "review",
     component: Review
+  },
+  {
+    path: "/automatch",
+    name: "automatch",
+    component: AutoMatches
   },
   {
     path: "/resolve/:clientId?",

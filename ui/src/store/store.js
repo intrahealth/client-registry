@@ -9,6 +9,7 @@ Vue.use(Vuex)
 export const store = new Vuex.Store({
   state: {
     totalMatchIssues: 0,
+    totalAutoMatches: 0,
     clients: [],
     systemURI: {},
     auth: {

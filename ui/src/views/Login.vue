@@ -10,8 +10,7 @@
           <v-alert
             type="error"
             :value="authStatus"
-          >
-            Authentication Failed
+          > {{ $t('auth_failed') }}
           </v-alert>
         </v-flex>
       </v-layout>
@@ -43,7 +42,7 @@
                 xs9
                 text-xs-right
               >
-                <b>Login</b>
+                <b>  {{ $t('login') }}</b>
               </v-flex>
             </v-layout>
           </v-toolbar>
@@ -58,7 +57,7 @@
               required
               filled
               color="deep-purple"
-              label="Username"
+              :label="$t('labels_Username')"
               @keyup.enter="authenticate()"
               @blur="$v.username.$touch()"
               @change="$v.username.$touch()"
@@ -70,7 +69,7 @@
               filled
               type="password"
               color="deep-purple"
-              label="Password"
+              :label="$t('labels_Password')"
               @keyup.enter="authenticate()"
               @blur="$v.password.$touch()"
               @change="$v.password.$touch()"
@@ -89,7 +88,7 @@
               :disabled="$v.$invalid"
             >
               <v-icon left>mdi-lock-open-variant</v-icon>
-              Login
+              {{ $t('login') }}
             </v-btn>
           </v-toolbar>
         </v-card-actions>
@@ -129,6 +128,7 @@ export default {
       })
         .then(authResp => {
           this.countMatchIssues();
+          this.countNewAutoMatches();
           this.getClients();
           this.$store.state.auth.token = authResp.data.token;
           this.$store.state.auth.username = this.username;
@@ -156,7 +156,7 @@ export default {
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
-          this.$store.state.alert.msg = "Login Failed"
+          this.$store.state.alert.msg = this.$t('login_failed');
           this.$store.state.alert.type = "error";
           if (err.hasOwnProperty("response")) {
             throw err;
@@ -168,13 +168,13 @@ export default {
     usernameErrors() {
       const errors = [];
       if (!this.$v.username.$dirty) return errors;
-      !this.$v.username.required && errors.push("Username is required");
+      !this.$v.username.required && errors.push(this.$t('username_required'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$t('password_required'));
       return errors;
     }
   }

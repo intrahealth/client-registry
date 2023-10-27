@@ -20,7 +20,7 @@
             dark
             flat
           >
-            <v-card-title class="title font-weight-regular">Add New User</v-card-title>
+            <v-card-title class="title font-weight-regular">{{ $t('account_add') }}</v-card-title>
           </v-toolbar>
           <v-form
             ref="form"
@@ -34,13 +34,13 @@
               v-model="firstName"
               filled
               color="deep-purple"
-              label="First Name*"
+              :label="$t('given_names')"
             />
             <v-text-field
               v-model="otherName"
               filled
               color="deep-purple"
-              label="Middle Names"
+              :label="$t('middle_names')"
             />
             <v-text-field
               required
@@ -50,7 +50,7 @@
               v-model="surname"
               filled
               color="deep-purple"
-              label="Surname*"
+              :label="$t('surname')"
             />
             <v-text-field
               required
@@ -60,7 +60,7 @@
               v-model="userName"
               filled
               color="deep-purple"
-              label="Username*"
+              :label="$t('username')"
             />
             <v-autocomplete
               v-model="role"
@@ -83,11 +83,11 @@
               type="password"
               filled
               color="deep-purple"
-              label="Password*"
+              :label="$t('labels_Password')"
             />
             <v-text-field
               v-model="retype_password"
-              label="Re-type Password*"
+              :label="$t('retype_password')"
               required
               type="password"
               filled
@@ -103,7 +103,7 @@
               text
               @click="$refs.form.reset()"
             >
-              <v-icon>mdi-clear</v-icon>Clear
+              <v-icon>mdi-clear</v-icon>{{ $t('clear') }}
             </v-btn>
             <v-spacer />
             <v-btn
@@ -115,7 +115,7 @@
             >
               <v-icon left>
                 mdi-language
-              </v-icon>Add
+              </v-icon>{{ $t('user.add') }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -172,13 +172,13 @@ export default {
     usernameErrors() {
       const errors = [];
       if (!this.$v.userName.$dirty) return errors;
-      !this.$v.userName.required && errors.push("Username is required");
+      !this.$v.userName.required && errors.push(this.$t('username_required'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$('password_required'));
       return errors;
     },
     retype_passwordErrors() {

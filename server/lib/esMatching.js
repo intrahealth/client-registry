@@ -232,6 +232,7 @@ const getESDocument = (query, callback) => {
           logger.warn('ES is overloaded with too many requests, delaying for 2 seconds');
           setTimeout(() => {
             return callback(null);
+
           }, 2000);
         } else {
           error = err;

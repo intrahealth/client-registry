@@ -1,7 +1,7 @@
 <template>
     <v-card>
     <v-card-title>
-    {{ $t('menu_action_required') }}
+     {{ $t('menu_auto_matches') }}
       <v-spacer />
     </v-card-title>
     <v-card-title>
@@ -16,7 +16,7 @@
     <v-data-table
       style="cursor: pointer"
       :headers="headers"
-      :items="reviews"
+      :items="automatches"
       :options.sync="options"
       :footer-props="{ 
       'items-per-page-options': [5,10,20,50] ,
@@ -49,12 +49,12 @@ import axios from "axios";
 import { generalMixin } from "@/mixins/generalMixin";
 export default {
   mixins: [generalMixin],
-  name: "Review",
+  name: "Automatch",
   components: {
   },
   data() {
     return {
-      reviews: [],
+      automatches: [],
       debug: "",
       search: "",
       loading: false,
@@ -74,19 +74,19 @@ export default {
     };
   },
   methods: {
-    getReviews() {
+    getAutomatches() {
       this.loading = true
-      axios.get('/ocrux/match/get-match-issues').then((resp) => {
-        this.reviews = resp.data
+      axios.get('/ocrux/match/get-new-auto-matches').then((resp) => {
+        this.automatches = resp.data
         this.loading = false
       })
     },
     clickIt: function(client) {
-      this.$router.push({ name: "review", params: { clientId: client.uid } });
+      this.$router.push({ name: "automatch", params: { clientId: client.uid } });
     }
   },
   created() {
-    this.getReviews()
+    this.getAutomatches()
   }
 };
 </script>

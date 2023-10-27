@@ -40,13 +40,13 @@
                   v-model="firstName"
                   filled
                   color="deep-purple"
-                  label="First Name*"
+                  :label="$t('given_names')"
                 />
                 <v-text-field
                   v-model="otherName"
                   filled
                   color="deep-purple"
-                  label="Middle Names"
+                  :label="$t('middle_names')"
                 />
                 <v-text-field
                   required
@@ -56,7 +56,7 @@
                   v-model="surname"
                   filled
                   color="deep-purple"
-                  label="Surname*"
+                  :label="$t('surname')"
                 />
                 <v-autocomplete
                   v-model="role"
@@ -68,7 +68,7 @@
                   :error-messages="roleErrors"
                   filled
                   color="deep-purple"
-                  label="Role"
+                  :label="$t('user_role')"
                 ></v-autocomplete>
                 <v-autocomplete
                   v-model="status"
@@ -80,7 +80,7 @@
                   :error-messages="statusErrors"
                   filled
                   color="deep-purple"
-                  label="Status"
+                  :label="$t('patient_status')"
                 ></v-autocomplete>
               </v-form>
             </v-flex>
@@ -98,7 +98,7 @@
           >
             <v-icon left>
               mdi-language
-            </v-icon>Save
+            </v-icon>{{ $t('save') }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -136,7 +136,7 @@
           color="white"
           style="font-weight: bold; font-size: 18px;"
         >
-          Users List
+         {{ $t('users_list') }}
           <v-spacer></v-spacer>
           <v-text-field
             v-model="searchUsers"
@@ -155,6 +155,9 @@
           dark
           class="elevation-1"
           :loading='loadingUsers'
+          :footer-props="{ 
+          'items-per-page-text':this.$t('row_per_page')}"
+          :no-data-text="$t('no_data')"
         >
           <v-progress-linear
             slot="progress"
@@ -297,12 +300,12 @@ export default {
   computed: {
     usersHeader() {
       return [
-        { text: `First Name`, value: 'firstName' },
-        { text: `Surname`, value: 'surname' },
-        { text: `Other Name`, value: 'otherName' },
-        { text: `User Name`, value: 'username' },
-        { text: `Role`, value: 'role' },
-        { text: `Status`, value: 'status' }
+        { text:  this.$t('given_names'), value: 'firstName' },
+        { text:  this.$t('surname'), value: 'surname' },
+        { text:  this.$t('other_name'), value: 'otherName' },
+        { text:  this.$t('username'), value: 'username' },
+        { text:  this.$t('user_role'), value: 'role' },
+        { text:  this.$t('patient_status'), value: 'status' }
       ]
     },
     firstnameErrors() {

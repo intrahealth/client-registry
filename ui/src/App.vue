@@ -14,7 +14,7 @@
           to="/"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-home</v-icon> Home
+          <v-icon>mdi-home</v-icon> {{ $t('menu_home') }}
         </v-btn>
         <v-btn
           color="primary"
@@ -26,7 +26,20 @@
             :value="displayActionRequiredBadge"
             offset-x="100"
           >
-          <v-icon>mdi-alert</v-icon> Action Required
+          <v-icon>mdi-alert</v-icon>{{ $t('menu_action_required') }}
+          </v-badge>
+        </v-btn>
+        <v-btn
+          color="primary"
+          to="/automatch"
+          v-if='!$store.state.denyAccess'
+        >
+          <v-badge color="error"
+            :content="$store.state.totalAutoMatches"
+            :value="displayAutoMatchBadge"
+            offset-x="100"
+          >
+          <v-icon>mdi-alert</v-icon> {{ $t('menu_auto_matches') }}
           </v-badge>
         </v-btn>
         <v-btn
@@ -34,7 +47,7 @@
           to="/csvreport"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-file-chart</v-icon> CSV Reports
+          <v-icon>mdi-file-chart</v-icon>{{ $t('menu_csv') }}
         </v-btn>
         <v-menu
           bottom
@@ -48,19 +61,19 @@
               v-on="on"
             >
               <v-icon>mdi-account-outline</v-icon>
-              Accounts
+              {{ $t('menu_accounts') }}
             </v-btn>
           </template>
 
           <v-list>
             <v-list-item to="/addUser" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Add User
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_add') }}
             </v-list-item>
             <v-list-item to="/usersList" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Users List
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_list') }}
             </v-list-item>
             <v-list-item to="/changePassword" v-if='!$store.state.denyAccess'>
-              <v-icon>mdi-account-plus</v-icon> Change Password
+              <v-icon>mdi-account-plus</v-icon>  {{ $t('account_change_password') }}
             </v-list-item>
           </v-list>
         </v-menu>
@@ -69,8 +82,14 @@
           to="/logout"
           v-if='!$store.state.denyAccess'
         >
-          <v-icon>mdi-logout</v-icon> Logout
+          <v-icon>mdi-logout</v-icon> {{ $t('menu_logout') }}
         </v-btn>
+        <div v-if='!$store.state.denyAccess' class="icon-div">
+          <button v-for="entry in languages" :key="entry.title" @click="$i18n.locale=entry.language">
+              <flag :iso="entry.flag" v-bind:squared=false /> {{entry.title}}
+          </button> 
+        </div>
+    
       </v-toolbar-items>
       <v-spacer />
     </v-app-bar>
@@ -115,12 +134,18 @@
 import VueCookies from "vue-cookies";
 import axios from "axios";
 import { generalMixin } from "@/mixins/generalMixin";
+
 export default {
   name: "App",
   mixins: [generalMixin],
   data() {
     return {
-      totalMatchIssues: 0
+      totalMatchIssues: 0,
+      totalAutoMatches: 0,
+      languages: [
+            { flag: 'us', language: 'en', title: 'English' },
+            { flag: 'fr', language: 'fr', title: 'Francais' }
+        ]
     }
   },
   created() {
@@ -142,10 +167,17 @@ export default {
       });
     }
     this.countMatchIssues();
+    this.countNewAutoMatches();
   },
   computed: {
     displayActionRequiredBadge() {
       if(this.$store.state.totalMatchIssues > 0) {
+        return true
+      }
+      return false
+    },
+    displayAutoMatchBadge() {
+      if(this.$store.state.totalAutoMatches > 0) {
         return true
       }
       return false
@@ -157,5 +189,9 @@ export default {
 .menuText {
   color: black;
   cursor: pointer;
+}
+.icon-div{
+  padding-top: 15px;
+  padding-left: 5px;
 }
 </style>

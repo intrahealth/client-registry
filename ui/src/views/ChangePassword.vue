@@ -20,7 +20,7 @@
             dark
             flat
           >
-            <v-card-title class="title font-weight-regular">Add New User</v-card-title>
+            <v-card-title class="title font-weight-regular">{{ $t('account_change_password') }}</v-card-title>
           </v-toolbar>
           <v-form
             ref="form"
@@ -35,7 +35,7 @@
               type="password"
               filled
               color="deep-purple"
-              label="Current Password*"
+              :label="$t('current_password')"
             />
             <v-text-field
               required
@@ -46,11 +46,11 @@
               type="password"
               filled
               color="deep-purple"
-              label="New Password*"
+              :label="$t('new_passord')"
             />
             <v-text-field
               v-model="retype_newpassword"
-              label="Re-type New Password*"
+              :label="$t('retype_password')"
               required
               type="password"
               filled
@@ -66,7 +66,7 @@
               text
               @click="$refs.form.reset()"
             >
-              <v-icon>mdi-clear</v-icon>Clear
+              <v-icon>mdi-clear</v-icon>{{ $t('clear') }}
             </v-btn>
             <v-spacer />
             <v-btn
@@ -78,7 +78,7 @@
             >
               <v-icon left>
                 mdi-language
-              </v-icon>Change
+              </v-icon>{{ $t('password_change') }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -109,19 +109,19 @@ export default {
     newpasswordErrors() {
       const errors = [];
       if (!this.$v.newpassword.$dirty) return errors;
-      !this.$v.newpassword.required && errors.push("New password is required");
+      !this.$v.newpassword.required && errors.push(this.$t('new_password_required'));
       return errors;
     },
     retype_newpasswordErrors() {
       const errors = [];
       if (!this.$v.retype_newpassword.$dirty) return errors;
-      !this.$v.retype_newpassword.required && errors.push("Must re-type New Password");
+      !this.$v.retype_newpassword.required && errors.push(this.$t('retype_new_password'));
       return errors;
     },
     passwordErrors() {
       const errors = [];
       if (!this.$v.password.$dirty) return errors;
-      !this.$v.password.required && errors.push("Password is required");
+      !this.$v.password.required && errors.push(this.$t('password_required'));
       return errors;
     }
   },
@@ -130,13 +130,13 @@ export default {
       if (this.newpassword !== this.retype_newpassword) {
         this.$store.state.alert.show = true;
         this.$store.state.alert.width = "500px";
-        this.$store.state.alert.msg = "New password mismatch";
+        this.$store.state.alert.msg = this.$t('new_password_mismatch');
         this.$store.state.alert.type = "error";
         return;
       }
       this.$store.state.progress.enable = true;
       this.$store.state.progress.width = "300px";
-      this.$store.state.progress.title = "Changing password"
+      this.$store.state.progress.title = this.$t('changing_password')
       let formData = new FormData();
       formData.append("password", this.password);
       formData.append("username", this.$store.state.auth.username);
@@ -151,7 +151,7 @@ export default {
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
           this.$store.state.alert.width = "500px";
-          this.$store.state.alert.msg = "Password changed";
+          this.$store.state.alert.msg = this.$t('password_changed');
           this.$store.state.alert.type = "success";
           this.$refs.form.reset();
         })
@@ -164,7 +164,7 @@ export default {
           } else if(error.message) {
             msg = error.message
           } else {
-            msg = "An error occured"
+            msg = this.$t('error_occured')
           }
           this.$store.state.progress.enable = false;
           this.$store.state.alert.show = true;
