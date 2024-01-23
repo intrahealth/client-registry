@@ -9,6 +9,8 @@ const logger = require('../server/lib/winston');
 const fhirWrapper = require('../server/lib/fhir')();
 const config = require('../server/lib/config');
 
+const internalIdSystem = 'http://clientregistry.org/openmrs'
+
 let noMatches = [];
 let missing = [];
 
@@ -99,29 +101,35 @@ const decisionRules2HTML = () => {
       <th>#</th><th>Field</th><th>Algorithm</th><th>Threshold</th>
     </tr>`
   let counter = 1
-  for (let decisionRule of decisionRules) {
-    let totalFields = Object.keys(decisionRule).length
-    let tr = `<tr><td rowspan=${totalFields}>${counter}</td>`
-    let innerCounter = 1;
-    for (const ruleField in decisionRule) {
-      if (innerCounter > 1) {
-        tr = `<tr>`
-      }
-      const rule = decisionRule[ruleField];
-      let threshold
-      if (!rule.threshold) {
-        threshold = '-'
-      } else {
-        threshold = rule.threshold
-      }
-      tr += `<td>${ruleField}</td><td>${rule.algorithm}</td><td>${threshold}</td>`
-      tr += `</tr>`
-      table += tr
-      innerCounter++
+  const fields = decisionRules[0]['fields'];
+  for (const ruleField in fields) {
+    const rule = fields[ruleField];
+    let threshold
+    if (!rule.threshold) {
+      threshold = '-'
+    } else {
+      threshold = rule.threshold
     }
+    let tr = `<tr></tr><tr><td>${counter}</td><td>${ruleField}</td><td>${rule.algorithm}</td><td>${threshold}</td></tr>`
+    table += tr
     counter++
   }
   table += `</table>`
+  return table
+}
+const matchThresholds2HTML = () => {
+  const decisionRules = config.get('rules');
+  const potentialMatchThreshold = decisionRules[0]['potentialMatchThreshold'];
+  const autoMatchThreshold = decisionRules[0]['autoMatchThreshold'];
+  let table =
+    `<table border='1' cellspacing='0'>
+      <tr>
+        <th>Potential</th><th>Automatic</th>
+      </tr>
+      <tr>
+        <td>${potentialMatchThreshold}</td><td>${autoMatchThreshold}</td>
+      </tr>
+    </table>`
   return table
 }
 const arraysEqual = (array1, array2) => {
@@ -173,7 +181,7 @@ const uploadResults = (csvFile) => {
                 getPatientLinks(patient.resource, dbPatients, (patientLinksData) => {
                   let linkedid1;
                   for (let ident of patient.resource.identifier) {
-                    if (ident.system === 'http://clientregistry.org/openmrs') {
+                    if (ident.system === internalIdSystem) {
                       linkedid1 = ident.value;
                     }
                   }
@@ -196,7 +204,7 @@ const uploadResults = (csvFile) => {
                     } else {
                       let id2;
                       for (let ident of linkedPatient.resource.identifier) {
-                        if (ident.system === 'http://clientregistry.org/openmrs') {
+                        if (ident.system === internalIdSystem) {
                           id2 = ident.value;
                         }
                       }
@@ -270,7 +278,7 @@ const uploadResults = (csvFile) => {
                           noIdentifier.push(linkedPatient);
                         } else {
                           for (let ident of linkedPatient.resource.identifier) {
-                            if (ident.system === 'http://clientregistry.org/openmrs') {
+                            if (ident.system === internalIdSystem) {
                               linkedIds2.push(ident.value);
                             }
                           }
@@ -414,6 +422,7 @@ const uploadResults = (csvFile) => {
             </tr>
           </table>`
           let rules = decisionRules2HTML()
+          let matchThresholds = matchThresholds2HTML()
           let matchDiagnostics =
             `<table border='1' cellspacing='0'>
             <tr>
@@ -430,6 +439,9 @@ const uploadResults = (csvFile) => {
             </tr>
             <tr>
               <td><center><b>Decision Rules</b>${rules}</center></td>
+            </tr>
+            <tr>
+              <td><center><b>Match Thresholds</b>${matchThresholds}</center></td>
             </tr>
             <tr>
               <td><center><b>Match Diagnostics</b><br>${matchDiagnostics}</center></td>
