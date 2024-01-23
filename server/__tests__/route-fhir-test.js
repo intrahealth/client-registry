@@ -84,8 +84,11 @@ describe( "Testing express", () => {
     axios.__setFhirResults( `${ES_BASE_URL}/_doc/d55e15fd-d7a6-42b8-89cc-560e3578ef7f`, require("./ESResources/cacheRequest-d55e15fd-d7a6-42b8-89cc-560e3578ef7f.json"), require("./ESResources/cacheResults-d55e15fd-d7a6-42b8-89cc-560e3578ef7f.json"));
     axios.__setFhirResults( `${ES_BASE_URL}/_doc/433ebeb6-1d89-4b64-97e6-a985675ca571`, require("./ESResources/cacheRequest-433ebeb6-1d89-4b64-97e6-a985675ca571.json"), require("./ESResources/cacheResults-433ebeb6-1d89-4b64-97e6-a985675ca571.json"));
     return supertest(app)
-      .post("/Patient").set("x-openhim-clientid", "openmrs").send(PATIENT3).then( (response) => {
-        expect(response.headers.location).toEqual("Patient/eda0fdeb-1d52-4878-a84f-ccf581ef9fff");
+    .post("/Patient").set("x-openhim-clientid", "openmrs").send(PATIENT3).then( (response) => {
+        // verify patient ID
+        expect(response.headers.location).toEqual("Patient/433ebeb6-1d89-4b64-97e6-a985675ca571");
+        // verify golden record ID
+        expect(response.headers.locationcruid).toEqual("Patient/eda0fdeb-1d52-4878-a84f-ccf581ef9fff");
     } );
   } );
 
