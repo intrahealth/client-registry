@@ -1,19 +1,14 @@
-"use strict";
+'use strict';
 /*global process, __dirname*/
-const fs = require("fs");
-const logger = require("../winston");
-const config = require("../config");
-const env = process.env.NODE_ENV || "development";
+const fs = require('fs');
+const logger = require('../winston');
+const config = require('../config');
+const env = process.env.NODE_ENV || 'development';
 
 const isMatchBroken = (resourceData, reference) => {
-  let isBroken =
-    resourceData.extension &&
-    resourceData.extension.find((extension) => {
-      return (
-        extension.url === config.get("systems:brokenMatch:uri") &&
-        extension.valueReference.reference === reference
-      );
-    });
+  let isBroken = resourceData.extension && resourceData.extension.find((extension) => {
+    return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === reference;
+  });
   return isBroken;
 };
 
@@ -25,16 +20,14 @@ const getClientDisplayName = (clientid) => {
   if (clientDet) {
     return clientDet.displayName;
   }
-  return "";
+  return '';
 };
 
 const getClientIdentifier = (resource) => {
   const internalIdURI = config.get("systems:internalid:uri");
-  const validSystem =
-    resource.identifier &&
-    resource.identifier.find((identifier) => {
-      return internalIdURI.includes(identifier.system) && identifier.value;
-    });
+  const validSystem = resource.identifier && resource.identifier.find(identifier => {
+    return internalIdURI.includes(identifier.system) && identifier.value;
+  });
   return validSystem;
 };
 
@@ -49,9 +42,9 @@ const setNestedKey = (obj, path, value, callback) => {
 };
 
 const updateConfigFile = (path, newValue, callback) => {
-  const pathString = path.join(":");
+  const pathString = path.join(':');
   config.set(pathString, newValue);
-  logger.info("Updating config file");
+  logger.info('Updating config file');
   const configFile = `${__dirname}/../../config/config_${env}.json`;
   const configData = require(configFile);
   setNestedKey(configData, path, newValue, () => {
@@ -59,18 +52,18 @@ const updateConfigFile = (path, newValue, callback) => {
       if (err) {
         throw err;
       }
-      logger.info("Done updating config file");
+      logger.info('Done updating config file');
       return callback();
     });
   });
 };
 
-const flattenComplex = (extension) => {
+const flattenComplex = extension => {
   let results = {};
   for (let ext of extension) {
-    let value = "";
+    let value = '';
     for (let key of Object.keys(ext)) {
-      if (key !== "url") {
+      if (key !== 'url') {
         value = ext[key];
       }
     }
@@ -91,12 +84,12 @@ const flattenComplex = (extension) => {
   return results;
 };
 
-const removeDir = function (path) {
+const removeDir = function(path) {
   if (fs.existsSync(path)) {
     const files = fs.readdirSync(path);
 
     if (files.length > 0) {
-      files.forEach(function (filename) {
+      files.forEach(function(filename) {
         if (fs.statSync(path + "/" + filename).isDirectory()) {
           removeDir(path + "/" + filename);
         } else {
@@ -116,5 +109,5 @@ module.exports = {
   getClientIdentifier,
   getClientDisplayName,
   isMatchBroken,
-  removeDir,
+  removeDir
 };
