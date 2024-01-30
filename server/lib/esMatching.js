@@ -201,14 +201,11 @@ const getESDocument = (query, callback) => {
   let scroll_id = null;
   async.doWhilst(
     (callback) => {
-      axios({
-        method: 'POST',
-        url,
-        data: query,
+      axios.post(url, query, {
         auth: {
-          username: config.get('elastic:username'),
-          password: config.get('elastic.password'),
-        }
+          username: config.get("elastic:username"),
+          password: config.get("elastic.password"),
+        },
       }).then((response) => {
         if(response.data.hits && response.data.hits.hits && Array.isArray(response.data.hits.hits)) {
           documents = documents.concat(response.data.hits.hits);
@@ -232,7 +229,6 @@ const getESDocument = (query, callback) => {
           logger.warn('ES is overloaded with too many requests, delaying for 2 seconds');
           setTimeout(() => {
             return callback(null);
-
           }, 2000);
         } else {
           error = err;
@@ -495,6 +491,7 @@ const performMatch = ({
 };
 
 module.exports = {
+  buildQuery,
   performMatch,
   refreshIndex
 };

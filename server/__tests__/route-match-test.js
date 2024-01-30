@@ -9,6 +9,7 @@ const ES_BASE_URL = URI(config.get('elastic:server')).segment(config.get('elasti
 const supertest = require("supertest");
 
 const route = require("../lib/routes/match");
+const { buildQuery } = require("../lib/esMatching");
 
 const express = require('express');
 const app = express();
@@ -176,12 +177,81 @@ describe( "Testing express", () => {
   //testing getting potential matches
   test( "Testing Getting Potential Matches", () => {
     const potentialMatches = require("./otherResources/potentialMatches.json");
-    request.__setFhirResults( `${FHIR_BASE_URL}/Patient/433ebeb6-1d89-4b64-97e6-a985675ca571`, null, JSON.stringify(require("./FHIRResources/patient3.json")) );
+    const decisionRules = config.get("rules");
+
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient/433ebeb6-1d89-4b64-97e6-a985675ca571`,
+      null,
+      JSON.stringify(require("./FHIRResources/patient3.json"))
+    );
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient/bc58707b-62f1-498a-8fb3-568cd5b69db2`,
+      null,
+      JSON.stringify(require("./FHIRResources/patient1.json"))
+    );
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient/d55e15fd-d7a6-42b8-89cc-560e3578ef7f`,
+      null,
+      JSON.stringify(require("./FHIRResources/patient2.json"))
+    );
+
+    // fhir search results for potential matches
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient?_id=bc58707b-62f1-498a-8fb3-568cd5b69db2,d55e15fd-d7a6-42b8-89cc-560e3578ef7f`,
+      null,
+      JSON.stringify({
+        entry: [
+          require("./FHIRResources/patient1andlinkAfterBrokenMatchWithoutRematch.json")
+            .entry[0],
+          require("./FHIRResources/patient2andlinkAfterBrokenMatchWithoutRematch.json")
+            .entry[0],
+        ],
+      })
+    );
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient?_id=bc58707b-62f1-498a-8fb3-568cd5b69db2&_include=Patient:link`,
+      null,
+      JSON.stringify(
+        require("./FHIRResources/patient1andlinkAfterBrokenMatchWithoutRematch.json")
+      )
+    );
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient?_id=d55e15fd-d7a6-42b8-89cc-560e3578ef7f&_include=Patient:link`,
+      null,
+      JSON.stringify(
+        require("./FHIRResources/patient2andlinkAfterBrokenMatchWithoutRematch.json")
+      )
+    );
+    request.__setFhirResults(
+      `${FHIR_BASE_URL}/Patient?_id=433ebeb6-1d89-4b64-97e6-a985675ca571`,
+      null,
+      JSON.stringify(
+        require("./FHIRResources/patient3andlinkAfterBrokenMatchWithoutRematch.json")
+      )
+    );
+    axios.__setFhirResults(
+      `${ES_BASE_URL}/_search?scroll=1m&size=1000`,
+      buildQuery(require("./FHIRResources/patient3.json"), decisionRules[0]),
+      require("./ESResources/searchresultsforpatient3.json")
+    );
+    axios.__setFhirResults(
+      `${ES_BASE_URL}/_search?scroll=1m&size=1000`,
+      buildQuery(require("./FHIRResources/patient2.json"), decisionRules[0]),
+      require("./ESResources/searchresultsforpatient2.json")
+    );
+    axios.__setFhirResults(
+      `${ES_BASE_URL}/_search?scroll=1m&size=1000`,
+      buildQuery(require("./FHIRResources/patient1.json"), decisionRules[0]),
+      require("./ESResources/searchresultsforpatient1.json")
+    );
+
     return supertest(app)
-      .get("/potential-matches/433ebeb6-1d89-4b64-97e6-a985675ca571").send().then( (response) => {
+      .get("/potential-matches/433ebeb6-1d89-4b64-97e6-a985675ca571")
+      .send()
+      .then((response) => {
         expect(response.statusCode).toBe(200);
         expect(response.body).toEqual(potentialMatches);
-    } );
+      });
   });
 
   test( "Testing Getting Match Issues", () => {
