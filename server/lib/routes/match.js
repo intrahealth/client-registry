@@ -1159,11 +1159,14 @@ router.post('/matches', (req, res) => {
         }
       }
       let systemName = generalMixin.getClientDisplayName(clientUserId);
-      let phone;
+      let phone = '';
       if(patient.telecom) {
         for(let telecom of patient.telecom) {
           if(telecom.system === 'phone') {
-            phone = telecom.value;
+              if (phone) { 
+                phone += ', ';
+              }
+              phone += telecom.value;
           }
         }
       }
@@ -1359,11 +1362,14 @@ router.get('/potential-matches/:id', (req, res) => {
         }
       }
       let systemName = generalMixin.getClientDisplayName(clientUserId);
-      let phone;
+      let phone = '';
       if(patient.telecom) {
         for(let telecom of patient.telecom) {
           if(telecom.system === 'phone') {
-            phone = telecom.value;
+            if (phone) { 
+              phone += ', ';
+            }
+            phone += telecom.value;
           }
         }
       }
