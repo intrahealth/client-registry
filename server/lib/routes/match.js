@@ -1162,7 +1162,7 @@ router.post('/matches', (req, res) => {
       let phone = '';
       if(patient.telecom) {
         for(let telecom of patient.telecom) {
-          if(telecom.system === 'phone') {
+          if(telecom.system === 'phone' && telecom.value !== '' && telecom.value !== undefined) {
               if (phone) { 
                 phone += ', ';
               }
@@ -1365,7 +1365,7 @@ router.get('/potential-matches/:id', (req, res) => {
       let phone = '';
       if(patient.telecom) {
         for(let telecom of patient.telecom) {
-          if(telecom.system === 'phone') {
+          if(telecom.system === 'phone' && telecom.value !== '' && telecom.value !== undefined) {
             if (phone) { 
               phone += ', ';
             }
