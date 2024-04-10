@@ -97,6 +97,7 @@
     "full_view":"Vue complète",
     "phone":"Téléphone",
     "loading_potential":"Chargement de correspondances potentielles",
+    "loading_auto": "Chargement des correspondances automatiques",
     "something_wrong":"Oups, quelque chose s'est mal passé",
     "Temporary_cr_id":"CR ID temporaire",
     "saving":"Sauvegarde en cours ...",
