@@ -319,6 +319,9 @@ export default {
     this.$store.state.progress.enable = true;
     this.$store.state.progress.width = "300px";
     this.$store.state.progress.title =  this.$t('loading_potential');
+    if(this.$route.query.flagType === 'autoMatches'){
+      this.$store.state.progress.title =  this.$t('loading_auto');
+    }
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
         let extRegexPattern = /^extension_/;
 
