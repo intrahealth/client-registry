@@ -1,113 +1,135 @@
 {
   "resourceType": "Bundle",
   "type": "batch",
-  "entry": [{
-    "resource": {
-      "resourceType": "Patient",
-      "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
-          "value": "patient1"
-        },
-        {
-          "system": "http://health.go.ug/cr/nationalid",
-          "value": "228374844"
-        },
-        {
-          "system": "http://system1.org",
-          "value": "12347",
-          "period": {
-            "start": "2001-05-07"
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient1"
           },
-          "assigner": {
-            "display": "test Org"
-          }
-        }
-      ],
-      "active": true,
-      "name": [{
-        "use": "official",
-        "family": "Joshua",
-        "given": [
-          "Emmanuel"
-        ]
-      }],
-      "telecom": [{
-        "system": "phone",
-        "value": "0678 561608"
-      }],
-      "gender": "male",
-      "birthDate": "1972-01-08"
-    }
-  }, {
-    "resource": {
-      "resourceType": "Patient",
-      "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
-          "value": "patient2"
-        },
-        {
-          "system": "http://health.go.ug/cr/nationalid",
-          "value": "228374844"
-        },
-        {
-          "system": "http://system1.org",
-          "value": "12347",
-          "period": {
-            "start": "2001-05-07"
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
           },
-          "assigner": {
-            "display": "test Org"
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
           }
-        }
-      ],
-      "active": true,
-      "name": [{
-        "use": "official",
-        "family": "Joshua",
-        "given": [
-          "Emanuel"
-        ]
-      }],
-      "telecom": [{
-        "system": "phone",
-        "value": "0678 561608"
-      }],
-      "gender": "male",
-      "birthDate": "1972-01-08"
-    }
-  }, {
-    "resource": {
-      "resourceType": "Patient",
-      "identifier": [{
-          "system": "http://clientregistry.org/openmrs",
-          "value": "patient3"
-        }, {
-          "system": "http://health.go.ug/cr/nationalid",
-          "value": "228374844"
-        }, {
-          "system": "http://system1.org",
-          "value": "12347",
-          "period": {
-            "start": "2001-05-07"
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Joshua",
+            "given": [
+              "Emmanuel"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "0678 561608"
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1972-01-08"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient2"
           },
-          "assigner": {
-            "display": "test Org"
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
+          },
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
           }
-      }],
-      "active": true,
-      "name": [{
-        "use": "official",
-        "family": "Joshua",
-        "given": [
-          "Emanuel"
-        ]
-      }],
-      "telecom": [{
-        "system": "phone",
-        "value": "0678 56160"
-      }],
-      "gender": "male",
-      "birthDate": "1972-01-08"
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Joshua",
+            "given": [
+              "Emanuel"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "0678 561608"
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1972-01-08"
+      }
+    },
+    {
+      "resource": {
+        "resourceType": "Patient",
+        "identifier": [
+          {
+            "system": "http://clientregistry.org/openmrs",
+            "value": "patient3"
+          },
+          {
+            "system": "http://health.go.ug/cr/nationalid",
+            "value": "228374844"
+          },
+          {
+            "system": "http://system1.org",
+            "value": "12347",
+            "period": {
+              "start": "2001-05-07"
+            },
+            "assigner": {
+              "display": "test Org"
+            }
+          }
+        ],
+        "active": true,
+        "name": [
+          {
+            "use": "official",
+            "family": "Joshua",
+            "given": [
+              "Emanuel"
+            ]
+          }
+        ],
+        "telecom": [
+          {
+            "system": "phone",
+            "value": "0678 56160"
+          }
+        ],
+        "gender": "male",
+        "birthDate": "1972-01-08"
+      }
     }
-  }]
+  ]
 }

@@ -8,90 +8,258 @@
       "http://ihris.org/fhir/StructureDefinition/opencrDisplay"
     ]
   },
-  "extension": [{
-    "url": "http://ihris.org/fhir/StructureDefinition/opencrReportDisplay",
-    "extension": [{
-      "url": "label",
-      "valueString": "Search Patients"
-    }, {
-      "url": "http://ihris.org/fhir/StructureDefinition/display",
-      "extension": [{
-        "url": "label",
-        "valueString": "Given Names(s)"
-      }, {
-        "url": "fhirpath",
-        "valueString": "name.where(use='official').last().given"
-      }, {
-        "url": "searchable",
-        "valueBoolean": true
-      }, {
-        "url": "searchparameter",
-        "valueString": "given:contains"
-      }]
-    }, {
-      "url": "http://ihris.org/fhir/StructureDefinition/display",
-      "extension": [{
-        "url": "label",
-        "valueString": "Surname"
-      }, {
-        "url": "fhirpath",
-        "valueString": "name.where(use='official').last().family"
-      }, {
-        "url": "searchable",
-        "valueBoolean": true
-      }, {
-        "url": "searchparameter",
-        "valueString": "family:contains"
-      }]
-    }, {
-      "url": "http://ihris.org/fhir/StructureDefinition/display",
-      "extension": [{
-        "url": "label",
-        "valueString": "Gender"
-      }, {
-        "url": "fhirpath",
-        "valueString": "gender"
-      }, {
-        "url": "valueset",
-        "valueString": "http://hl7.org/fhir/ValueSet/administrative-gender"
-      }, {
-        "url": "searchable",
-        "valueBoolean": true
-      }, {
-        "url": "searchparameter",
-        "valueString": "gender"
-      }]
-    }, {
-      "url": "http://ihris.org/fhir/StructureDefinition/display",
-      "extension": [{
-        "url": "label",
-        "valueString": "Birth Date"
-      }, {
-        "url": "fhirpath",
-        "valueString": "birthDate"
-      }]
-    }, {
-      "url": "http://ihris.org/fhir/StructureDefinition/display",
-      "extension": [{
-        "url": "label",
-        "valueString": "CRUID"
-      }, {
-        "url": "fhirpath",
-        "valueString": "link.where(type='refer').other.reference"
-      }, {
-        "url": "searchable",
-        "valueBoolean": true
-      }, {
-        "url": "searchparameter",
-        "valueString": "link"
-      }]
-    }]
-  }],
+  "extension": [
+    {
+      "url": "http://ihris.org/fhir/StructureDefinition/opencrReportDisplay",
+      "extension": [
+        {
+          "url": "label",
+          "valueString": "Search Patients"
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Given Names(s)"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "name.where(use='official').last().given"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "given:contains"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Surname"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "name.where(use='official').last().family"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "family:contains"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Gender"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "gender"
+            },
+            {
+              "url": "valueset",
+              "valueString": "http://hl7.org/fhir/ValueSet/administrative-gender"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "gender"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Birth Date"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Date of Death"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Registering Facility"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "gender"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Village"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Parish"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Sub County"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "County"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "District"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Nationality"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "birthDate"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "National ID / Passport"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "name.where(use='official').last().family"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "gender"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Health Identification Number"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "name.where(use='official').last().family"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "gender"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "code": {
-    "coding": [{
-      "system": "http://opencr.org/fhir/ValueSet/opencr-resource",
-      "code": "opencrReportPageView"
-    }],
+    "coding": [
+      {
+        "system": "http://opencr.org/fhir/ValueSet/opencr-resource",
+        "code": "opencrReportPageView"
+      }
+    ],
     "text": "openCR Report And Page View"
   },
   "subject": {

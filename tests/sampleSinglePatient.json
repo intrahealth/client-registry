@@ -1,40 +1,50 @@
 {
   "resourceType": "Patient",
   "meta": {
-    "tag": [{
-      "system": "http://openclientregistry.org/fhir/tag/csv",
-      "code": "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
-      "display": "Testing CSV"
-    }]
-  },
-  "identifier": [{
-    "system": "http://clientregistry.org/openmrs",
-    "value": "sourceid27"
-  }, {
-    "system": "http://clientregistry.org/nationalid",
-    "value": ""
-  }, {
-    "system": "http://system1.org",
-    "value": "12351",
-    "period": {
-      "start": "2001-05-07"
-    },
-    "assigner": {
-      "display": "test Org"
-    }
-  }],
-  "active": true,
-  "name": [{
-    "use": "official",
-    "family": "Joshu",
-    "given": [
-      "Emmanuel"
+    "tag": [
+      {
+        "system": "http://openclientregistry.org/fhir/tag/csv",
+        "code": "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
+        "display": "Testing CSV"
+      }
     ]
-  }],
-  "telecom": [{
-    "system": "phone",
-    "value": "0678 5616088"
-  }],
+  },
+  "identifier": [
+    {
+      "system": "http://clientregistry.org/openmrs",
+      "value": "sourceid27"
+    },
+    {
+      "system": "http://clientregistry.org/nationalid",
+      "value": ""
+    },
+    {
+      "system": "http://system1.org",
+      "value": "12351",
+      "period": {
+        "start": "2001-05-07"
+      },
+      "assigner": {
+        "display": "test Org"
+      }
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Joshu",
+      "given": [
+        "Emmanuel"
+      ]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "0678 5616088"
+    }
+  ],
   "gender": "male",
   "birthDate": "1972-01-08"
 }

@@ -1,20 +1,28 @@
 <template>
   <v-container>
-    <v-tabs
-      v-model="tab"
-      background-color="secondary"
-      dark
-    >
+    <v-tabs v-model="tab" background-color="secondary" dark>
       <v-tabs-slider></v-tabs-slider>
-      <v-tab href="#record"><v-icon>mdi-account</v-icon>{{  $t('record') }}</v-tab>
-      <v-tab href="#history"><v-icon>mdi-history</v-icon>{{  $t('history') }}</v-tab>
+      <v-tab href="#record"
+        ><v-icon>mdi-account</v-icon>{{ $t("record") }}</v-tab
+      >
+      <v-tab href="#history"
+        ><v-icon>mdi-history</v-icon>{{ $t("history") }}</v-tab
+      >
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn v-if="uid === '6f2eac1b-5b1d-49ce-a4b7-f9089128f836'" color="warning" @click="$router.push('/resolve/590-57-2820')">
-          <v-badge icon="mdi-alert" color="error" >{{ $t('review_potential_matches') }}</v-badge>
+        <v-btn
+          v-if="uid === '6f2eac1b-5b1d-49ce-a4b7-f9089128f836'"
+          color="warning"
+          @click="$router.push('/resolve/590-57-2820')"
+        >
+          <v-badge icon="mdi-alert" color="error">{{
+            $t("review_potential_matches")
+          }}</v-badge>
         </v-btn>
-        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">{{  $t('back') }}</v-btn>
-        <v-btn color="secondary" @click="close" v-else>{{  $t('close') }}</v-btn>
+        <v-btn color="secondary" @click="$router.go(-1)" v-if="canGoBack">{{
+          $t("back")
+        }}</v-btn>
+        <v-btn color="secondary" @click="close" v-else>{{ $t("close") }}</v-btn>
       </v-toolbar-items>
       <v-tab-item value="record">
         <v-row>
@@ -31,23 +39,23 @@
                   v-for="(patient, i) in match_items"
                   :key="`${i}-${patient.id}`"
                 >
-                  <v-card
-                    class="mx-auto"
-                    height="100%"
-                  >
-                    <v-toolbar
-                      color="secondary"
-                      dark
-                    >
+                  <v-card class="mx-auto" height="100%">
+                    <v-toolbar color="secondary" dark>
                       <v-toolbar-title class="font-weight-bold">
                         CRUID: {{ uid }}
                       </v-toolbar-title>
                       <v-spacer />
-                      {{ selected+1 }} / {{ match_count }}
+                      {{ selected + 1 }} / {{ match_count }}
                     </v-toolbar>
-                    <v-list dense light style="max-height: 400px; overflow-y: auto;">
+                    <v-list
+                      dense
+                      light
+                      style="max-height: 400px; overflow-y: auto;"
+                    >
                       <v-list-item>
-                        <v-list-item-content>{{ $t('submitting_system') }}:</v-list-item-content>
+                        <v-list-item-content
+                          >{{ $t("submitting_system") }}:</v-list-item-content
+                        >
                         <v-list-item-content class="align-end">
                           {{ patient.system }}
                         </v-list-item-content>
@@ -56,23 +64,112 @@
                         v-for="(name, j) in patient.name"
                         :key="`${j}-${name.use}`"
                       >
-                        <v-list-item-content>{{ $t('surname') }} ({{ name.use }})</v-list-item-content>
+                        <v-list-item-content
+                          >{{ $t("surname") }} ({{
+                            name.use
+                          }})</v-list-item-content
+                        >
                         <v-list-item-content class="align-end text-capitalize">
                           {{ name.given.join(" ") }} {{ name.family }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>{{ $t('gender') }}:</v-list-item-content>
+                        <v-list-item-content
+                          >{{ $t("gender") }}:</v-list-item-content
+                        >
                         <v-list-item-content class="align-end">
                           {{ patient.gender }}
                         </v-list-item-content>
                       </v-list-item>
                       <v-list-item>
-                        <v-list-item-content>{{ $t('birth_date') }}:</v-list-item-content>
+                        <v-list-item-content
+                          >{{ $t("birth_date") }}:</v-list-item-content
+                        >
                         <v-list-item-content class="align-end">
                           {{ patient.birthdate }}
                         </v-list-item-content>
                       </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          {{ $t("death_date") }}:</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content> Nationality:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          Marital Status:</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          Registering Facility:</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content> Village:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content> Parish:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content
+                          >Sub County:</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>County:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>District:</v-list-item-content>
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item>
+                        <v-list-item-content
+                          >Country of residence:</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+
+                      <v-list-item>
+                        <v-list-item-content
+                          >Next of Kin :</v-list-item-content
+                        >
+                        <v-list-item-content class="align-end">
+                          "Not Set"
+                        </v-list-item-content>
+                      </v-list-item>
+
                       <v-list-item
                         v-for="(telecom, k) in patient.telecom"
                         :key="`${k}-${telecom.system}`"
@@ -88,7 +185,9 @@
                         v-for="(id, l) in patient.identifier"
                         :key="`${l}-${id.system}`"
                       >
-                        <v-list-item-content>{{ id.name }}:</v-list-item-content>
+                        <v-list-item-content
+                          >{{ id.name }}:</v-list-item-content
+                        >
                         <v-list-item-content class="align-end">
                           {{ id.value }}
                         </v-list-item-content>
@@ -97,7 +196,9 @@
                         v-for="(id, l) in patient.extension"
                         :key="`${l}-${id.name}`"
                       >
-                        <v-list-item-content>{{ $t(id.name) }}:</v-list-item-content>
+                        <v-list-item-content
+                          >{{ $t(id.name) }}:</v-list-item-content
+                        >
                         <v-list-item-content class="align-end">
                           {{ id.value }}
                         </v-list-item-content>
@@ -110,19 +211,17 @@
           </v-col>
           <v-col cols="6">
             <v-card class="mx-auto">
-              <v-toolbar
-                color="accent"
-                dark
-              >
-                <v-toolbar-title>{{ $t('matched_records') }} </v-toolbar-title>
+              <v-toolbar color="accent" dark>
+                <v-toolbar-title>{{ $t("matched_records") }} </v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="breaks"
                 :headers="match_headers"
                 :items="match_items"
                 :items-per-page="20"
-                :footer-props="{ 
-                'items-per-page-text':this.$t('row_per_page')}"
+                :footer-props="{
+                  'items-per-page-text': this.$t('row_per_page'),
+                }"
                 :no-data-text="$t('no_data')"
                 class="elevation-1 text-capitalize"
                 item-key="fid"
@@ -135,26 +234,24 @@
                   :disabled="breaks.length === 0 || match_items.length < 2"
                   @click="breakMatch()"
                 >
-                {{ $t('break_matches') }}
+                  {{ $t("break_matches") }}
                 </v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
           <v-col cols="12">
             <v-card class="mx-auto">
-              <v-toolbar
-                color="warning"
-                dark
-              >
-                <v-toolbar-title> {{ $t('broken_matches') }}</v-toolbar-title>
+              <v-toolbar color="warning" dark>
+                <v-toolbar-title> {{ $t("broken_matches") }}</v-toolbar-title>
               </v-toolbar>
               <v-data-table
                 v-model="unbreaks"
                 :headers="match_headers"
                 :items="break_items"
                 :items-per-page="20"
-                :footer-props="{ 
-                'items-per-page-text':this.$t('row_per_page')}"
+                :footer-props="{
+                  'items-per-page-text': this.$t('row_per_page'),
+                }"
                 class="elevation-1 text-capitalize"
                 :no-data-text="$t('no_data')"
                 item-key="id"
@@ -167,7 +264,7 @@
                   :disabled="unbreaks.length === 0"
                   @click="revertBreak()"
                 >
-                {{ $t('revert_break') }}
+                  {{ $t("revert_break") }}
                 </v-btn>
               </v-card-actions>
             </v-card>
@@ -178,83 +275,65 @@
         <v-row>
           <v-col cols="12">
             <v-card class="mx-auto">
-              <v-toolbar
-                color="secondary"
-                dark
-              >
-                <v-toolbar-title>{{  $t('history') }}</v-toolbar-title>
+              <v-toolbar color="secondary" dark>
+                <v-toolbar-title>{{ $t("history") }}</v-toolbar-title>
               </v-toolbar>
               <v-expansion-panels popout>
-                <v-expansion-panel
-                  v-for="(event,i) in matchEvents"
-                  :key="i"
-                >
+                <v-expansion-panel v-for="(event, i) in matchEvents" :key="i">
                   <v-expansion-panel-header>
                     <template v-if="event.type === 'submittedResource'">
-                      {{  $t('submitted_resource') }}
+                      {{ $t("submitted_resource") }}
                     </template>
                     <template v-if="event.type === 'breakMatch'">
-                      {{  $t('break_matche') }}
+                      {{ $t("break_matche") }}
                     </template>
                     <template v-if="event.type === 'unBreak'">
-                      {{  $t('revert_break') }}
+                      {{ $t("revert_break") }}
                     </template>
-                    {{  $t('event') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }}</v-expansion-panel-header>
+                    {{ $t("event") }}
+                    {{
+                      event.recorded | moment("Do MMM YYYY h:mm:ss a")
+                    }}</v-expansion-panel-header
+                  >
                   <v-expansion-panel-content>
                     <template v-if="event.type !== 'submittedResource'">
-                      {{  $t('user') }}: {{ event.username }} <br>
+                      {{ $t("user") }}: {{ event.username }} <br />
                     </template>
-                    Operation: <b>{{ event.operation }}</b> <br>
-                    {{  $t('operation_time') }} {{ event.recorded | moment('Do MMM YYYY h:mm:ss a') }} <br>
-                    {{  $t('patient_status') }} :
+                    Operation: <b>{{ event.operation }}</b> <br />
+                    {{ $t("operation_time") }}
+                    {{ event.recorded | moment("Do MMM YYYY h:mm:ss a") }}
+                    <br />
+                    {{ $t("patient_status") }} :
                     <template v-if="event.outcomeCode === '0'">
-                      <v-chip
-                        color="green"
-                        dark
-                      >
+                      <v-chip color="green" dark>
                         {{ event.outcome }}
                       </v-chip>
                     </template>
                     <template v-else>
-                      <v-chip
-                        color="red"
-                        dark
-                      >
+                      <v-chip color="red" dark>
                         {{ event.outcome }}
-                      </v-chip>
-                    </template><br>
-                    IP Address: {{ event.ipaddress }} <br>
+                      </v-chip> </template
+                    ><br />
+                    IP Address: {{ event.ipaddress }} <br />
                     <v-row v-if="event.type === 'breakMatch'">
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="green"
-                          hover
-                        >
+                        <v-card elevation="12" color="green" hover>
                           <v-card-text class="white--text">
-                            Break <br><b>{{ event.break }}</b>
+                            Break <br /><b>{{ event.break }}</b>
                           </v-card-text>
                         </v-card>
                       </v-col>
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="red"
-                          hover
-                        >
+                        <v-card elevation="12" color="red" hover>
                           <v-card-text class="white--text">
-                            Old CRUID <br><b>{{ event.CRUID }}</b>
+                            Old CRUID <br /><b>{{ event.CRUID }}</b>
                           </v-card-text>
                         </v-card>
                       </v-col>
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="red"
-                          hover
-                        >
+                        <v-card elevation="12" color="red" hover>
                           <v-card-text class="white--text">
-                            Broken From <br>
+                            Broken From <br />
                             <b>
                               <template v-for="breakFrom in event.breakFrom">
                                 => {{ breakFrom }}
@@ -266,37 +345,29 @@
                     </v-row>
                     <v-row v-if="event.type === 'unBreak'">
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="green"
-                          hover
-                        >
+                        <v-card elevation="12" color="green" hover>
                           <v-card-text class="white--text">
-                            Reverting <br><b>{{ event.unBreak }}</b>
+                            Reverting <br /><b>{{ event.unBreak }}</b>
                           </v-card-text>
                         </v-card>
                       </v-col>
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="red"
-                          hover
-                        >
+                        <v-card elevation="12" color="red" hover>
                           <v-card-text class="white--text">
-                            Reverting From CRUID <br><b>{{ event.unBreakFromCRUID }}</b>
+                            Reverting From CRUID <br /><b>{{
+                              event.unBreakFromCRUID
+                            }}</b>
                           </v-card-text>
                         </v-card>
                       </v-col>
                       <v-col cols="4">
-                        <v-card
-                          elevation="12"
-                          color="red"
-                          hover
-                        >
+                        <v-card elevation="12" color="red" hover>
                           <v-card-text class="white--text">
-                            Reverting From <br>
+                            Reverting From <br />
                             <b>
-                              <template v-for="unBreakFrom in event.unBreakFrom">
+                              <template
+                                v-for="unBreakFrom in event.unBreakFrom"
+                              >
                                 => {{ unBreakFrom }}
                               </template>
                             </b>
@@ -305,17 +376,15 @@
                       </v-col>
                     </v-row>
                     <v-row
-                      v-for="(detail,j) in event.matchData"
+                      v-for="(detail, j) in event.matchData"
                       v-else
                       :key="j"
                     >
                       <v-col cols="6">
-                        <v-card
-                          elevation="12"
-                          hover
-                        >
+                        <v-card elevation="12" hover>
                           <v-card-title primary-title>
-                            Decision Rule {{ ++j }} => Matching Type: &nbsp; <b> {{ detail.matchingType }}</b>
+                            Decision Rule {{ ++j }} => Matching Type: &nbsp;
+                            <b> {{ detail.matchingType }}</b>
                           </v-card-title>
                           <v-card-text>
                             <v-data-table
@@ -326,36 +395,30 @@
                             >
                               <template v-slot:item.details="{ item }">
                                 <template v-if="item.details.algorithm">
-                                  Algorithm - {{ item.details.algorithm }}<br>
+                                  Algorithm - {{ item.details.algorithm }}<br />
                                 </template>
                                 <template v-if="item.details.threshold">
                                   Threshold
-                                  <v-chip
-                                    color="red"
-                                    dark
-                                  >
-                                    {{ item.details.threshold }}
-                                  </v-chip><br>
+                                  <v-chip color="red" dark>
+                                    {{ item.details.threshold }} </v-chip
+                                  ><br />
                                 </template>
-                                <template v-if="detail.matchingType === 'probabilistic'">
+                                <template
+                                  v-if="detail.matchingType === 'probabilistic'"
+                                >
                                   <b>mValue</b>
-                                  <v-chip
-                                    color="green"
-                                    dark
-                                  >
+                                  <v-chip color="green" dark>
                                     {{ item.details.mValue }}
-                                  </v-chip> <b>- uValue</b>
-                                  <v-chip
-                                    color="blue"
-                                    dark
-                                  >
-                                    {{ item.details.uValue }}
-                                  </v-chip><br>
+                                  </v-chip>
+                                  <b>- uValue</b>
+                                  <v-chip color="blue" dark>
+                                    {{ item.details.uValue }} </v-chip
+                                  ><br />
                                 </template>
                                 <template v-if="item.details.fhirpath">
                                   FHIR Path - {{ item.details.fhirpath }}
                                 </template>
-                                <br><br>
+                                <br /><br />
                               </template>
                             </v-data-table>
                           </v-card-text>
@@ -425,7 +488,6 @@
   </v-container>
 </template>
 
-
 <script>
 import { generalMixin } from "@/mixins/generalMixin";
 export default {
@@ -439,7 +501,7 @@ export default {
         0: "Success",
         4: "Minor Failure - Client Error",
         8: "Serious Failure - Server Error",
-        12: "Major Failure - Server Crashed"
+        12: "Major Failure - Server Crashed",
       },
       selected: "",
       matchEvents: [],
@@ -453,48 +515,65 @@ export default {
       unbreaks: [],
       matchRuleHeaders: [
         {
-          text: this.$t('field'),
-          value: "name"
+          text: this.$t("field"),
+          value: "name",
         },
         {
-          text: this.$t('field_details'),
-          value: "details"
-        }
+          text: this.$t("field_details"),
+          value: "details",
+        },
       ],
       match_headers: [
         {
-          text: this.$t('submitting_system'),
-          value: "system"
+          text: this.$t("submitting_system"),
+          value: "system",
         },
         {
-          text: this.$t('record_id'),
-          value: "id"
+          text: this.$t("record_id"),
+          value: "id",
         },
         {
-          text: this.$t('surname'),
-          value: "family"
+          text: this.$t("surname"),
+          value: "family",
         },
         {
-          text: this.$t('given_names'),
-          value: "given"
+          text: this.$t("given_names"),
+          value: "given",
         },
         {
-          text: this.$t('gender'),
-          value: "gender"
+          text: this.$t("gender"),
+          value: "gender",
         },
         {
-          text: this.$t('birth_date'),
-          value: "birthdate"
-        }
+          text: this.$t("birth_date"),
+          value: "birthdate",
+        },
+        {
+          text: this.$t("death_date"),
+          value: "deathDate",
+        },
+        {
+          text: this.$t("nationality"),
+          value: "nationality",
+        },
+        {
+          text: this.$t("marital_status"),
+          value: "maritalStatus",
+        },
+        {
+          text: this.$t("registering_facility"),
+          value: "facility",
+        },
+
       ],
       match_items: [],
-      break_items: []
+      break_items: [],
     };
   },
   computed: {
     canGoBack() {
-      return history.length > 1
-    }
+      return history.length > 1;
+    },
   },
   mounted() {
     this.getPatient();
@@ -511,7 +590,7 @@ export default {
           "/ocrux/fhir/Patient?_elements=link,extension&_id=" +
             this.$route.params.clientId
         )
-        .then(response => {
+        .then((response) => {
           let uid = response.data.entry[0].resource.link[0].other.reference
             .split("/")
             .pop();
@@ -528,14 +607,17 @@ export default {
             brokenList = brokenList.join(",");
             this.$http
               .get("/ocrux/fhir/Patient?_id=" + brokenList)
-              .then(resp => {
+              .then((resp) => {
                 for (let entry of resp.data.entry) {
                   let patient = entry.resource;
                   let recordId, systemName, name, phone;
                   let clientUserId;
                   if (patient.meta && patient.meta.tag) {
                     for (let tag of patient.meta.tag) {
-                      if (tag.system === "http://openclientregistry.org/fhir/clientid") {
+                      if (
+                        tag.system ===
+                        "http://openclientregistry.org/fhir/clientid"
+                      ) {
                         clientUserId = tag.code;
                         systemName = tag.display;
                       }
@@ -551,29 +633,29 @@ export default {
                         }
                         identifiers.push({
                           name: displName.name,
-                          value: id.value
+                          value: id.value,
                         });
                       } else {
                         identifiers.push({
                           name: id.system,
-                          value: id.value
+                          value: id.value,
                         });
                       }
                     }
                   }
                   try {
-                    name = patient.name.find(name => name.use === "official");
-                    if(!name) {
+                    name = patient.name.find((name) => name.use === "official");
+                    if (!name) {
                       name = { family: "", given: [] };
-                    } else if(!name.given) {
-                      name.given = []
+                    } else if (!name.given) {
+                      name.given = [];
                     }
                   } catch (err) {
                     name = { family: "", given: [] };
                   }
                   try {
                     phone = patient.telecom.find(
-                      phone => (phone.system = "phone")
+                      (phone) => (phone.system = "phone")
                     ).value;
                   } catch (err) {
                     phone = "";
@@ -593,7 +675,7 @@ export default {
                       identifier: identifiers,
                       family: name.family,
                       given: name.given.join(" "),
-                      phone: phone
+                      phone: phone,
                     });
                   } else {
                     this.break_items.push({
@@ -607,7 +689,7 @@ export default {
                       identifier: identifiers,
                       family: name.family,
                       given: name.given.join(" "),
-                      phone: phone
+                      phone: phone,
                     });
                   }
                 }
@@ -615,13 +697,13 @@ export default {
           }
           this.$http
             .get("/ocrux/fhir/Patient?_include=Patient:link&_id=" + uid)
-            .then(resp => {
+            .then((resp) => {
               for (let entry of resp.data.entry) {
                 let patient = entry.resource;
                 if (
                   patient.meta.tag &&
                   patient.meta.tag.find(
-                    tag => tag.code === process.env.VUE_APP_CRUID_TAG
+                    (tag) => tag.code === process.env.VUE_APP_CRUID_TAG
                   ) !== undefined
                 ) {
                   this.uid = patient.id;
@@ -632,7 +714,10 @@ export default {
                   let clientUserId;
                   if (patient.meta && patient.meta.tag) {
                     for (let tag of patient.meta.tag) {
-                      if (tag.system === "http://openclientregistry.org/fhir/clientid") {
+                      if (
+                        tag.system ===
+                        "http://openclientregistry.org/fhir/clientid"
+                      ) {
                         clientUserId = tag.code;
                         systemName = tag.display;
                       }
@@ -648,12 +733,12 @@ export default {
                         }
                         identifiers.push({
                           name: displName.name,
-                          value: id.value
+                          value: id.value,
                         });
                       } else {
                         identifiers.push({
                           name: id.system,
-                          value: id.value
+                          value: id.value,
                         });
                       }
                     }
@@ -661,25 +746,25 @@ export default {
                   let extensions = [];
                   if (patient.extension) {
                     for (let id of patient.extension) {
-                        extensions.push({
-                          name: id.url,
-                          value: ( id.valueString ? id.valueString : id.valueDate )
-                        });
+                      extensions.push({
+                        name: id.url,
+                        value: id.valueString ? id.valueString : id.valueDate,
+                      });
                     }
                   }
                   try {
-                    name = patient.name.find(name => name.use === "official");
-                    if(!name) {
+                    name = patient.name.find((name) => name.use === "official");
+                    if (!name) {
                       name = { family: "", given: [] };
-                    } else if(!name.given) {
-                      name.given = []
+                    } else if (!name.given) {
+                      name.given = [];
                     }
                   } catch (err) {
                     name = { family: "", given: [] };
                   }
                   try {
                     phone = patient.telecom.find(
-                      phone => (phone.system = "phone")
+                      (phone) => (phone.system = "phone")
                     ).value;
                   } catch (err) {
                     phone = "";
@@ -698,10 +783,10 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
-                      extension: extensions,                      
+                      extension: extensions,
                       family: name.family,
                       given: name.given.join(" "),
-                      phone: phone
+                      phone: phone,
                     });
                   } else {
                     this.match_items.push({
@@ -714,10 +799,10 @@ export default {
                       name: patient.name,
                       telecom: patient.telecom,
                       identifier: identifiers,
-                      extension: extensions,                      
+                      extension: extensions,
                       family: name.family,
                       given: name.given.join(" "),
-                      phone: phone
+                      phone: phone,
                     });
                   }
                   this.match_count++;
@@ -732,7 +817,7 @@ export default {
     breakMatch() {
       if (this.breaks.length > 0) {
         this.$store.state.progress.enable = true;
-        this.$store.state.progress.title = "Breaing Match";
+        this.$store.state.progress.title = "Breaking Match";
         let username = this.$store.state.auth.username;
         let url = `/ocrux/match/break-match?username=${username}`;
         let ids = [];
@@ -750,7 +835,7 @@ export default {
     revertBreak() {
       if (this.unbreaks.length > 0) {
         this.$store.state.progress.enable = true;
-        this.$store.state.progress.title = "UnBreaing Match";
+        this.$store.state.progress.title = "UnBreaking Match";
         let username = this.$store.state.auth.username;
         let url = `/ocrux/match/unbreak-match?username=${username}`;
         let ids = [];
@@ -758,7 +843,7 @@ export default {
           for (let match of this.match_items) {
             ids.push({
               id2: "Patient/" + match.fid,
-              id1: "Patient/" + unBreak.fid
+              id1: "Patient/" + unBreak.fid,
             });
           }
         }
@@ -773,23 +858,25 @@ export default {
     getAuditEvents() {
       this.matchEvents = [];
       let url = `/ocrux/fhir/AuditEvent?entity=${this.$route.params.clientId}&entity-name=submittedResource,breakTo,breakFrom,unBreak,unBreakFromResource&_sort=-_lastUpdated`;
-      this.$http.get(url).then(response => {
+      this.$http.get(url).then((response) => {
         this.auditEvent = response.data;
         for (let event of response.data.entry) {
           let modifiedEvent = { matchData: [] };
           modifiedEvent.recorded = event.resource.recorded;
-          let isBreakEvent = event.resource.entity.find(entity => {
+          let isBreakEvent = event.resource.entity.find((entity) => {
             return entity.name === "break" || entity.name === "breakFrom";
           });
-          let isUnBreakEvent = event.resource.entity.find(entity => {
+          let isUnBreakEvent = event.resource.entity.find((entity) => {
             return (
               entity.name === "unBreak" || entity.name === "unBreakFromResource"
             );
           });
           let operation;
-          if(event.resource.subtype && Array.isArray(event.resource.subtype)) {
+          if (event.resource.subtype && Array.isArray(event.resource.subtype)) {
             for (let subtype of event.resource.subtype) {
-              if (subtype.system === "http://hl7.org/fhir/restful-interaction") {
+              if (
+                subtype.system === "http://hl7.org/fhir/restful-interaction"
+              ) {
                 operation = subtype.code;
               }
             }
@@ -849,8 +936,14 @@ export default {
               for (let detail of entity.detail) {
                 if (detail.type === "resource") {
                   modifiedEvent.submittedResourceData = detail.valueString;
-                } else if (detail.type === "match" && detail.valueBase64Binary) {
-                  let matches = new Buffer.from(detail.valueBase64Binary, "base64").toString("ascii");
+                } else if (
+                  detail.type === "match" &&
+                  detail.valueBase64Binary
+                ) {
+                  let matches = new Buffer.from(
+                    detail.valueBase64Binary,
+                    "base64"
+                  ).toString("ascii");
                   matches = JSON.parse(matches);
                   let decRule = [];
                   for (let field in matches.rule.fields) {
@@ -858,7 +951,7 @@ export default {
                     decRule.push({
                       name: field,
                       id: field,
-                      details: fieldDet
+                      details: fieldDet,
                     });
                   }
                   modifiedEvent.matchData.push({
@@ -866,9 +959,17 @@ export default {
                     matchingType: matches.rule.matchingType,
                     filters: matches.rule.filters,
                     autoMatches: JSON.stringify(matches.autoMatches, 0, 2),
-                    potentialMatches: JSON.stringify(matches.potentialMatches, 0, 2),
-                    conflictsMatchResults: JSON.stringify(matches.conflictMatches, 0, 2),
-                    query: JSON.stringify(matches.query, 0, 2)
+                    potentialMatches: JSON.stringify(
+                      matches.potentialMatches,
+                      0,
+                      2
+                    ),
+                    conflictsMatchResults: JSON.stringify(
+                      matches.conflictMatches,
+                      0,
+                      2
+                    ),
+                    query: JSON.stringify(matches.query, 0, 2),
                   });
                 }
               }
@@ -879,8 +980,8 @@ export default {
       });
     },
     close() {
-      window.close()
-    }
-  }
+      window.close();
+    },
+  },
 };
 </script>

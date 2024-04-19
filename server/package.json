@@ -6,6 +6,7 @@
   "scripts": {
     "start": "env NODE_ENV=production node --max-old-space-size=8192 lib/app.js",
     "dev": "env NODE_ENV=development node lib/app.js",
+    "docker": "env NODE_ENV=docker node lib/app.js",
     "test": "env NODE_ENV=test jest --testPathIgnorePatterns=__tests__/e2e",
     "e2e": "env NODE_ENV=test node __tests__/e2e/resetTestData.js && jest --detectOpenHandles --testPathPattern=__tests__/e2e"
   },
@@ -46,6 +47,7 @@
     "slashes": "^1.0.5",
     "soundex-code": "^1.0.4",
     "supertest": "^5.0.0-0",
+    "underscore": "^1.13.6",
     "urijs": "^1.19.2",
     "uuid": "^3.3.3",
     "uuid4": "^1.1.4",
