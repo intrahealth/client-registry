@@ -3,43 +3,17 @@
     <v-card-title>
       <v-spacer />
       <template v-for="filter in filters">
-        <searchTerm
-          :label="filter.label"
-          :key="filter.searchparameter"
-          :expression="filter.searchparameter"
-          :binding="filter.binding"
-          @termChange="searchData"
-        />
+        <searchTerm :label="filter.label" :key="filter.searchparameter" :expression="filter.searchparameter"
+          :binding="filter.binding" @termChange="searchData" />
       </template>
-      <v-autocomplete
-        v-model="pos"
-        :items="$store.state.clients"
-        item-text="displayName"
-        item-value="id"
-        clearable
-        :label="$t('source')"
-        hide-details
-        outlined
-        shaped
-        @click:clear="searchPOS"
-        @change="searchPOS"
-      />
+      <v-autocomplete v-model="pos" :items="$store.state.clients" item-text="displayName" item-value="id" clearable
+        :label="$t('source')" hide-details outlined shaped @click:clear="searchPOS" @change="searchPOS" />
     </v-card-title>
-    <v-data-table
-      style="cursor: pointer"
-      :headers="headers"
-      :items="patients"
-      :options.sync="options"
-      :server-items-length="totalPatients"
-      :footer-props="{
+    <v-data-table style="cursor: pointer" :headers="headers" :items="patients" :options.sync="options"
+      :server-items-length="totalPatients" :footer-props="{
         'items-per-page-options': [5, 10, 20, 50],
         'items-per-page-text': this.$t('row_per_page'),
-      }"
-      :no-data-text="$t('no_data')"
-      :loading="loading"
-      class="elevation-1"
-      @click:row="clickIt"
-    />
+      }" :no-data-text="$t('no_data')" :loading="loading" class="elevation-1" @click:row="clickIt" />
   </v-card>
 </template>
 
@@ -53,7 +27,8 @@ export const headersNames = {
   gender: "Gender",
   birth: "Birth Date",
   registeringFacility: "Registering Facility",
-  nationalIDPassport: "National ID / Passport",
+  nationalID: "National ID",
+  passport: "Passport",
   healthIdentificationNumber: "Health Identification Number",
   cruid: "CRUID",
 };
@@ -92,7 +67,7 @@ export default {
     searchTerm: searchTerm,
   },
   methods: {
-    clickIt: function(client) {
+    clickIt: function (client) {
       this.$router.push({
         name: "client",
         params: { clientId: client.id },
@@ -233,8 +208,11 @@ export default {
                 if (label.valueString === headersNames.registeringFacility) {
                   translatedHeader = this.$t("registering_facility");
                 }
-                if (label.valueString === headersNames.nationalIDPassport) {
-                  translatedHeader = this.$t("national_id_passport");
+                if (label.valueString === headersNames.nationalID) {
+                  translatedHeader = this.$t("national_id");
+                }
+                if (label.valueString === headersNames.passport) {
+                  translatedHeader = this.$t("passport");
                 }
                 if (
                   label.valueString === headersNames.healthIdentificationNumber

@@ -126,7 +126,7 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "gender"
+              "valueString": "managingOrganization"
             }
           ]
         },
@@ -213,11 +213,11 @@
           "extension": [
             {
               "url": "label",
-              "valueString": "National ID / Passport"
+              "valueString": "National ID"
             },
             {
               "url": "fhirpath",
-              "valueString": "name.where(use='official').last().family"
+              "valueString": "identifier.where(system='http://health.go.ug/cr/nationalid').last().value"
             },
             {
               "url": "searchable",
@@ -225,7 +225,28 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "gender"
+              "valueString": "identifier"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Passport"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "identifier.where(system='http://health.go.ug/cr/passport').last().value"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "identifier"
             }
           ]
         },
@@ -238,7 +259,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "name.where(use='official').last().family"
+              "valueString": "identifier.where(system='http://health.go.ug/cr/hin').last().value"
             },
             {
               "url": "searchable",
@@ -246,7 +267,7 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "gender"
+              "valueString": "identifier"
             }
           ]
         }
