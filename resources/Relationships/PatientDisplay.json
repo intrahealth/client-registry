@@ -105,7 +105,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "deceased"
             }
           ]
         },
@@ -118,7 +118,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "organization"
             },
             {
               "url": "searchable",
@@ -126,7 +126,7 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "managingOrganization"
+              "valueString": "organization"
             }
           ]
         },
@@ -191,7 +191,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "address"
             }
           ]
         },
@@ -204,7 +204,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "address-country"
             }
           ]
         },
@@ -217,7 +217,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "identifier.where(system='http://health.go.ug/cr/nationalid').last().value"
+              "valueString": "identifier.where(system='http://health.go.ug/cr/natioanlid').last().value"
             },
             {
               "url": "searchable",
