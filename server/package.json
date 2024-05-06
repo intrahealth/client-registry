@@ -46,7 +46,7 @@
     "slashes": "^1.0.5",
     "soundex-code": "^1.0.4",
     "supertest": "^5.0.0-0",
-    "urijs": "^1.19.2",
+    "urijs": "^1.19.11",
     "uuid": "^3.3.3",
     "uuid4": "^1.1.4",
     "winston": "^3.2.1",
