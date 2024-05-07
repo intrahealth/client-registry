@@ -27,6 +27,7 @@ export const headersNames = {
   gender: "Gender",
   birth: "Birth Date",
   registeringFacility: "Registering Facility",
+  artNumber: "Art Number",
   nationalID: "National ID",
   passport: "Passport",
   healthIdentificationNumber: "Health Identification Number",
@@ -210,6 +211,9 @@ export default {
                 }
                 if (label.valueString === headersNames.nationalID) {
                   translatedHeader = this.$t("national_id");
+                }
+                 if (label.valueString === headersNames.artNumber) {
+                  translatedHeader = this.$t("art_number");
                 }
                 if (label.valueString === headersNames.passport) {
                   translatedHeader = this.$t("passport");

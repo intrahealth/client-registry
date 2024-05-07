@@ -115,13 +115,13 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         ];
         if (nationalID) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/nationalid',
+            system: 'http://health.go.ug/cr/nationalid',
             value: nationalID,
           });
         }
         if (ARTNumb) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/artnumber',
+            system: 'http://health.go.ug/cr/artnumber',
             value: ARTNumb,
           });
         }

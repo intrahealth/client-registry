@@ -118,7 +118,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "organization"
+              "valueString": "name"
             },
             {
               "url": "searchable",
@@ -126,7 +126,7 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "organization"
+              "valueString": "managingOrganization"
             }
           ]
         },
@@ -191,7 +191,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "address"
+              "valueString": "address.where(use='official').last()"
             }
           ]
         },
@@ -204,7 +204,28 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "address-country"
+              "valueString": "address:nationality"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "Art Number"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "identifier.where(system='http://health.go.ug/cr/artnumber').value"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "identifier"
             }
           ]
         },
@@ -217,7 +238,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "identifier.where(system='http://health.go.ug/cr/natioanlid').last().value"
+              "valueString": "identifier.where(system='http://health.go.ug/cr/nationalid').last().value"
             },
             {
               "url": "searchable",

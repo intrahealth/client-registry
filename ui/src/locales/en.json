@@ -6,8 +6,9 @@
     "identifier_http://openelis-global.org/pat_nationalId": "ART Number",
     "identifier_https://openmrs.org/UPI": "UPID",
     "identifier_http://clientregistry.org/openmrs": "Internal ID",
-    "http://clientregistry.org/artnumber":"ART Number",
-    "http://clientregistry.org/nationalid":"National ID",
+    "http://health.go.ug/cr/artnumber":"ART Number",
+    "http://health.go.ug/cr/nationalid":"National ID",
+    "http://health.go.ug/cr/hin":"Health Information Number",
     "patient_status": "Status",
     "patient_status_date": "Status Date",
     "http://openelis-global.org/pat_nationalId":"ART Number",
@@ -52,6 +53,7 @@
     "registering_facility": "Registering Facility",
     "national_id": "National ID",
     "passport": "Passport",
+    "art_number": "Art Number",
     "health_identification_number" :" Health Identification Number",
     "middle_names":"Middle names",
     "source": "Source",
@@ -116,7 +118,6 @@
     "row_per_page": "Rows per page : ",
     "no_data": "No data available",
     "simplified_naming": "Use simplified naming?",
-     "include_real_crid": "Include Actual CR ID with Temporary CR ID?"
-    
+    "include_real_crid": "Include Actual CR ID with Temporary CR ID?"
 
 }
