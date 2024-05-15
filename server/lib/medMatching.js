@@ -1,167 +1,225 @@
 /* eslint-disable promise/param-names */
-const levenshtein = require('fast-levenshtein');
-const dlevenshtein = require('damerau-levenshtein');
-const jaroWankler = require('jaro-winkler');
-const soundex = require('soundex-code');
-const metaphone = require('metaphone');
-const doubleMetaphone = require('double-metaphone');
-const async = require('async');
-const logger = require('./winston');
-const config = require('./config');
-const generalMixin = require('./mixins/generalMixin');
-const fhirWrapper = require('./fhir')();
-const Fhir = require('fhir').Fhir;
+const levenshtein = require("fast-levenshtein");
+const dlevenshtein = require("damerau-levenshtein");
+const jaroWankler = require("jaro-winkler");
+const soundex = require("soundex-code");
+const metaphone = require("metaphone");
+const doubleMetaphone = require("double-metaphone");
+const async = require("async");
+const logger = require("./winston");
+const config = require("./config");
+const generalMixin = require("./mixins/generalMixin");
+const fhirWrapper = require("./fhir")();
+const Fhir = require("fhir").Fhir;
 
 const fhir = new Fhir();
 
 module.exports = () => ({
-  performMatch({
-    sourceResource,
-    ignoreList,
-    url
-  }, callback) {
+  performMatch({ sourceResource, ignoreList, url }, callback) {
     const matches = {};
     matches.entry = [];
-    fhirWrapper.getResource({
-      resource: 'Patient',
-      count: 3000,
-      url,
-    }, targetResources => {
-      this.getMatches({
-        sourceResource,
-        targetResources,
-        ignoreList,
-      }, (err, matched) => {
-        matches.entry = matches.entry.concat(matched.entry);
-        if (targetResources.link) {
-          let next = targetResources.link && targetResources.link.find(link => link.relation === 'next');
-          const url = next.url
-          targetResources = [];
-          this.performMatch({
+    fhirWrapper.getResource(
+      {
+        resource: "Patient",
+        count: 3000,
+        url,
+      },
+      (targetResources) => {
+        this.getMatches(
+          {
             sourceResource,
+            targetResources,
             ignoreList,
-            url: url,
-          }, (err, matched) => {
+          },
+          (err, matched) => {
             matches.entry = matches.entry.concat(matched.entry);
-            return callback(err, matches);
-          });
-        } else {
-          return callback(err, matches);
-        }
-      });
-    });
+            if (targetResources.link) {
+              let next =
+                targetResources.link &&
+                targetResources.link.find((link) => link.relation === "next");
+              const url = next.url;
+              targetResources = [];
+              this.performMatch(
+                {
+                  sourceResource,
+                  ignoreList,
+                  url: url,
+                },
+                (err, matched) => {
+                  matches.entry = matches.entry.concat(matched.entry);
+                  return callback(err, matches);
+                }
+              );
+            } else {
+              return callback(err, matches);
+            }
+          }
+        );
+      }
+    );
   },
-  getMatches({
-    sourceResource,
-    targetResources,
-    ignoreList = []
-  }, callback) {
-    const decisionRules = config.get('rules');
+  getMatches({ sourceResource, targetResources, ignoreList = [] }, callback) {
+    const decisionRules = config.get("rules");
     const matches = {};
     matches.entry = [];
     const promises = [];
     for (const targetResource of targetResources.entry) {
-      promises.push(new Promise(resolve => {
-        const isBroken = generalMixin.isMatchBroken(sourceResource, targetResource.resource.resourceType + '/' + targetResource.resource.id);
-        if (isBroken) {
-          return resolve();
-        }
-        const ignore = ignoreList.find(ignoreId => {
-          return ignoreId === targetResource.resource.id;
-        });
-        if (ignore) {
-          return resolve();
-        }
-        let missMatchFound = false;
-        const rulePromises = [];
-        async.each(decisionRules, (decisionRule, nxtRule) => {
-          for (const ruleField in decisionRule.fields) {
-            rulePromises.push(new Promise(ruleResolve => {
-              const rule = decisionRule.fields[ruleField];
-              const sourceValue = fhir.evaluate(sourceResource, rule.fhirpath);
-              const targetValue = fhir.evaluate(targetResource.resource, rule.fhirpath);
-              if (!sourceValue || !targetValue || (typeof sourceValue === 'object' && !Array.isArray(sourceValue)) || (typeof targetValue === 'object' && !Array.isArray(targetValue))) {
-                if (typeof sourceValue === 'object') {
-                  logger.warn('Object comparison are not supported ' + JSON.stringify(sourceValue));
-                }
-                if (typeof targetValue === 'object') {
-                  logger.warn('Object comparison are not supported ' + JSON.stringify(targetValue));
-                }
-                missMatchFound = true;
-                return ruleResolve();
-              }
-              const algorith = rule.algorithm;
-              let isMatch;
-              switch (algorith) {
-                case 'exact':
-                  isMatch = this.exactMatcher(sourceValue, targetValue);
-                  if (!isMatch) {
-                    missMatchFound = true;
-                  }
-                  break;
-                case 'levenshtein':
-                  isMatch = this.levenshteinMatcher(sourceValue, targetValue, rule.threshold);
-                  if (!isMatch) {
-                    missMatchFound = true;
-                  }
-                  break;
-                case 'damerau-levenshtein':
-                  isMatch = this.damerauLevenshteinMatcher(sourceValue, targetValue, rule.threshold);
-                  if (!isMatch) {
-                    missMatchFound = true;
-                  }
-                  break;
-                case 'jaro-winkler':
-                  isMatch = this.jaroWinklerMatcher(sourceValue, targetValue, rule.threshold);
-                  if (!isMatch) {
-                    missMatchFound = true;
-                  }
-                  break;
-                case 'soundex':
-                  isMatch = this.soundexMatcher(sourceValue, targetValue);
-                  if (!isMatch) {
-                    missMatchFound = true;
-                  }
-                  case 'metaphone':
-                    isMatch = this.metaphoneMatcher(sourceValue, targetValue);
-                    if (!isMatch) {
-                      missMatchFound = true;
-                    }
-                    break;
-                  case 'double-metaphone':
-                    isMatch = this.doubleMetaphoneMatcher(sourceValue, targetValue);
-                    if (!isMatch) {
-                      missMatchFound = true;
-                    }
-                    break;
-                  default:
-                    missMatchFound = true;
-                    break;
-              }
-              ruleResolve();
-            }));
+      promises.push(
+        new Promise((resolve) => {
+          const isBroken = generalMixin.isMatchBroken(
+            sourceResource,
+            targetResource.resource.resourceType +
+              "/" +
+              targetResource.resource.id
+          );
+          if (isBroken) {
+            return resolve();
           }
-          Promise.all(rulePromises).then(() => {
-            if (!missMatchFound) {
-              matches.entry.push(targetResource);
-            }
-            return nxtRule();
-          }).catch(err => {
-            nxtRule();
-            logger.error(err);
-            throw err;
+          const ignore = ignoreList.find((ignoreId) => {
+            return ignoreId === targetResource.resource.id;
           });
-        }, () => {
-          return resolve();
-        });
-      }));
+          if (ignore) {
+            return resolve();
+          }
+          let missMatchFound = false;
+          const rulePromises = [];
+          async.each(
+            decisionRules,
+            (decisionRule, nxtRule) => {
+              for (const ruleField in decisionRule.fields) {
+                rulePromises.push(
+                  new Promise((ruleResolve) => {
+                    const rule = decisionRule.fields[ruleField];
+                    const sourceValue = fhir.evaluate(
+                      sourceResource,
+                      rule.fhirpath
+                    );
+                    const targetValue = fhir.evaluate(
+                      targetResource.resource,
+                      rule.fhirpath
+                    );
+                    if (
+                      !sourceValue ||
+                      !targetValue ||
+                      (typeof sourceValue === "object" &&
+                        !Array.isArray(sourceValue)) ||
+                      (typeof targetValue === "object" &&
+                        !Array.isArray(targetValue))
+                    ) {
+                      if (typeof sourceValue === "object") {
+                        logger.warn(
+                          "Object comparison are not supported " +
+                            JSON.stringify(sourceValue)
+                        );
+                      }
+                      if (typeof targetValue === "object") {
+                        logger.warn(
+                          "Object comparison are not supported " +
+                            JSON.stringify(targetValue)
+                        );
+                      }
+                      missMatchFound = true;
+                      return ruleResolve();
+                    }
+                    const algorith = rule.algorithm;
+                    let isMatch;
+                    switch (algorith) {
+                      case "exact":
+                        isMatch = this.exactMatcher(sourceValue, targetValue);
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "levenshtein":
+                        isMatch = this.levenshteinMatcher(
+                          sourceValue,
+                          targetValue,
+                          rule.threshold
+                        );
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "damerau-levenshtein":
+                        isMatch = this.damerauLevenshteinMatcher(
+                          sourceValue,
+                          targetValue,
+                          rule.threshold
+                        );
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "jaro-winkler":
+                        isMatch = this.jaroWinklerMatcher(
+                          sourceValue,
+                          targetValue,
+                          rule.threshold
+                        );
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "soundex":
+                        isMatch = this.soundexMatcher(sourceValue, targetValue);
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "metaphone":
+                        isMatch = this.metaphoneMatcher(
+                          sourceValue,
+                          targetValue
+                        );
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      case "double-metaphone":
+                        isMatch = this.doubleMetaphoneMatcher(
+                          sourceValue,
+                          targetValue
+                        );
+                        if (!isMatch) {
+                          missMatchFound = true;
+                        }
+                        break;
+                      default:
+                        missMatchFound = true;
+                        break;
+                    }
+                    ruleResolve();
+                  })
+                );
+              }
+              Promise.all(rulePromises)
+                .then(() => {
+                  if (!missMatchFound) {
+                    matches.entry.push(targetResource);
+                  }
+                  return nxtRule();
+                })
+                .catch((err) => {
+                  nxtRule();
+                  logger.error(err);
+                  throw err;
+                });
+            },
+            () => {
+              return resolve();
+            }
+          );
+        })
+      );
     }
-    Promise.all(promises).then(() => {
-      return callback(false, matches);
-    }).catch(err => {
-      logger.error(err);
-      throw err;
-    });
+    Promise.all(promises)
+      .then(() => {
+        return callback(false, matches);
+      })
+      .catch((err) => {
+        logger.error(err);
+        throw err;
+      });
   },
   /**
    *
@@ -486,9 +544,7 @@ module.exports = () => ({
     return false;
   },
 
-  identifiersMatcher(identifiers1, identifiers2) {
-
-  }
+  identifiersMatcher(identifiers1, identifiers2) {},
 });
 
 function cleanValue(value) {
