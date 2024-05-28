@@ -80,6 +80,7 @@ async.eachOfSeries(bundle.entry, (entry, index, nxtEntry) => {
     json: entry.resource,
   };
   request.post(options, (err, res, body) => {
+    console.error(JSON.stringify(body, 0, 2));
     if (err) {
       logger.error('An error has occured');
       logger.error(err);
