@@ -1,3 +1,4 @@
+/* eslint-disable no-empty */
 const express = require("express");
 const router = express.Router();
 const URI = require('urijs');
@@ -634,6 +635,7 @@ router.post('/break-match', (req, res) => {
         operSummary.oldCRUID = entry.resource.link[0].other.reference;
         for (const link of entry.resource.link) {
           // group together records that shares the same golden id, these will later on be assigned to the same new golden id
+          // eslint-disable-next-line no-prototype-builtins
           if (!goldenRec2RecoLink.hasOwnProperty(link.other.reference)) {
             const newGoldenRecord = fhirWrapper.createGoldenRecord();
             newGoldenRecord.link = [];
@@ -674,6 +676,7 @@ router.post('/break-match', (req, res) => {
       let goldenQuery;
       for (const goldenId of goldenIds) {
         const goldenIdArr = goldenId.split('/');
+        // eslint-disable-next-line no-unused-vars
         const [resName, resId] = goldenIdArr;
         if (goldenQuery) {
           goldenQuery += ',' + resId;
@@ -739,6 +742,7 @@ router.post('/break-match', (req, res) => {
             }
             for (const linkedRec of goldenRecord.resource.link) {
               const linkedRecArr = linkedRec.other.reference.split('/');
+              // eslint-disable-next-line no-unused-vars
               const [resName, resId] = linkedRecArr;
               if (linkedRecordsQuery) {
                 linkedRecordsQuery += ',' + resId;
@@ -1124,7 +1128,6 @@ router.post('/matches', (req, res) => {
       sourceResource: patient,
       ignoreList: [],
     }, ({
-      error,
       FHIRAutoMatched,
       FHIRPotentialMatches,
       FHIRConflictsMatches,
@@ -1315,13 +1318,16 @@ router.post('/matches', (req, res) => {
       singleEntry.resource = {};
       singleEntry.resource.resourceType = 'Patient';
       singleEntry.resource.id = patient.id;
+      singleEntry.resource.meta = {};
+      singleEntry.resource.meta.source_id = patient.source_id;
+      singleEntry.resource.meta.source = patient.source;
       singleEntry.resource.gender = patient.gender;
       singleEntry.resource.name = [];
       singleEntry.resource.name.push(family);
       singleEntry.resource.name.push(given);
 
       singleEntry.resource.telecom = [];
-      const value = {system: patient.phone};
+      const value = {value: patient.phone};
       singleEntry.resource.telecom.push(system);
       singleEntry.resource.telecom.push(value);
 
@@ -1351,7 +1357,6 @@ router.post('/matches', (req, res) => {
     return bundle;
   }
 }
-//EOL
 );
 
 router.get('/potential-matches/:id', (req, res) => {
@@ -1395,7 +1400,6 @@ router.get('/potential-matches/:id', (req, res) => {
       sourceResource: patient,
       ignoreList: [patient.id],
     }, ({
-      error,
       FHIRAutoMatched,
       FHIRPotentialMatches,
       FHIRConflictsMatches,
@@ -1871,7 +1875,7 @@ router.post('/unbreak-match', (req, res) => {
                   resource: entry.resource
                 }]
               };
-              matchMixin.addPatient(clientID, patientsBundle, (err, response, operSum) => {
+              matchMixin.addPatient(clientID, patientsBundle, (err, response) => {
                 // operationSummary.push(operSum);
                 const tmpAuditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
                 auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
