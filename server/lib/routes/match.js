@@ -1092,7 +1092,7 @@ router.post('/matches', (req, res) => {
   const patientJson = req.body;
 
   generateScoreMatrix({patient: patientJson, level: 'childMatches',type: 'parent'}, () => {
-    return res.status(200).send(matchResults);
+    return res.status(200).send(transformToFhirObject(matchResults));
   });
 
   function matrixExist(sourceID) {
@@ -1260,6 +1260,7 @@ router.post('/matches', (req, res) => {
       });
     });
   }
+
   function populateScores(patient, ESMatches, FHIRPotentialMatches, FHIRAutoMatched, FHIRConflictsMatches) {
     for(let esmatch of ESMatches) {
       for(let autoMatch of esmatch.autoMatchResults) {
@@ -1291,7 +1292,67 @@ router.post('/matches', (req, res) => {
       }
     }
   }
-});
+
+  function transformToFhirObject(matchResults) {
+    const bundle = {};
+    bundle.resourceType = 'Bundle';
+    bundle.id = '';
+    bundle.meta = {};
+    bundle.meta.lastUpdated = new Date().toISOString();
+    bundle.type = 'searchset';
+    bundle.total = 0;
+    bundle.entry = []; 
+  
+    const serverUrl = 'http://clientregistry.org/openmrs';
+    const family = {family: ''};
+    const given = {given: ''};
+    const system = {system: 'phone'};
+    const url = {url: 'http://hl7.org/fhir/StructureDefinition/match-grade'};
+    
+    function createPatientEntry(patient, matchGrade, score) {
+      const singleEntry = {};
+      singleEntry.fullUrl = `${serverUrl}/Patient/${patient.id}`;
+      singleEntry.resource = {};
+      singleEntry.resource.resourceType = 'Patient';
+      singleEntry.resource.id = patient.id;
+      singleEntry.resource.gender = patient.gender;
+      singleEntry.resource.name = [];
+      singleEntry.resource.name.push(family);
+      singleEntry.resource.name.push(given);
+
+      singleEntry.resource.telecom = [];
+      const value = {system: patient.phone};
+      singleEntry.resource.telecom.push(system);
+      singleEntry.resource.telecom.push(value);
+
+      singleEntry.resource.birthDate = patient.birthDate;
+
+      singleEntry.resource.search = {};
+      singleEntry.resource.search.extension = [];
+      const valueCode = {valueCode: matchGrade};
+      singleEntry.resource.search.extension.push(url);
+      singleEntry.resource.search.extension.push(valueCode);
+      singleEntry.resource.search.mode = 'match';
+      singleEntry.resource.search.score = score;
+      return singleEntry;
+    }
+
+    matchResults.auto.forEach(autoMatch => {
+      const entry = createPatientEntry(autoMatch, 'certain', 0.9);
+      bundle.entry.push(entry);
+    });
+  
+    matchResults.potential.forEach(potentialMatch => {
+      const entry = createPatientEntry(potentialMatch, 'possible', 0.2);
+      bundle.entry.push(entry);
+    });
+  
+    bundle.total = bundle.entry.length;
+    return bundle;
+  }
+}
+//EOL
+);
 
 router.get('/potential-matches/:id', (req, res) => {
   logger.info("Received a request to get potential matches");
