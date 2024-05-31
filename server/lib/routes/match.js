@@ -1299,7 +1299,7 @@ router.post('/matches', (req, res) => {
   function transformToFhirObject(matchResults) {
     const bundle = {};
     bundle.resourceType = 'Bundle';
-    bundle.id = '';
+    bundle.id = uuid4();
     bundle.meta = {};
     bundle.meta.lastUpdated = new Date().toISOString();
     bundle.type = 'searchset';
@@ -1319,6 +1319,7 @@ router.post('/matches', (req, res) => {
       singleEntry.resource.resourceType = 'Patient';
       singleEntry.resource.id = patient.id;
       singleEntry.resource.meta = {};
+      singleEntry.resource.meta.lastUpdated = new Date().toISOString();
       singleEntry.resource.meta.source_id = patient.source_id;
       singleEntry.resource.meta.source = patient.source;
       singleEntry.resource.gender = patient.gender;
