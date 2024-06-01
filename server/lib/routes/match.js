@@ -1096,7 +1096,7 @@ router.post('/matches', (req, res) => {
   const patientJson = req.body;
 
   generateScoreMatrix({patient: patientJson, level: 'childMatches',type: 'parent'}, () => {
-    return res.status(200).send(transformToFhirObject(matchResults));
+    return res.status(200).send(transformToFhirObject());
   });
 
   function matrixExist(sourceID) {
@@ -1296,69 +1296,55 @@ router.post('/matches', (req, res) => {
     }
   }
 
-  function transformToFhirObject(matchResults) {
-    const bundle = {};
-    bundle.resourceType = 'Bundle';
-    bundle.id = uuid4();
-    bundle.meta = {};
-    bundle.meta.lastUpdated = new Date().toISOString();
-    bundle.type = 'searchset';
-    bundle.total = 0;
-    bundle.entry = []; 
-  
-    const serverUrl = 'http://clientregistry.org/openmrs';
-    const family = {family: ''};
-    const given = {given: ''};
-    const system = {system: 'phone'};
-    const url = {url: 'http://hl7.org/fhir/StructureDefinition/match-grade'};
-    
-    function createPatientEntry(patient, matchGrade, score) {
-      const singleEntry = {};
-      singleEntry.fullUrl = `${serverUrl}/Patient/${patient.id}`;
-      singleEntry.resource = {};
-      singleEntry.resource.resourceType = 'Patient';
-      singleEntry.resource.id = patient.id;
-      singleEntry.resource.meta = {};
-      singleEntry.resource.meta.lastUpdated = new Date().toISOString();
-      singleEntry.resource.meta.source_id = patient.source_id;
-      singleEntry.resource.meta.source = patient.source;
-      singleEntry.resource.gender = patient.gender;
-      singleEntry.resource.name = [];
-      singleEntry.resource.name.push(family);
-      singleEntry.resource.name.push(given);
+  function getPatientById(bundle, array, score, matchGrade) {
+    array.forEach(function(auto) {
+        fhirWrapper.getResource({resource: 'Patient', id: auto.id, noCaching: true }, 
+        (resourceData, statusCode) => {
+            for (const index in resourceData.link) {
+                if (!resourceData.link[index].url) {
+                    continue;
+                }
+                const urlArr = resourceData.link[index].url.split('fhir');
+                if (urlArr.length === 2) {
+                    resourceData.link[index].url = '/fhir' + urlArr[1];
+                }
+            }
 
-      singleEntry.resource.telecom = [];
-      const value = {value: patient.phone};
-      singleEntry.resource.telecom.push(system);
-      singleEntry.resource.telecom.push(value);
+            console.log('The status code is: '+ statusCode);
+            console.log('The patient returned is: '+ JSON.stringify(resourceData));
 
-      singleEntry.resource.birthDate = patient.birthDate;
+            resourceData.search = {
+              extension: [{
+                url: 'http://hl7.org/fhir/StructureDefinition/match-grade',
+                valueCode: matchGrade
+            }],
+            score: score
+            };
 
-      singleEntry.resource.search = {};
-      singleEntry.resource.search.extension = [];
-      const valueCode = {valueCode: matchGrade};
-      singleEntry.resource.search.extension.push(url);
-      singleEntry.resource.search.extension.push(valueCode);
-      singleEntry.resource.search.mode = 'match';
-      singleEntry.resource.search.score = score;
-      return singleEntry;
-    }
+            console.log('After Adding search object to patient object: '+ JSON.stringify(resourceData));
 
-    matchResults.auto.forEach(autoMatch => {
-      const entry = createPatientEntry(autoMatch, 'certain', 0.9);
-      bundle.entry.push(entry);
+            bundle.entry.push(resourceData);
+        });
     });
-  
-    matchResults.potential.forEach(potentialMatch => {
-      const entry = createPatientEntry(potentialMatch, 'possible', 0.2);
-      bundle.entry.push(entry);
-    });
-  
-    bundle.total = bundle.entry.length;
-    return bundle;
-  }
 }
-);
+
+function transformToFhirObject() {
+  const bundle = {};
+  bundle.resourceType = 'Bundle';
+  bundle.id = uuid4();
+  bundle.meta = {};
+  bundle.meta.lastUpdated = new Date().toISOString();
+  bundle.type = 'searchset';
+  bundle.total = 0;
+  bundle.entry = [];  
+
+  getPatientById(bundle, matchResults.auto, 0.9, 'certain');
+  getPatientById(bundle, matchResults.potential, 0.2, 'potential');
+
+  bundle.total = bundle.entry.length;
+  return bundle;
+}
+});
 
 router.get('/potential-matches/:id', (req, res) => {
   logger.info("Received a request to get potential matches");
