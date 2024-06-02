@@ -635,7 +635,6 @@ router.post('/break-match', (req, res) => {
         operSummary.oldCRUID = entry.resource.link[0].other.reference;
         for (const link of entry.resource.link) {
           // group together records that shares the same golden id, these will later on be assigned to the same new golden id
-          // eslint-disable-next-line no-prototype-builtins
           if (!goldenRec2RecoLink.hasOwnProperty(link.other.reference)) {
             const newGoldenRecord = fhirWrapper.createGoldenRecord();
             newGoldenRecord.link = [];
@@ -676,7 +675,6 @@ router.post('/break-match', (req, res) => {
       let goldenQuery;
       for (const goldenId of goldenIds) {
         const goldenIdArr = goldenId.split('/');
-        // eslint-disable-next-line no-unused-vars
         const [resName, resId] = goldenIdArr;
         if (goldenQuery) {
           goldenQuery += ',' + resId;
@@ -742,7 +740,6 @@ router.post('/break-match', (req, res) => {
             }
             for (const linkedRec of goldenRecord.resource.link) {
               const linkedRecArr = linkedRec.other.reference.split('/');
-              // eslint-disable-next-line no-unused-vars
               const [resName, resId] = linkedRecArr;
               if (linkedRecordsQuery) {
                 linkedRecordsQuery += ',' + resId;
@@ -1888,7 +1885,7 @@ router.post('/unbreak-match', (req, res) => {
                   resource: entry.resource
                 }]
               };
-              matchMixin.addPatient(clientID, patientsBundle, (err, response) => {
+              matchMixin.addPatient(clientID, patientsBundle, (err, response, operSum) => {
                 // operationSummary.push(operSum);
                 const tmpAuditBundle = matchMixin.createAddPatientAudEvent(operationSummary, req);
                 auditBundle.entry = auditBundle.entry.concat(tmpAuditBundle.entry);
