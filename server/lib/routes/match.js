@@ -1,4 +1,3 @@
-/* eslint-disable no-empty */
 const express = require("express");
 const router = express.Router();
 const URI = require('urijs');
@@ -1410,6 +1409,7 @@ router.get('/potential-matches/:id', (req, res) => {
       sourceResource: patient,
       ignoreList: [patient.id],
     }, ({
+      error,
       FHIRAutoMatched,
       FHIRPotentialMatches,
       FHIRConflictsMatches,
