@@ -1085,7 +1085,7 @@ router.get(`/count-new-auto-matches`, (req, res) => {
   });
 });
 
-router.post('/matches', (req, res) => {
+router.post('/matches', async (req, res) => {
   logger.info("Received a request to get all matches");
   let matchResults = {
     parent: [],
@@ -1095,8 +1095,14 @@ router.post('/matches', (req, res) => {
   };
   const patientJson = req.body;
 
-  generateScoreMatrix({patient: patientJson, level: 'childMatches',type: 'parent'}, () => {
-    return res.status(200).send(transformToFhirObject());
+  generateScoreMatrix({ patient: patientJson, level: 'childMatches', type: 'parent' }, async () => {
+    try {
+      const combinedBundle = await transformToFhirObject();
+      return res.status(200).json(combinedBundle);
+    } catch (error) {
+      logger.error("Error in handling matches request:", error);
+      return res.status(500).send({ error: 'An error occurred while processing the matches' });
+    }
   });
 
   function matrixExist(sourceID) {
@@ -1296,55 +1302,75 @@ router.post('/matches', (req, res) => {
     }
   }
 
-  function getPatientById(bundle, array, score, matchGrade) {
-    array.forEach(function(auto) {
-        fhirWrapper.getResource({resource: 'Patient', id: auto.id, noCaching: true }, 
-        (resourceData, statusCode) => {
-            for (const index in resourceData.link) {
-                if (!resourceData.link[index].url) {
-                    continue;
+  async function getPatientById(array, score, matchGrade) {
+    const fetchPatientPromises = array.map(auto => {
+        return new Promise((resolve, reject) => {
+            fhirWrapper.getResource({ resource: 'Patient', id: auto.id, noCaching: true },
+                (resourceData, statusCode) => {
+                    if (statusCode !== 200) {
+                        reject(`Error fetching patient with id ${auto.id}: Status code ${statusCode}`);
+                        return;
+                    }
+
+                    if (resourceData.link) {
+                        resourceData.link.forEach(link => {
+                            if (link.url) {
+                                const urlArr = link.url.split('fhir');
+                                if (urlArr.length === 2) {
+                                    link.url = '/fhir' + urlArr[1];
+                                }
+                            }
+                        });
+                    }
+
+                    resourceData.search = {
+                        extension: [{
+                            url: 'http://hl7.org/fhir/StructureDefinition/match-grade',
+                            valueCode: matchGrade
+                        }],
+                        score: score
+                    };
+
+                    resolve(resourceData);
                 }
-                const urlArr = resourceData.link[index].url.split('fhir');
-                if (urlArr.length === 2) {
-                    resourceData.link[index].url = '/fhir' + urlArr[1];
-                }
-            }
-
-            console.log('The status code is: '+ statusCode);
-            console.log('The patient returned is: '+ JSON.stringify(resourceData));
-
-            resourceData.search = {
-              extension: [{
-                url: 'http://hl7.org/fhir/StructureDefinition/match-grade',
-                valueCode: matchGrade
-            }],
-            score: score
-            };
-
-            console.log('After Adding search object to patient object: '+ JSON.stringify(resourceData));
-
-            bundle.entry.push(resourceData);
+            );
         });
     });
+
+    try {
+      const results = await Promise.all(fetchPatientPromises);
+      return results;
+    } catch (error) {
+      console.error(error);
+      throw new Error('Error fetching patients');
+    }
 }
 
-function transformToFhirObject() {
-  const bundle = {};
-  bundle.resourceType = 'Bundle';
-  bundle.id = uuid4();
-  bundle.meta = {};
-  bundle.meta.lastUpdated = new Date().toISOString();
-  bundle.type = 'searchset';
-  bundle.total = 0;
-  bundle.entry = [];  
+async function transformToFhirObject() {
+    try {
+        const autoResults = await getPatientById(matchResults.auto, 0.9, 'certain');
+        const potentialResults = await getPatientById(matchResults.potential, 0.2, 'potential');
 
-  getPatientById(bundle, matchResults.auto, 0.9, 'certain');
-  getPatientById(bundle, matchResults.potential, 0.2, 'potential');
+        console.log('Auto Results Bundle: ', JSON.stringify(autoResults));
+        console.log('Potential Results Bundle: ', JSON.stringify(potentialResults));
 
-  bundle.total = bundle.entry.length;
-  return bundle;
-}
-});
+        const combinedEntries = [...autoResults, ...potentialResults];
+
+        const combinedBundle = {
+          resourceType: 'Bundle',
+          id: uuid4(),
+          meta: { lastUpdated: new Date().toISOString() },
+          type: 'searchset',
+          total: combinedEntries.length,
+          entry: combinedEntries
+      };
+
+      console.log('Combined Results Bundle: ', JSON.stringify(combinedBundle));
+      return combinedBundle;
+    } catch (error) {
+        console.error('Error in transforming to FHIR Object: ', error);
+    }
+}});
 
 router.get('/potential-matches/:id', (req, res) => {
   logger.info("Received a request to get potential matches");
