@@ -142,7 +142,30 @@ const loadResources = async (callback) => {
         } else {
           fhir = JSON.parse(data);
         }
-        const dest = URI(config.get('fhirServer:baseURL')).segment(fhir.resourceType).segment(fhir.id).toString();
+
+        const nonPartitionableFhirResources = [
+          "CapabilityStatement",
+          "CodeSystem",
+          "CompartmentDefinition",
+          "ConceptMap",
+          "Library",
+          "NamingSystem",
+          "OperationDefinition",
+          "Questionnaire",
+          "SearchParameter",
+          "StructureDefinition",
+          "StructureMap",
+          "ValueSet",
+          "Basic"
+        ];
+
+        let baseFhirURL = config.get('fhirServer:baseURL');
+
+        if (config.get('partitioned')  && nonPartitionableFhirResources.includes(fhir.resourceType)) {
+          baseFhirURL =  config.get('partitionbaseURL');
+        }
+        
+        const dest = URI(baseFhirURL).segment(fhir.resourceType).segment(fhir.id).toString();
         const options = {
           url: dest,
           withCredentials: true,
