@@ -31,7 +31,6 @@ router.get('/:resource?/:id?', (req, res) => {
     pixmRequest({
       req
     }, (resourceData, statusCode) => {
-      logger.error(JSON.stringify(resourceData,0,2));
       res.status(statusCode).send(resourceData);
     });
   } else {
@@ -255,7 +254,7 @@ router.post('/', (req, res) => {
         filteredResponseBundle.push(entry);
       } else {
         let replaceIndex = filteredResponseBundle.findIndex((fil) => {
-          return parseInt(fil.response.etag) < parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+          return parseInt(fil.response.etag) > parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
         });
         if(replaceIndex !== -1) {
           filteredResponseBundle.splice(replaceIndex, 1);
@@ -265,7 +264,16 @@ router.post('/', (req, res) => {
     }
     res.setHeader('Location', JSON.stringify(results.patients.responseHeaders.patientID));
     res.setHeader('LocationCRUID', JSON.stringify(results.patients.responseHeaders.CRUID));
-    res.status(code).json(filteredResponseBundle);
+    let type = resource.type + "-response"
+    if(!resource.type) {
+      type = "batch-response"
+    }
+    let responseBundle = {
+      resourceType: "Bundle",
+      type,
+      entry: filteredResponseBundle
+    }
+    res.status(code).json(responseBundle);
 
     const auditBundle = matchMixin.createAddPatientAudEvent(results.patients.operationSummary, req);
     fhirWrapper.saveResource({
@@ -369,6 +377,7 @@ function saveResource(req, res) {
       }, () => {
         logger.info('Audit saved successfully');
         let filteredResponseBundle = [];
+        logger.error(JSON.stringify(responseBundle, 0, 2));
         for(let entry of responseBundle.entry) {
           let exists = filteredResponseBundle.findIndex((fil) => {
             return fil.response && entry.response && entry.response.location && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
@@ -377,7 +386,7 @@ function saveResource(req, res) {
             filteredResponseBundle.push(entry);
           } else {
             let replaceIndex = filteredResponseBundle.findIndex((fil) => {
-              return parseInt(fil.response.etag) < parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
+              return parseInt(fil.response.etag) > parseInt(entry.response.etag) && fil.response.location.startsWith(entry.response.location.split('/_history')[0]);
             });
             if(replaceIndex !== -1) {
               filteredResponseBundle.splice(replaceIndex, 1);
@@ -388,9 +397,22 @@ function saveResource(req, res) {
         if (error) {
           res.status(500).json(filteredResponseBundle);
         } else {
+          let response = filteredResponseBundle.find((bnd) => {
+            return bnd.response.location.startsWith(responseHeaders.patientID[0]);
+          })?.response;
+          let status = response.status.split(" ")[0];
+          resource.id = responseHeaders.patientID[0];
+          if(!resource.meta) {
+            resource.meta = {};
+          }
+          resource.meta.versionId = response.etag;
+          resource.meta.lastUpdated = response.lastModified;
+          if(status !== 200 && status !== 201) {
+            status = 200;
+          }
           res.setHeader('Location', responseHeaders.patientID[0]);
           res.setHeader('LocationCRUID', responseHeaders.CRUID[0]);
-          res.status(200).json(filteredResponseBundle);
+          res.status(status).json(resource);
         }
 
         let csvUploadAuditBundle = {
