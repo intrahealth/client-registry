@@ -1,18 +1,18 @@
-const fs = require('fs');
-const async = require('async');
-const csv = require('fast-csv');
-const path = require('path');
-const request = require('request');
-const moment = require('moment');
-const uploadResults = require('./uploadResults');
-const logger = require('../server/lib/winston');
+const fs = require("fs");
+const async = require("async");
+const csv = require("fast-csv");
+const path = require("path");
+const request = require("request");
+const moment = require("moment");
+const uploadResults = require("./uploadResults");
+const logger = require("../server/lib/winston");
 
 if (!process.argv[2]) {
-  logger.error('Please specify path to a CSV file');
+  logger.error("Please specify path to a CSV file");
   process.exit();
 }
 const csvFile = process.argv[2];
-let csvTrueLinks = '';
+let csvTrueLinks = "";
 if (process.argv[3]) {
   csvTrueLinks = process.argv[3];
 }
@@ -23,7 +23,7 @@ try {
     process.exit();
   }
   if (!fs.existsSync(csvTrueLinks)) {
-    csvTrueLinks = '';
+    csvTrueLinks = "";
   }
 } catch (err) {
   logger.error(err);
@@ -32,39 +32,40 @@ try {
 
 const ext = path.extname(csvFile);
 const extTrueLinks = path.extname(csvTrueLinks);
-if (ext !== '.csv') {
-  logger.error('File is not a CSV');
+if (ext !== ".csv") {
+  logger.error("File is not a CSV");
   process.exit();
 }
-if (extTrueLinks !== '.csv') {
-  csvTrueLinks = '';
+if (extTrueLinks !== ".csv") {
+  csvTrueLinks = "";
 }
 
-logger.info('Upload started ...');
+logger.info("Upload started ...");
 const bundles = [];
 const bundle = {};
-bundle.type = 'batch';
-bundle.resourceType = 'Bundle';
+bundle.type = "batch";
+bundle.resourceType = "Bundle";
 bundle.entry = [];
 const promises = [];
 let totalRecords = 0;
-fs.createReadStream(path.resolve(__dirname, '', csvFile))
+fs.createReadStream(path.resolve(__dirname, "", csvFile))
   .pipe(
     csv.parse({
       headers: true,
     })
   )
-  .on('error', error => console.error(error))
-  .on('data', row => {
+  .on("error", (error) => console.error(error))
+  .on("data", (row) => {
     promises.push(
       new Promise((resolve, reject) => {
-        let sex = row['sex'];
-        let given = row['given_name'];
-        let surname = row['surname'];
-        let phone = row['phone_number'];
-        let nationalID = row['uganda_nin'];
-        let ARTNumb = row['art_number'];
-        let birthDate = row['date_of_birth'];
+        let sex = row["sex"];
+        let given = row["given_name"];
+        let surname = row["surname"];
+        let phone = row["phone_number"];
+        let nationalID = row["uganda_nin"];
+        let healthIN = row["uganda_hin"];
+        let ARTNumb = row["art_number"];
+        let birthDate = row["date_of_birth"];
         if (sex) {
           sex = sex.trim();
         }
@@ -80,6 +81,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (nationalID) {
           nationalID = nationalID.trim();
         }
+        if (healthIN) {
+          healthIN = "";
+        }
         if (ARTNumb) {
           ARTNumb = ARTNumb.trim();
         }
@@ -88,47 +92,55 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         }
         const resource = {
           meta: {
-            tag: [{
-              system: "http://openclientregistry.org/fhir/tag/csv",
-              code: "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
-              display: "Uganda CSV Data"
-            }]
-          }
+            tag: [
+              {
+                system: "http://openclientregistry.org/fhir/tag/csv",
+                code: "50a0ed16-c2e6-4319-8687-43a6a1a2d1e7",
+                display: "Uganda CSV Data",
+              },
+            ],
+          },
         };
-        resource.resourceType = 'Patient';
-        if (sex == 'f') {
-          resource.gender = 'female';
-        } else if (sex == 'm') {
-          resource.gender = 'male';
+        resource.resourceType = "Patient";
+        if (sex == "f") {
+          resource.gender = "female";
+        } else if (sex == "m") {
+          resource.gender = "male";
         }
-        if ( birthDate.match( /\d{8,8}/ ) ) {
-          const birthMoment = moment( birthDate );
-          if ( birthMoment.isValid() ) {
+        if (birthDate.match(/\d{8,8}/)) {
+          const birthMoment = moment(birthDate);
+          if (birthMoment.isValid()) {
             resource.birthDate = birthMoment.format("YYYY-MM-DD");
           }
         }
         resource.identifier = [
           {
-            system: 'http://clientregistry.org/openmrs',
-            value: row['rec_id'].trim(),
+            system: "http://clientregistry.org/openmrs",
+            value: row["rec_id"].trim(),
           },
         ];
         if (nationalID) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/nationalid',
+            system: "http://health.go.ug/cr/nationalid",
             value: nationalID,
           });
         }
+        // if (healthIN) {
+        resource.identifier.push({
+          system: "http://health.go.ug/cr/hin",
+          value: "",
+        });
+        // }
         if (ARTNumb) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/artnumber',
+            system: "http://health.go.ug/cr/artnumber",
             value: ARTNumb,
           });
         }
         if (phone) {
           resource.telecom = [];
           resource.telecom.push({
-            system: 'phone',
+            system: "phone",
             value: phone,
           });
         }
@@ -139,7 +151,7 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         if (surname) {
           name.family = surname;
         }
-        name.use = 'official';
+        name.use = "official";
         resource.name = [name];
         bundle.entry.push({
           resource,
@@ -156,13 +168,13 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
       })
     );
   })
-  .on('end', rowCount => {
+  .on("end", (rowCount) => {
     if (bundle.entry.length > 0) {
       totalRecords += bundle.entry.length;
       bundles.push(bundle);
     }
     Promise.all(promises).then(() => {
-      console.time('Total Processing Time');
+      console.time("Total Processing Time");
       let count = 0;
       async.eachSeries(
         bundles,
@@ -171,60 +183,67 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
             bundle.entry,
             (entry, nxtEntry) => {
               count++;
-              console.time('Processing Took');
-              console.log('Processing ' + count + ' of ' + totalRecords);
+              console.time("Processing Took");
+              console.log("Processing " + count + " of " + totalRecords);
               const agentOptions = {
                 cert: fs.readFileSync(
-                  '../server/clientCertificates/openmrs_cert.pem'
+                  "../server/clientCertificates/openmrs_cert.pem"
                 ),
                 key: fs.readFileSync(
-                  '../server/clientCertificates/openmrs_key.pem'
+                  "../server/clientCertificates/openmrs_key.pem"
                 ),
-                ca: fs.readFileSync('../server/serverCertificates/server_cert.pem'),
-                securityOptions: 'SSL_OP_NO_SSLv3',
+                ca: fs.readFileSync(
+                  "../server/serverCertificates/server_cert.pem"
+                ),
+                securityOptions: "SSL_OP_NO_SSLv3",
               };
               const auth = {
-                username: 'openmrs',
-                password: 'openmrs'
+                username: "root@intrahealth.org",
+                password: "intrahealth",
               };
               const options = {
-                url: 'https://localhost:3000/fhir/Patient',
+                url: "https://localhost:3000/fhir/Patient",
                 // auth,
                 agentOptions,
                 json: entry.resource,
               };
               request.post(options, (err, res, body) => {
-                if(err) {
-                  logger.error('An error has occured');
+                if (err) {
+                  logger.error("An error has occured");
                   logger.error(err);
                   return nxtEntry();
                 }
-                if(!res.headers) {
-                  logger.error('Something went wrong, this transaction was not successfully, please cross check the URL and authentication details;');
+                if (!res.headers) {
+                  logger.error(
+                    "Something went wrong, this transaction was not successfully, please cross check the URL and authentication details;"
+                  );
                   return nxtEntry();
                 }
-                if(res.headers.location) {
+                if (res.headers.location) {
                   logger.info({
-                    'Patient ID': res.headers.location,
-                    'Patient CRUID': res.headers.locationcruid
+                    "Patient HIN": res.headers.patienthin,
+                    "Patient ID": res.headers.location,
+                    "Patient CRUID": res.headers.locationcruid,
                   });
                 } else {
-                  logger.error('Something went wrong, no CRUID created');
+                  logger.error("Something went wrong, no CRUID created");
                 }
-                console.timeEnd('Processing Took');
+                console.timeEnd("Processing Took");
                 return nxtEntry();
               });
-            }, () => {
+            },
+            () => {
               return nxt();
             }
           );
-        }, () => {
-          console.timeEnd('Total Processing Time');
+        },
+        () => {
+          console.timeEnd("Total Processing Time");
           if (csvTrueLinks) {
             uploadResults.uploadResults(csvTrueLinks);
           } else {
             console.log(
-              'CSV File that had true matches was not specified, import summary wont be displayed'
+              "CSV File that had true matches was not specified, import summary wont be displayed"
             );
           }
         }

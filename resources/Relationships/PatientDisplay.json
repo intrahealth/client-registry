@@ -4,9 +4,7 @@
   "meta": {
     "versionId": "1",
     "lastUpdated": "2022-05-18T09:17:24.098+00:00",
-    "profile": [
-      "http://ihris.org/fhir/StructureDefinition/opencrDisplay"
-    ]
+    "profile": ["http://ihris.org/fhir/StructureDefinition/opencrDisplay"]
   },
   "extension": [
     {
@@ -105,7 +103,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "deceasedDateTime"
             }
           ]
         },
@@ -118,7 +116,7 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "name"
             },
             {
               "url": "searchable",
@@ -126,7 +124,7 @@
             },
             {
               "url": "searchparameter",
-              "valueString": "managingOrganization"
+              "valueString": "organization"
             }
           ]
         },
@@ -191,7 +189,11 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "address.where(use='home').district"
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "address:contains"
             }
           ]
         },
@@ -204,7 +206,11 @@
             },
             {
               "url": "fhirpath",
-              "valueString": "birthDate"
+              "valueString": "address.where(use='home').country"
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "address:contains"
             }
           ]
         },
@@ -268,6 +274,27 @@
             {
               "url": "searchparameter",
               "valueString": "identifier"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/display",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "CRUID"
+            },
+            {
+              "url": "fhirpath",
+              "valueString": "link.where(type='refer').other.reference"
+            },
+            {
+              "url": "searchable",
+              "valueBoolean": true
+            },
+            {
+              "url": "searchparameter",
+              "valueString": "link"
             }
           ]
         }

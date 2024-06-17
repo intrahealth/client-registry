@@ -272,12 +272,13 @@ export default {
         { text: this.$t('given_names'), value: "given" },
         { text: this.$t('birth_date'), value: "birthDate" },
         { text: this.$t('gender'), value: "gender" },
+        { text: this.$t('health_identification_number'), value: "ohin" },
         { text: this.$t('full_view'), value: "view", sortable: false },
         { text: "Scores", value: "score", sortable: false },
       ],
       dates: { birthDate: true },
       fields: { source: this.$t('submitting_system'), source_id: this.$t('source_id'), family: this.$t('surname'), given: this.$t('given_names'),
-        gender: this.$t('gender'), birthDate: this.$t('birth_date'), phone: this.$t('phone')
+        gender: this.$t('gender'), birthDate: this.$t('birth_date'), phone: this.$t('phone'), ohin: this.$t('health_identification_number')
       },
       score_matrix: [],
       score_headers: [ { text: "Source", value: "name" } ],
@@ -285,7 +286,10 @@ export default {
         { text: "Source", value: "source" },
         { text: this.$t('source_id'), value: "source_id" },
         { text: this.$t('original_cr_id'), value: "ouid" },
-        { text: this.$t('new_cr_id'), value: "uid" }
+        { text: this.$t('new_cr_id'), value: "uid" },
+        { text: this.$t('old_hin'), value: "ohin" }, 
+        { text: this.$t('new_hin'), value: "nhin" }
+
       ],
       review_list: [],
       copyCohortInfo: null,
@@ -374,38 +378,61 @@ export default {
     }
   },
   methods: {
-    organizeResolves: function( firstTime ) {
-      this.loading = true
-      for( let idx of Object.keys(this.crids) ) {
-        this.crids[idx] = []
-      }
-      this.review_list = []
+    organizeResolves: function (firstTime) {
+      this.loading = true;
 
-      for( let resolve of this.resolves ) {
-        if ( firstTime ) {
-          let scoreRow = {}
-          scoreRow.name = resolve.source+" "+resolve.source_id
-          this.score_headers.push( { text: scoreRow.name, value: resolve.source_id } )
-          for( let score_id of Object.keys(resolve.scores) ) {
-            resolve[score_id] = resolve.scores[score_id]
-            scoreRow[score_id] = resolve.scores[score_id]
+      // Reset crids and review_list
+      for (let idx of Object.keys(this.crids)) {
+        this.crids[idx] = [];
+      }
+      this.review_list = [];
+
+      // Process each resolve
+      for (let resolve of this.resolves) {
+        if (firstTime) {
+          let scoreRow = {};
+          scoreRow.name = `${resolve.source} ${resolve.source_id}`;
+          this.score_headers.push({ text: scoreRow.name, value: resolve.source_id });
+
+          for (let score_id of Object.keys(resolve.scores)) {
+            resolve[score_id] = resolve.scores[score_id];
+            scoreRow[score_id] = resolve.scores[score_id];
           }
-          this.score_matrix.push( scoreRow )
-          resolve.ouid = resolve.uid
+          this.score_matrix.push(scoreRow);
+          resolve.ouid = resolve.uid;
+          resolve.ohin = resolve.nhin;
         }
-        if ( !this.crids[ resolve.uid ] ) {
-          this.crids[ resolve.uid ] = []
-          this.nickname[ resolve.uid ] = this.available_nicknames.pop()
+
+        // Initialize crids entry if it doesn't exist
+        if (!this.crids[resolve.uid]) {
+          this.crids[resolve.uid] = [];
+          this.nickname[resolve.uid] = this.available_nicknames.pop();
         }
-        this.crids[ resolve.uid ].push( resolve )
-        if ( resolve.ouid !== resolve.uid ) {
-          this.review_list.push( resolve )
+        this.crids[resolve.uid].push(resolve);
+
+        // Handle copyCohortInfo
+        if (this.copyCohortInfo && this.copyCohortInfo.new_id === resolve.uid) {
+          const matchedResolves = this.resolves.filter(r => r.uid === this.copyCohortInfo.new_id);
+
+          if (matchedResolves.length > 0) {
+            matchedResolves.forEach(matchedResolve => {
+              // Update nhin and ohin
+              resolve.nhin = matchedResolve.ohin;
+
+            });
+
+            if (resolve.ouid !== resolve.uid) {
+              this.review_list.push(resolve);
+            }
+          } else {
+            console.log(`No resolve object found with new_id: ${this.copyCohortInfo.new_id}`);
+          }
         }
+
       }
 
-
-      this.setupCRIDList()
-      this.loading = false
+      this.setupCRIDList();
+      this.loading = false;
     },
     setupCRIDList: function() {
       this.crid_list = Object.keys(this.crids).map( crid => { return { text: this.cridDisplay(crid), value: crid } } )
@@ -418,8 +445,8 @@ export default {
     getSource: function(source_id) {
       return this.resolves.find( resolve => resolve.source_id === source_id ).source
     },
-    moveClient: function(val,item) {
-      this.copyCohortInfo = { old_id: item.uid, new_id: val, item: item }
+    moveClient: function (val, item) {
+      this.copyCohortInfo = { old_id: item.uid, new_id: val,  item: item }
       this.cohortPopup = true
     },
     copyClient: function() {

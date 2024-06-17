@@ -64,6 +64,7 @@ export default {
       rowsPerPageItems: [5, 10, 20, 50],
       headers: [
         { text:  this.$t('cr_id'), value: "uid" },
+        { text: this.$t('health_identification_number'), value: "hin" },
         { text:  this.$t('surname'), value: "family" },
         { text:  this.$t('given_names'), value: "given" },
         { text:  this.$t('source'), value: "source" },

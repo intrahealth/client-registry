@@ -1,14 +1,66 @@
-'use strict';
+"use strict";
 /*global process, __dirname*/
-const fs = require('fs');
-const logger = require('../winston');
-const config = require('../config');
-const env = process.env.NODE_ENV || 'development';
+const fs = require("fs");
+const logger = require("../winston");
+const config = require("../config");
+const env = process.env.NODE_ENV || "development";
+
+const initialCounterValue = config.get("uniqueIdentifier:IdentifierBase");
+
+const UniqueIdentifierPrefix = config.get("uniqueIdentifier:Prefix");
+
+const identifierLength = parseInt(config.get("uniqueIdentifier:Length"), 10);
+
+const createPatientIdentifierGenerator = (initialCounter) => {
+  // Function to calculate the Luhn check digit
+  function calculateAlphabetCheckDigit(number) {
+    let sum = 0;
+    let shouldDouble = true;
+
+    // Process the number from right to left
+    for (let i = number.length - 1; i >= 0; i--) {
+      let digit = parseInt(number.charAt(i), 10);
+
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) {
+          digit -= 9;
+        }
+      }
+
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+
+    // Calculate the check digit as the sum modulo 26
+    const checkDigitIndex = sum % 26;
+
+    // Map the check digit index to an alphabet character
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    return alphabet[checkDigitIndex];
+  }
+
+  return () => {
+    const uniqueNumber = initialCounter++; // Increment initialCounter after assigning it to uniqueNumber
+    const uniqueNumberStr = uniqueNumber.toString().padStart(identifierLength, "0");
+    const checkDigit = calculateAlphabetCheckDigit(uniqueNumberStr);
+    return `${UniqueIdentifierPrefix}-${uniqueNumberStr}${checkDigit}`; // Append the check digit to the unique identifier
+  };
+};
+
+// Create an instance of the identifier generator with an external counter value
+const generatePatientUniqueIdentifier = createPatientIdentifierGenerator(initialCounterValue);
+
 
 const isMatchBroken = (resourceData, reference) => {
-  let isBroken = resourceData.extension && resourceData.extension.find((extension) => {
-    return extension.url === config.get("systems:brokenMatch:uri") && extension.valueReference.reference === reference;
-  });
+  let isBroken =
+    resourceData.extension &&
+    resourceData.extension.find((extension) => {
+      return (
+        extension.url === config.get("systems:brokenMatch:uri") &&
+        extension.valueReference.reference === reference
+      );
+    });
   return isBroken;
 };
 
@@ -20,14 +72,16 @@ const getClientDisplayName = (clientid) => {
   if (clientDet) {
     return clientDet.displayName;
   }
-  return '';
+  return "";
 };
 
 const getClientIdentifier = (resource) => {
   const internalIdURI = config.get("systems:internalid:uri");
-  const validSystem = resource.identifier && resource.identifier.find(identifier => {
-    return internalIdURI.includes(identifier.system) && identifier.value;
-  });
+  const validSystem =
+    resource.identifier &&
+    resource.identifier.find((identifier) => {
+      return internalIdURI.includes(identifier.system) && identifier.value;
+    });
   return validSystem;
 };
 
@@ -42,9 +96,9 @@ const setNestedKey = (obj, path, value, callback) => {
 };
 
 const updateConfigFile = (path, newValue, callback) => {
-  const pathString = path.join(':');
+  const pathString = path.join(":");
   config.set(pathString, newValue);
-  logger.info('Updating config file');
+  logger.info("Updating config file");
   const configFile = `${__dirname}/../../config/config_${env}.json`;
   const configData = require(configFile);
   setNestedKey(configData, path, newValue, () => {
@@ -52,18 +106,18 @@ const updateConfigFile = (path, newValue, callback) => {
       if (err) {
         throw err;
       }
-      logger.info('Done updating config file');
+      logger.info("Done updating config file");
       return callback();
     });
   });
 };
 
-const flattenComplex = extension => {
+const flattenComplex = (extension) => {
   let results = {};
   for (let ext of extension) {
-    let value = '';
+    let value = "";
     for (let key of Object.keys(ext)) {
-      if (key !== 'url') {
+      if (key !== "url") {
         value = ext[key];
       }
     }
@@ -84,12 +138,12 @@ const flattenComplex = extension => {
   return results;
 };
 
-const removeDir = function(path) {
+const removeDir = function (path) {
   if (fs.existsSync(path)) {
     const files = fs.readdirSync(path);
 
     if (files.length > 0) {
-      files.forEach(function(filename) {
+      files.forEach(function (filename) {
         if (fs.statSync(path + "/" + filename).isDirectory()) {
           removeDir(path + "/" + filename);
         } else {
@@ -104,10 +158,11 @@ const removeDir = function(path) {
 };
 
 module.exports = {
+  generatePatientUniqueIdentifier,
   updateConfigFile,
   flattenComplex,
   getClientIdentifier,
   getClientDisplayName,
   isMatchBroken,
-  removeDir
+  removeDir,
 };
