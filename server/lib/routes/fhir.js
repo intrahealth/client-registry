@@ -263,10 +263,18 @@ router.post('/', (req, res) => {
         }
       }
     }
-    res.setHeader('PatientHIN',JSON.stringify(results.patients.responseHeaders.patientHIN));
     res.setHeader('Location', JSON.stringify(results.patients.responseHeaders.patientID));
     res.setHeader('LocationCRUID', JSON.stringify(results.patients.responseHeaders.CRUID));
-    res.status(code).json(filteredResponseBundle);
+    let type = resource.type + "-response";
+      if(!resource.type) {
+        type = "batch-response";
+      }
+      let responseBundle = {
+        resourceType: "Bundle",
+        type,
+        entry: filteredResponseBundle
+      };
+    res.status(code).json(responseBundle);
 
     const auditBundle = matchMixin.createAddPatientAudEvent(results.patients.operationSummary, req);
     fhirWrapper.saveResource({
@@ -406,10 +414,22 @@ function saveResource(req, res) {
         if (error) {
           res.status(500).json(filteredResponseBundle);
         } else {
-          // res.setHeader('PatientHIN',responseHeaders.patientHIN[0]);
+          let response = filteredResponseBundle.find((bnd) => {
+            return bnd.response.location.startsWith(responseHeaders.patientID[0]);
+          })?.response;
+          let status = response.status.split(" ")[0];
+          resource.id = responseHeaders.patientID[0];
+          if(!resource.meta) {
+            resource.meta = {};
+          }
+          resource.meta.versionId = response.etag;
+          resource.meta.lastUpdated = response.lastModified;
+          if(status !== 200 && status !== 201) {
+            status = 200;
+          }
           res.setHeader('Location', responseHeaders.patientID[0]);
           res.setHeader('LocationCRUID', responseHeaders.CRUID[0]);
-          res.status(200).json(filteredResponseBundle);
+          res.status(status).json(resource);
         }
 
         let csvUploadAuditBundle = {
