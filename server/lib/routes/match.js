@@ -18,6 +18,8 @@ const humanAdjudicationURI = URI(config.get("systems:CRBaseURI")).segment('human
 router.post('/resolve-match-issue', async(req, res) => {
   logger.info('Received a request to resolve match issues');
   let {resolves, resolvingFrom, removeFlag, flagType} = req.body;
+
+  // logger.info("req-body"+JSON.stringify(req.body,0,2));
   let query = '';
   let addedToQuery = [];
 
@@ -90,6 +92,26 @@ router.post('/resolve-match-issue', async(req, res) => {
           let newCRUID = originalResourceData.entry.find((entry) => {
             return entry.resource.id === patient.uid;
           });
+
+          let resourceWithouGolden = originalResourceData.entry.filter((entry) => {
+           return entry.resource.meta.tag.find(
+              (item) => item.code !== "5c827da5-4858-4f3d-a50c-62ece001efea"
+            );
+          });
+
+          let oldHINPatient = resourceWithouGolden.find((entry) => {
+            return entry.resource.identifier.find((identifier) => {
+              return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.ohin;
+            });
+          });
+
+          let newHINPatient = resourceWithouGolden.find((entry) => {
+            return entry.resource.identifier.find((identifier) => {
+              return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.nhin;
+            });
+          });
+
+
           if(patient.uid.startsWith('New CR ID')) {
             newCRUID = {};
             newCRUID.resource = fhirWrapper.createGoldenRecord();
@@ -102,6 +124,12 @@ router.post('/resolve-match-issue', async(req, res) => {
               patientResource.resource.link.splice(index, 1);
             }
           }
+
+          patientResource.resource.identifier.push({
+            system: config.get("systems:healthInformationNumber:uri"),
+            value: newHINPatient.resource.identifier.find((identifier)=>identifier.system === config.get("systems:healthInformationNumber:uri")).value
+          });
+
           patientResource.resource.link.push({
             other: {
               reference: 'Patient/' + newCRUID.resource.id
@@ -124,6 +152,7 @@ router.post('/resolve-match-issue', async(req, res) => {
               oldCRUID.resource.link.splice(index, 1);
             }
           }
+
           if(oldCRUID.resource.link.length === 0) {
             oldCRUID.resource.link.push({
               other: {
@@ -137,6 +166,14 @@ router.post('/resolve-match-issue', async(req, res) => {
             request: {
               method: 'PUT',
               url: 'Patient/' + oldCRUID.resource.id
+            }
+          });
+
+          modifiedResourceData.entry.push({
+            resource: oldHINPatient.resource,
+            request: {
+              method: 'PUT',
+              url: 'Patient/' + oldHINPatient.resource.id
             }
           });
           // end of removing patient from old CRUID
@@ -153,6 +190,14 @@ router.post('/resolve-match-issue', async(req, res) => {
             request: {
               method: 'PUT',
               url: 'Patient/' + newCRUID.resource.id
+            }
+          });
+
+          modifiedResourceData.entry.push({
+            resource: newHINPatient.resource,
+            request: {
+              method: 'PUT',
+              url: 'Patient/' + newHINPatient.resource.id
             }
           });
           //end of adding patient into new CRUID
