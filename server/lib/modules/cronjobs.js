@@ -5,10 +5,6 @@ const logger = require("../winston");
 
 let patientReprocessing = config.get("cronJobs:patientReprocessing");
 
-if (typeof patientReprocessing !== 'string') {
-  throw new TypeError('patientReprocessing must be a string!');
-}
-
 cron.schedule("0 21 * * *", () => {
   logger.info("Running cron job for patients reprocessing");
   matchMixin.reprocessPatients().then(() => {
