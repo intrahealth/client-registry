@@ -9,7 +9,7 @@ WORKDIR /src/server
 RUN npm install
 
 RUN cp /src/server/config/config_docker_template.json /src/server/config/config_docker.json
-RUN cp /src/server/config/mediatorTemplate.json /src/server/config/mediator.json
+RUN cp /src/server/config/mediator_template.json /src/server/config/mediator.json
 
 ARG NODE_ENV=docker
 ENV NODE_ENV=$NODE_ENV
