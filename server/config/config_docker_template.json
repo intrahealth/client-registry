@@ -5,7 +5,7 @@
   },
   "app": {
     "port": 3000,
-    "installed": true
+    "installed": false
   },
   "mediator": {
     "api": {
@@ -13,17 +13,17 @@
       "password": "password",
       "apiURL": "https://mediator-api-staging.health.go.ug",
       "trustSelfSigned": true,
-      "urn": ""
+      "urn": "urn:uuid:6a919095-f4b8-4a41-9b5e-f101e846d988"
     },
-    "register": false
+    "register": true
   },
   "cronJobs": {
     "patientReprocessing": "0 21 * * *"
   },
-  "fhirServer": {
-    "baseURL": "http://client-fhir:8080/hapi-fhir-jpaserver/fhir",
-    "username": "hapi",
-    "password": "hapi"
+ "fhirServer": {
+    "baseURL": "http://client-fhir:8080/hapi-fhir-jpaserver/fhir", 
+    "username": "clihapi",
+    "password": "bhh6j37jhnsrtuts77"
   },
   "elastic": {
     "server": "http://client-es:9200",
