@@ -122,19 +122,20 @@ module.exports = () => ({
                   if (!isMatch) {
                     missMatchFound = true;
                   }
-                  case 'metaphone':
+                  break;
+                case 'metaphone':
                     isMatch = this.metaphoneMatcher(sourceValue, targetValue);
                     if (!isMatch) {
                       missMatchFound = true;
                     }
                     break;
-                  case 'double-metaphone':
+                case 'double-metaphone':
                     isMatch = this.doubleMetaphoneMatcher(sourceValue, targetValue);
                     if (!isMatch) {
                       missMatchFound = true;
                     }
                     break;
-                  default:
+                default:
                     missMatchFound = true;
                     break;
               }
