@@ -1394,15 +1394,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
               });
 
             if (!healthId) {
-              operSummary.outcome = "4";
-              operSummary.outcomeDesc =
-                "Patient resource has no health Identification number ";
-              operationSummary.push(operSummary);
-              logger.error(
-                "Patient resource has no health Identification number, stop processing"
-              );
-              deleteProcess(processID);
-              return nxtPatient();
+              newPatient.resource.identifier.push({
+                system: config
+                  .get("systems:healthInformationNumber:uri")
+                  .find((id) => id === "http://health.go.ug/cr/hin"),
+                value: "NA",
+              })
             }
 
             // generate Internal ID
@@ -1434,7 +1431,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
                 if (
                   identifier.value === "null" ||
                   identifier.value === undefined ||
-                  identifier.value === ""
+                  identifier.value === "NA"
                 ) {
                   const query = "_sort=-_lastUpdated&_count=1";
                   try {
@@ -1678,15 +1675,12 @@ const addPatient = (clientID, patientsBundle, callback) => {
               });
 
             if (!healthId) {
-              operSummary.outcome = "4";
-              operSummary.outcomeDesc =
-                "Patient resource has no health Identification number ";
-              operationSummary.push(operSummary);
-              logger.error(
-                "Patient resource has no Health Identification number, stop processing"
-              );
-              deleteProcess(processID);
-              return nxtPatient();
+              newPatient.resource.identifier.push({
+                system: config
+                  .get("systems:healthInformationNumber:uri")
+                  .find((id) => id === "http://health.go.ug/cr/hin"),
+                value: "NA",
+              })
             }
 
             // generate Internal ID
@@ -1718,7 +1712,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
                 if (
                   identifier.value === "null" ||
                   identifier.value === undefined ||
-                  identifier.value === ""
+                  identifier.value === "NA"
                 ) {
                   const query = "_sort=-_lastUpdated&_count=1";
                   try {
