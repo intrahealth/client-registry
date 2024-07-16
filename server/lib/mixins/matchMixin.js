@@ -1395,9 +1395,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
 
             if (!healthId) {
               newPatient.resource.identifier.push({
-                system: config
-                  .get("systems:healthInformationNumber:uri")
-                  .find((id) => id === "http://health.go.ug/cr/hin"),
+                system: config.get("systems:healthInformationNumber:uri")  ,                
                 value: "NA",
               })
             }
@@ -1675,10 +1673,8 @@ const addPatient = (clientID, patientsBundle, callback) => {
               });
 
             if (!healthId) {
-              newPatient.resource.identifier.push({
-                system: config
-                  .get("systems:healthInformationNumber:uri")
-                  .find((id) => id === "http://health.go.ug/cr/hin"),
+                newPatient.resource.identifier.push({
+                system: config.get("systems:healthInformationNumber:uri")  ,                
                 value: "NA",
               })
             }
