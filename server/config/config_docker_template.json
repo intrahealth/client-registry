@@ -15,7 +15,7 @@
       "trustSelfSigned": true,
       "urn": "urn:uuid:6a919095-f4b8-4a41-9b5e-f101e846d988"
     },
-    "register": true
+    "register": false
   },
   "cronJobs": {
     "patientReprocessing": "0 21 * * *"
