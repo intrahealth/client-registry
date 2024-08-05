@@ -1,46 +1,35 @@
 <template>
+  <v-container fluid>
     <v-card>
-    <v-card-title>
-    {{ $t('menu_action_required') }}
-      <v-spacer />
-    </v-card-title>
-    <v-card-title>
-      <v-text-field
-        v-model="search"
-        append-icon="mdi-magnify"
-        :label="$t('search')"
-        single-line
-        hide-details
-      ></v-text-field>
-    </v-card-title>
-    <v-data-table
-      style="cursor: pointer"
-      :headers="headers"
-      :items="reviews"
-      :options.sync="options"
-      :footer-props="{ 
-      'items-per-page-options': [5,10,20,50] ,
-      'items-per-page-text':this.$t('row_per_page')}"
-      :no-data-text="$t('no_data')"
-      :loading="loading"
-      class="elevation-1"
-      :search="search"
-      @click:row="clickIt"
-    >
-      <template v-slot:item.uid="{ item }">
-        <router-link :to="'/resolve/'+item.id+'?flagType='+item.reasonCode">{{ item.uid }}</router-link>
-      </template>
-      <template v-slot:item.reason="{ item }">
-        <span class="text-uppercase">{{ item.reason }}</span>
-      </template>
-      <template v-slot:item.source="{ item }">
-        <span class="text-uppercase">{{ getClientDisplayName(item.source) }}</span>
-      </template>
-      <template v-slot:item.date="{ item }">
-        {{ item.date | moment("MMMM DD YYYY HH:mm:ssZ") }}
-      </template>
-    </v-data-table>
-  </v-card>
+      <v-card-title>
+        {{ $t('menu_action_required') }}
+        <v-spacer />
+      </v-card-title>
+      <v-card-title>
+        <v-text-field v-model="search" append-icon="mdi-magnify" :label="$t('search')" single-line
+          hide-details></v-text-field>
+      </v-card-title>
+      <v-data-table style="cursor: pointer" :headers="headers" :items="reviews" :options.sync="options" :footer-props="{
+          'items-per-page-options': [5, 10, 20, 50],
+          'items-per-page-text': this.$t('row_per_page')
+        }" :no-data-text="$t('no_data')" :loading="loading"
+        class="elevation-1" :search="search" @click:row="clickIt">
+        <template v-slot:item.uid="{ item }">
+          <router-link :to="'/resolve/' + item.id + '?flagType=' + item.reasonCode">{{ item.uid }}</router-link>
+        </template>
+        <template v-slot:item.reason="{ item }">
+          <span class="text-uppercase">{{ item.reason }}</span>
+        </template>
+        <template v-slot:item.source="{ item }">
+          <span class="text-uppercase">{{ getClientDisplayName(item.source) }}</span>
+        </template>
+        <template v-slot:item.date="{ item }">
+          {{ item.date | moment("MMMM DD YYYY HH:mm:ssZ") }}
+        </template>
+      </v-data-table>
+    </v-card>
+  </v-container>
+
 </template>
 
 <script>

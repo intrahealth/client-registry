@@ -616,7 +616,6 @@ const addPatient = (clientID, patientsBundle, callback) => {
   const responseHeaders = {
     CRUID: [],
     patientID: [],
-    patientHIN: [],
   };
   const operationSummary = [];
   if (!clientID) {
@@ -1431,7 +1430,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
                   identifier.value === undefined ||
                   identifier.value === "NA"
                 ) {
-                  const query = "_sort=-_lastUpdated&_count=1";
+                  const query = "entity-name:exact=InternalID&_sort=-_lastUpdated&_count=1";
                   try {
                     const resource = await new Promise((resolve, reject) => {
                       fhirWrapper.getResource(
@@ -1490,9 +1489,9 @@ const addPatient = (clientID, patientsBundle, callback) => {
                   (id) =>
                     id.system ===
                     config.get("systems:healthInformationNumber:uri")
-                )
+                ) 
               ) {
-                const query = "_sort=-_lastUpdated&_count=1";
+                const query = "entity-name:exact=InternalID&_sort=-_lastUpdated&_count=1";
                 try {
                   const resource = await new Promise((resolve, reject) => {
                     fhirWrapper.getResource(
@@ -1547,9 +1546,11 @@ const addPatient = (clientID, patientsBundle, callback) => {
               return identifier;
             };
 
-            const updateIdentifiers = async () => {
+           const updateIdentifiers = async () => {
               const updatedIdentifiers = await Promise.all(
-                newPatient.resource.identifier.map(updateIdentifier)
+                !existingHealthId
+                  ? newPatient.resource.identifier.map(updateIdentifier)
+                  : existingHealthId.resource.identifier
               );
               newPatient.resource.identifier = updatedIdentifiers;
             };
@@ -1672,11 +1673,33 @@ const addPatient = (clientID, patientsBundle, callback) => {
                 );
               });
 
-            if (!healthId) {
-                newPatient.resource.identifier.push({
-                system: config.get("systems:healthInformationNumber:uri")  ,                
-                value: "NA",
+            const existingHealthId = existingPatient.resource.identifier.find(
+              (identifier) => {
+                return (
+                  config.get("systems:healthInformationNumber:uri") ===
+                  identifier.system
+                );
+              }
+            )
+
+            if (!healthId && !existingHealthId) {
+
+               if (existingHealthId.resource.identifier.find((identifier) => identifier.system === config.get("systems:healthInformationNumber:uri")).value === "NA" || 
+               existingHealthId.resource.identifier.find((identifier) => identifier.system === config.get("systems:healthInformationNumber:uri")).value === "null" || 
+               existingHealthId.resource.identifier.find((identifier) => identifier.system === config.get("systems:healthInformationNumber:uri")).value === ""|| 
+               existingHealthId.resource.identifier.find((identifier) => identifier.system === config.get("systems:healthInformationNumber:uri")).value === undefined ) {
+               }
+
+               // check if identifier value has UG-1
+              const isUGPresent = existingPatient.resource.identifier((identifier)=>{
+                return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value.includes("UG-1")
               })
+              isUGPresent ? newPatient.resource.identifier.push({
+                system: config.get("systems:healthInformationNumber:uri")  ,                
+                value: isUGPresent.value,
+              }) : existingHealthId.resource.identifier.push({
+                system: config.get("systems:healthInformationNumber:uri")  ,                
+                value: existingHealthId.value})
             }
 
             // generate Internal ID
@@ -1710,7 +1733,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
                   identifier.value === undefined ||
                   identifier.value === "NA"
                 ) {
-                  const query = "_sort=-_lastUpdated&_count=1";
+                  const query = "entity-name:exact=InternalID&_sort=-_lastUpdated&_count=1";
                   try {
                     const resource = await new Promise((resolve, reject) => {
                       fhirWrapper.getResource(
@@ -1771,7 +1794,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
                     config.get("systems:healthInformationNumber:uri")
                 )
               ) {
-                const query = "_sort=-_lastUpdated&_count=1";
+                const query = "entity-name:exact=InternalID&_sort=-_lastUpdated&_count=1";
                 try {
                   const resource = await new Promise((resolve, reject) => {
                     fhirWrapper.getResource(
@@ -1826,12 +1849,15 @@ const addPatient = (clientID, patientsBundle, callback) => {
               return identifier;
             };
 
-            const updateIdentifiers = async () => {
+           const updateIdentifiers = async () => {
               const updatedIdentifiers = await Promise.all(
-                newPatient.resource.identifier.map(updateIdentifier)
+                !existingHealthId
+                  ? newPatient.resource.identifier.map(updateIdentifier)
+                  : existingPatient.resource.identifier
               );
               newPatient.resource.identifier = updatedIdentifiers;
             };
+
 
             // Call the function to update the identifiers
             updateIdentifiers()

@@ -1,4 +1,5 @@
 <template>
+  <v-container fluid>
     <v-card>
     <v-card-title>
       Action Required
@@ -39,6 +40,7 @@
       </template>
     </v-data-table>
   </v-card>
+  </v-container>
 </template>
 
 <script>

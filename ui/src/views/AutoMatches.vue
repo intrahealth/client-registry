@@ -1,4 +1,5 @@
 <template>
+  <v-container fluid>
     <v-card>
     <v-card-title>
      {{ $t('menu_auto_matches') }}
@@ -41,6 +42,7 @@
       </template>
     </v-data-table>
   </v-card>
+  </v-container>
 </template>
 
 <script>

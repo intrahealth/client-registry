@@ -3,11 +3,14 @@ import VueRouter from "vue-router";
 import Home from "../views/Home.vue";
 import Client from "../views/Client.vue";
 import Review from "../views/Review.vue";
+import Dashboard from "../views/Dashboard.vue";
 import AutoMatches from "../views/AutoMatches.vue";
+import AuditLogs from "../views/AuditLogs.vue";
 import Resolve from "../views/Resolve.vue";
 import CSVReport from "../views/CSVReport.vue";
 import AddUser from "../views/AddUser.vue";
 import usersList from "../views/usersList.vue"
+import Configuration from "../views/Configuration.vue"
 import ChangePassword from "../views/ChangePassword.vue"
 import Login from '@/views/Login.vue'
 import Logout from '@/components/Logout.vue'
@@ -22,6 +25,11 @@ const routes = [{
     path: "/",
     name: "home",
     component: Home
+  },
+  {
+    path :"/dashboard",
+    name :"dashboard",
+    component : Dashboard
   },
   {
     path: "/client/:clientId",
@@ -47,6 +55,16 @@ const routes = [{
     path: "/csvreport",
     name: "csvreport",
     component: CSVReport
+  },
+  {
+    path : "/logs",
+    name : "auditlogs",
+    component : AuditLogs
+  },
+    {
+    path : "/config",
+    name : "configuration",
+    component : Configuration
   },
   {
     path: '/addUser',

@@ -1,4 +1,5 @@
 <template>
+  <v-container fluid>
   <v-card>
     <v-card-title>
       <v-spacer />
@@ -14,7 +15,7 @@
         'items-per-page-options': [5, 10, 20, 50],
         'items-per-page-text': this.$t('row_per_page'),
       }" :no-data-text="$t('no_data')" :loading="loading" class="elevation-1" @click:row="clickIt" />
-  </v-card>
+  </v-card></v-container>
 </template>
 
 <script>

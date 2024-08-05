@@ -59,6 +59,13 @@
           "null_handling": "moderate",
           "null_handling_both": "moderate",
           "espath": "passport"
+        },
+         "hin": {
+          "algorithm": "exact",
+          "fhirpath": "identifier.where(system='http://health.go.ug/cr/hin').value",
+          "null_handling": "moderate",
+          "null_handling_both": "moderate",
+          "espath": "hin"
         }
       },
       "potentialMatchThreshold": 4,

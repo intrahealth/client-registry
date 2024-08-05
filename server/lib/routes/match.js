@@ -93,23 +93,23 @@ router.post('/resolve-match-issue', async(req, res) => {
             return entry.resource.id === patient.uid;
           });
 
-          let resourceWithouGolden = originalResourceData.entry.filter((entry) => {
-           return entry.resource.meta.tag.find(
-              (item) => item.code !== "5c827da5-4858-4f3d-a50c-62ece001efea"
-            );
-          });
+          // let resourceWithouGolden = originalResourceData.entry.filter((entry) => {
+          //  return entry.resource.meta.tag.find(
+          //     (item) => item.code !== "5c827da5-4858-4f3d-a50c-62ece001efea"
+          //   );
+          // });
 
-          let oldHINPatient = resourceWithouGolden.find((entry) => {
-            return entry.resource.identifier.find((identifier) => {
-              return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.ohin;
-            });
-          });
+          // let oldHINPatient = resourceWithouGolden.find((entry) => {
+          //   return entry.resource.identifier.find((identifier) => {
+          //     return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.ohin;
+          //   });
+          // });
 
-          let newHINPatient = resourceWithouGolden.find((entry) => {
-            return entry.resource.identifier.find((identifier) => {
-              return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.nhin;
-            });
-          });
+          // let newHINPatient = resourceWithouGolden.find((entry) => {
+          //   return entry.resource.identifier.find((identifier) => {
+          //     return identifier.system === config.get("systems:healthInformationNumber:uri") && identifier.value === patient.nhin;
+          //   });
+          // });
 
 
           if(patient.uid.startsWith('New CR ID')) {
@@ -125,10 +125,10 @@ router.post('/resolve-match-issue', async(req, res) => {
             }
           }
 
-          patientResource.resource.identifier.push({
-            system: config.get("systems:healthInformationNumber:uri"),
-            value: newHINPatient.resource.identifier.find((identifier)=>identifier.system === config.get("systems:healthInformationNumber:uri")).value
-          });
+          // patientResource.resource.identifier.push({
+          //   system: config.get("systems:healthInformationNumber:uri"),
+          //   value: newHINPatient.resource.identifier.find((identifier)=>identifier.system === config.get("systems:healthInformationNumber:uri")).value
+          // });
 
           patientResource.resource.link.push({
             other: {
@@ -169,13 +169,13 @@ router.post('/resolve-match-issue', async(req, res) => {
             }
           });
 
-          modifiedResourceData.entry.push({
-            resource: oldHINPatient.resource,
-            request: {
-              method: 'PUT',
-              url: 'Patient/' + oldHINPatient.resource.id
-            }
-          });
+          // modifiedResourceData.entry.push({
+          //   resource: oldHINPatient.resource,
+          //   request: {
+          //     method: 'PUT',
+          //     url: 'Patient/' + oldHINPatient.resource.id
+          //   }
+          // });
           // end of removing patient from old CRUID
 
           //add patient into new CRUID
@@ -193,16 +193,17 @@ router.post('/resolve-match-issue', async(req, res) => {
             }
           });
 
-          modifiedResourceData.entry.push({
-            resource: newHINPatient.resource,
-            request: {
-              method: 'PUT',
-              url: 'Patient/' + newHINPatient.resource.id
-            }
-          });
+          // modifiedResourceData.entry.push({
+          //   resource: newHINPatient.resource,
+          //   request: {
+          //     method: 'PUT',
+          //     url: 'Patient/' + newHINPatient.resource.id
+          //   }
+          // });
           //end of adding patient into new CRUID
         }
       }
+
       fhirWrapper.saveResource({ resourceData: modifiedResourceData }, (err) => {
         if(err) {
           return res.status(500).send();
@@ -1778,6 +1779,7 @@ router.post('/unbreak-match', (req, res) => {
       query,
       noCaching: true
     }, (resourceData) => {
+      logger.error('Processing Unbreak ' + JSON.stringify(resourceData.entry,0,2) + ' patients');
       const auditedId = [];
       for (const idPair of ids) {
         const id1 = idPair.id1;
