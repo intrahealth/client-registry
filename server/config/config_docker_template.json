@@ -11,7 +11,7 @@
     "api": {
       "username": "root@openhim.org",
       "password": "password",
-      "apiURL": "https://mediator-api-staging.health.go.ug",
+      "apiURL": "https://100.66.44.100:19002",
       "trustSelfSigned": true,
       "urn": "urn:uuid:6a919095-f4b8-4a41-9b5e-f101e846d988"
     },
