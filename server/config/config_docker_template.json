@@ -5,7 +5,7 @@
   },
   "app": {
     "port": 3000,
-    "installed": false
+    "installed": true
   },
   "mediator": {
     "api": {
