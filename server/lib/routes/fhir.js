@@ -137,10 +137,14 @@ function pixmRequest({
         if (isGoldenRec) {
           continue;
         }
+
         parameters.parameter.push({
           name: 'targetId',
-          valueReference: entry.resource.fullUrl
+          valueReference: {
+            reference: `Patient/${entry.resource.id}`
+          }
         });
+
         for (const identifier of entry.resource.identifier) {
           if (targetSystem) {
             if (targetSystem === identifier.system) {
