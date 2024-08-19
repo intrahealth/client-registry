@@ -141,7 +141,7 @@ function pixmRequest({
         parameters.parameter.push({
           name: 'targetId',
           valueReference: {
-            reference: entry.resource.fullUrl ? entry.resource.fullUrl : `Patient/${entry.resource.id}`
+            reference: entry.resource.fullUrl ? entry.resource.fullUrl : entry.resource.id
           }
         });
 
