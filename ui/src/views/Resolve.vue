@@ -373,7 +373,7 @@ export default {
     cridHeader: function() {
       return this.useNickname ?  this.$t('Temporary_cr_id') + ( this.includeCRID ? " / Actual CR ID" : "") : "CR ID"
     },
-    filteredScores(scores) {
+    filteredScores() {
         return (data) => {
           const filteredScores = {};
 
