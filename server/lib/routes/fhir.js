@@ -140,7 +140,9 @@ function pixmRequest({
 
         parameters.parameter.push({
           name: 'targetId',
-          valueReference: entry.resource.fullUrl ? entry.resource.fullUrl : entry.resource.id
+          valueReference: {
+            reference: entry.fullUrl
+          }
         });
 
         for (const identifier of entry.resource.identifier) {
