@@ -3,7 +3,6 @@
     <div>
       <div>National Client Registry</div>
       <div>Copyright &copy; {{ currentYear }} Uganda Ministry of Health</div>
-      <div>Supported by METS</div>
     </div>
   </footer>
 </template>
