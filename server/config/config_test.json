@@ -22,6 +22,8 @@
     "username": "hapi",
     "password": "hapi"
   },
+  "partitioned": true,
+  "partitionbaseURL": "http://hapi-fhir:8080/fhir/DEFAULT",
   "elastic": {
     "server": "http://localhost:9200",
     "username": "",
