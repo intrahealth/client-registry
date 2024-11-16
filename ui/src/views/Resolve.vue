@@ -213,7 +213,7 @@
                 <h5 class="text-uppercase">Scores</h5>
               </v-list-item>
               <v-list-item
-                v-for="(score,source_id) in data.scores"
+                v-for="(score,source_id) in filteredScores(data.scores)"
                 :key="data.source_id+'-'+source_id"
                 >
                 <v-list-item-content>{{getSource(source_id)}}</v-list-item-content>
@@ -318,17 +318,26 @@ export default {
   created: function() {
     this.$store.state.progress.enable = true;
     this.$store.state.progress.width = "300px";
-    this.$store.state.progress.title =  this.$t('loading_potential');
-    if(this.$route.query.flagType === 'autoMatches'){
-      this.$store.state.progress.title =  this.$t('loading_auto');
-    }
+    this.$store.state.progress.title = this.$route.query.flagType === 'autoMatches' ? this.$t('loading_auto') : this.$t('loading_potential');
+
     axios.get(`/ocrux/match/potential-matches/${this.$route.params.clientId}`).then((resp) => {
+
+    let responseData = resp.data;
+    if(this.$route.query.flagType === 'autoMatches'){
+
+      const parentObject = responseData.find(item => item.id === this.$route.params.clientId);
+
+      if (parentObject) {
+        responseData = responseData.filter(item => item.uid === parentObject.uid);
+      }
+      
+    }
         let extRegexPattern = /^extension_/;
 
         let matchingKeys = [];
 
-        for (let i = 0; i < resp.data.length; i++) {
-          const dataObject = resp.data[i];
+        for (let i = 0; i < responseData.length; i++) {
+          const dataObject = responseData[i];
             for (let key in dataObject) {
               if (extRegexPattern.test(key)) {
                 matchingKeys.push(key);
@@ -339,7 +348,7 @@ export default {
 
 
         let idRegexPattern = /^identifier/;
-        for (let key in resp.data[0]) {
+        for (let key in responseData[0]) {
           if (idRegexPattern.test(key)) {
               this.$set(this.fields, key, this.$t(key));
 
@@ -347,7 +356,7 @@ export default {
         }
 
 
-      this.resolves = resp.data
+      this.resolves = responseData
 
       shuffle(this.available_nicknames)
       this.organizeResolves(true)
@@ -363,6 +372,19 @@ export default {
   computed: {
     cridHeader: function() {
       return this.useNickname ?  this.$t('Temporary_cr_id') + ( this.includeCRID ? " / Actual CR ID" : "") : "CR ID"
+    },
+    filteredScores() {
+        return (data) => {
+          const filteredScores = {};
+
+            Object.entries(data)
+              .forEach(([source_id, value]) => {
+                if (this.getSource(source_id) !== null && this.getSource(source_id) !== '') {
+                  filteredScores[source_id] = value;
+                }
+              });
+            return filteredScores;
+        }
     },
     bucketsModified () {
       for(let matrix of this.resolves) {
@@ -416,7 +438,8 @@ export default {
       return this.useNickname ? this.nickname[crid] + ( this.includeCRID ? " ("+crid+")" : "" ): crid
     },
     getSource: function(source_id) {
-      return this.resolves.find( resolve => resolve.source_id === source_id ).source
+      const resolvedObject = this.resolves.find(resolve => resolve.source_id === source_id);
+      return resolvedObject ? resolvedObject.source : '';
     },
     moveClient: function(val,item) {
       this.copyCohortInfo = { old_id: item.uid, new_id: val, item: item }

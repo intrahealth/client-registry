@@ -1509,10 +1509,9 @@ router.get(`/get-match-issues`, (req, res) => {
       if(link) {
         link = link.split('/')[1];
       }
-      const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
-        return 'http://openclientregistry.org/fhir/sourceid' && identifier.value;
-      });
-
+      
+      const validSystem = generalMixin.getClientIdentifier(entry.resource);
+      
       let matchTag = entry.resource.meta.tag.find((tag) => {
         return tag.system === matchIssuesURI;
       });
@@ -1560,9 +1559,9 @@ router.get(`/get-new-auto-matches`, (req, res) => {
       if(link) {
         link = link.split('/')[1];
       }
-      const validSystem = entry.resource.identifier && entry.resource.identifier.find(identifier => {
-        return 'http://openclientregistry.org/fhir/sourceid' && identifier.value;
-      });
+      
+      const validSystem = generalMixin.getClientIdentifier(entry.resource);
+
 
       let matchTag = entry.resource.meta.tag.find((tag) => {
         return tag.system === matchAutoURI;
