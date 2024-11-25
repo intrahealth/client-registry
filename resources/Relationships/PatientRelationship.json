@@ -103,11 +103,11 @@
           "extension": [
             {
               "url": "label",
-              "valueString": "nationalid"
+              "valueString": "alternatePhone"
             },
             {
               "url": "name",
-              "valueString": "identifier.where(system='http://health.go.ug/cr/nationalid').last().value"
+              "valueString": "telecom.where(system='phone').value"
             }
           ]
         },
@@ -116,11 +116,11 @@
           "extension": [
             {
               "url": "label",
-              "valueString": "passport"
+              "valueString": "district"
             },
             {
               "url": "name",
-              "valueString": "identifier.where(system='http://health.go.ug/cr/passport').last().value"
+              "valueString": "address.where(use='home').district"
             }
           ]
         },
@@ -129,11 +129,50 @@
           "extension": [
             {
               "url": "label",
-              "valueString": "hin"
+              "valueString": "subCounty"
             },
             {
               "url": "name",
-              "valueString": "identifier.where(system='http://health.go.ug/cr/hin').value"
+              "valueString": "address.extension.where(url='http://fhir.openmrs.org/ext/address').extension.where(url='http://fhir.openmrs.org/ext/address#subcounty').valueString"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "village"
+            },
+            {
+              "url": "name",
+              "valueString": "address.extension.where(url='http://fhir.openmrs.org/ext/address').extension.where(url='http://fhir.openmrs.org/ext/address#village').valueString"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "mothersName"
+            },
+            {
+              "url": "name",
+              "valueString": "contact.name.where(use='official').family"
+            }
+          ]
+        },
+        {
+          "url": "http://ihris.org/fhir/StructureDefinition/iHRISReportElement",
+          "extension": [
+            {
+              "url": "label",
+              "valueString": "id"
+            },
+            {
+              "url": "name",
+              "valueString": "identifier.where(use='official').value"
             }
           ]
         }

@@ -18,7 +18,7 @@
       "fields": {
         "given": {
           "algorithm": "jaro-winkler-similarity",
-          "threshold": 0.8,
+          "threshold": 0.85,
           "fhirpath": "name.where(use='official').given",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
@@ -26,7 +26,7 @@
         },
         "family": {
           "algorithm": "jaro-winkler-similarity",
-          "threshold": 0.9,
+          "threshold": 0.85,
           "fhirpath": "name.where(use='official').family",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
@@ -41,31 +41,67 @@
         },
         "phone": {
           "algorithm": "exact",
+          "threshold": 0.85,
           "fhirpath": "telecom.where(system='phone').value",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
           "espath": "phone"
         },
-        "nationalid": {
+        "alternatePhone": {
           "algorithm": "exact",
-          "fhirpath": "identifier.where(system='http://health.go.ug/cr/nationalid').value",
+          "threshold": 0.85,
+          "fhirpath": "telecom.where(system='phone').value",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
-          "espath": "nationalid"
+          "espath": "alternatePhone"
         },
-        "passport": {
-          "algorithm": "exact",
-          "fhirpath": "identifier.where(system='http://health.go.ug/cr/passport').value",
+        "district": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "address.where(use='home').district",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
-          "espath": "passport"
+          "espath": "district"
         },
-         "hin": {
-          "algorithm": "exact",
-          "fhirpath": "identifier.where(system='http://health.go.ug/cr/hin').value",
+        "subcounty": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "address.extension.where(url='http://fhir.openmrs.org/ext/address').extension.where(url='http://fhir.openmrs.org/ext/address#subcounty').valueString",
           "null_handling": "moderate",
           "null_handling_both": "moderate",
-          "espath": "hin"
+          "espath": "subCounty"
+        },
+        "village": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "address.extension.where(url='http://fhir.openmrs.org/ext/address').extension.where(url='http://fhir.openmrs.org/ext/address#village').valueString",
+          "null_handling": "moderate",
+          "null_handling_both": "moderate",
+          "espath": "village"
+        },
+        "gender": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "gender",
+          "null_handling": "moderate",
+          "null_handling_both": "moderate",
+          "espath": "gender"
+        },
+        "mothersName": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "contact.name.where(use='official').family",
+          "null_handling": "moderate",
+          "null_handling_both": "moderate",
+          "espath": "mothersName"
+        },
+        "id": {
+          "algorithm": "jaro-winkler-similarity",
+          "threshold": 0.85,
+          "fhirpath": "identifier.where(use='official').value",
+          "null_handling": "moderate",
+          "null_handling_both": "moderate",
+          "espath": "id"
         }
       },
       "potentialMatchThreshold": 4,

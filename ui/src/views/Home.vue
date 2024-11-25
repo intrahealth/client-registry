@@ -30,7 +30,7 @@ export const headersNames = {
   registeringFacility: "Registering Facility",
   nationalID: "National ID",
   passport: "Passport",
-  healthIdentificationNumber: "Health Identification Number",
+  UniquePatientIdentifier: "Unique Patient Identifier",
   cruid: "CRUID",
 };
 
@@ -216,9 +216,9 @@ export default {
                   translatedHeader = this.$t("passport");
                 }
                 if (
-                  label.valueString === headersNames.healthIdentificationNumber
+                  label.valueString === headersNames.UniquePatientIdentifier
                 ) {
-                  translatedHeader = this.$t("health_identification_number");
+                  translatedHeader = this.$t("unique_patient_identifier");
                 }
 
                 if (label.valueString === headersNames.cruid) {

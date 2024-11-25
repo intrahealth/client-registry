@@ -1,7 +1,7 @@
 <template>
   <footer class="footer">
     <div>
-      <div>National Client Registry</div>
+      <div>National Health Client Registry</div>
       <div>Copyright &copy; {{ currentYear }} Uganda Ministry of Health</div>
     </div>
   </footer>

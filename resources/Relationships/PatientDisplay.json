@@ -261,7 +261,7 @@
           "extension": [
             {
               "url": "label",
-              "valueString": "Health Identification Number"
+              "valueString": "Unique Patient Identifier"
             },
             {
               "url": "fhirpath",

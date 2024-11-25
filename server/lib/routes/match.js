@@ -19,7 +19,6 @@ router.post('/resolve-match-issue', async(req, res) => {
   logger.info('Received a request to resolve match issues');
   let {resolves, resolvingFrom, removeFlag, flagType} = req.body;
 
-  // logger.info("req-body"+JSON.stringify(req.body,0,2));
   let query = '';
   let addedToQuery = [];
 
@@ -1225,6 +1224,16 @@ router.post('/matches', (req, res) => {
         family: name.family,
         birthDate: patient.birthDate,
         phone,
+        nationality : "Not Set",
+        marital_status : "Not Set",
+        registering_facility :"Not Set",
+        village : "Not Set",
+        parish : "Not Set",
+        sub_county : "Not Set",
+        county : "Not Set",
+        district : "Not Set",
+        country_of_residence: "Not Set",
+        next_of_kin : "Not Set",
         uid: goldenLink,
         ouid: goldenLink,
         source_id: validSystem && validSystem.value  ? validSystem.value : null,
@@ -1440,6 +1449,16 @@ router.get('/potential-matches/:id', (req, res) => {
         family: name.family,
         birthDate: patient.birthDate,
         phone,
+        nationality : "Not Set",
+        marital_status : "Not Set",
+        registering_facility :"Not Set",
+        village : "Not Set",
+        parish : "Not Set",
+        sub_county : "Not Set",
+        county : "Not Set",
+        district : "Not Set",
+        country_of_residence: "Not Set",
+        next_of_kin : "Not Set",
         ohin:hin,
         nhin:hin,
         uid: goldenLink,
@@ -1594,6 +1613,16 @@ router.get(`/get-match-issues`, (req, res) => {
         family: name.family,
         given,
         birthDate: entry.resource.birthDate,
+        nationality : "Not Set",
+        marital_status : "Not Set",
+        registering_facility :"Not Set",
+        village : "Not Set",
+        parish : "Not Set",
+        sub_county : "Not Set",
+        county : "Not Set",
+        district : "Not Set",
+        country_of_residence: "Not Set",
+        next_of_kin : "Not Set",
         hin: hin,
         uid: link,
         source: clientsTag.code,
@@ -1648,12 +1677,23 @@ router.get(`/get-new-auto-matches`, (req, res) => {
           }
         }
       }
+
       let review = {
         id: entry.resource.id,
         gender: entry.resource.gender,
         family: name.family,
         given,
         birthDate: entry.resource.birthDate,
+        nationality : "Not Set",
+        marital_status : "Not Set",
+        registering_facility :entry.resource.managingOrganization.display,
+        village :  "Not Set",
+        parish :  "Not Set",
+        sub_county : "Not Set",
+        county :  "Not Set",
+        district :  "Not Set",
+        country_of_residence:  "Not Set",
+        next_of_kin : "Not Set",
         hin: hin,
         uid: link,
         source: clientsTag.code,
@@ -1664,6 +1704,7 @@ router.get(`/get-new-auto-matches`, (req, res) => {
       reviews.push(review);
     }
     return res.status(200).json(reviews);
+    
   });
 });
 

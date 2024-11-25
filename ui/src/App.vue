@@ -1,12 +1,12 @@
 <template>
   <v-app>
     <v-app-bar app color="primary" dark clipped-right>
-      <v-toolbar-title class="display-1">National Client Registry</v-toolbar-title>
+      <v-toolbar-title class="display-1">National Health Client Registry</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <v-btn color="primary" to="/dashboard" v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
+        <!-- <v-btn color="primary" to="/dashboard" v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
           <v-icon>mdi-home</v-icon> {{ $t('menu_dashboard') }}
-        </v-btn>
+        </v-btn> -->
         <v-btn color="primary" to="/" v-if='!$store.state.denyAccess'>
           <v-icon>mdi-home</v-icon> {{ $t('menu_home') }}
         </v-btn>
@@ -21,9 +21,9 @@
             <v-icon>mdi-alert</v-icon> {{ $t('menu_auto_matches') }}
           </v-badge>
         </v-btn>
-        <v-btn color="primary" to="/csvreport" v-if='!$store.state.denyAccess'>
+        <!-- <v-btn color="primary" to="/csvreport" v-if='!$store.state.denyAccess'>
           <v-icon>mdi-file-chart</v-icon>{{ $t('menu_csv') }}
-        </v-btn>
+        </v-btn> -->
         <v-menu bottom v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
@@ -32,6 +32,9 @@
             </v-btn>
           </template>
           <v-list>
+            <v-list-item to="/user-management" v-if='!$store.state.denyAccess'>
+              <v-icon>mdi-account-outline</v-icon> {{ $t('menu_accounts') }}
+            </v-list-item>
             <v-list-item to="/logs" v-if='!$store.state.denyAccess'>
               <v-icon>mdi-shape-rectangle-plus</v-icon> {{ $t('settings_logs') }}
             </v-list-item>
@@ -40,7 +43,7 @@
             </v-list-item>
           </v-list>
         </v-menu>
-        <v-menu bottom v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
+        <!-- <v-menu bottom v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
               <v-icon>mdi-account-outline</v-icon>
@@ -59,15 +62,15 @@
               <v-icon>mdi-account-plus</v-icon> {{ $t('account_change_password') }}
             </v-list-item>
           </v-list>
-        </v-menu>
+        </v-menu> -->
         <v-btn color="primary" to="/logout" v-if='!$store.state.denyAccess'>
           <v-icon>mdi-logout</v-icon> {{ $t('menu_logout') }}
         </v-btn>
-        <div v-if='!$store.state.denyAccess' class="icon-div">
+        <!-- <div v-if='!$store.state.denyAccess' class="icon-div">
           <button v-for="entry in languages" :key="entry.title" @click="$i18n.locale=entry.language">
             <flag :iso="entry.flag" v-bind:squared=false /> {{entry.title}}
           </button>
-        </div>
+        </div> -->
 
       </v-toolbar-items>
       <v-spacer />
@@ -113,7 +116,6 @@ export default {
       totalAutoMatches: 0,
       languages: [
             { flag: 'us', language: 'en', title: 'English' },
-            { flag: 'fr', language: 'fr', title: 'Francais' }
         ]
     }
   },
