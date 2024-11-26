@@ -4,9 +4,9 @@
       <v-toolbar-title class="display-1">National Health Client Registry</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
-        <!-- <v-btn color="primary" to="/dashboard" v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
+        <v-btn color="primary" to="/dashboard" v-if='!$store.state.denyAccess && $store.state.auth.role !== "deduplication"'>
           <v-icon>mdi-home</v-icon> {{ $t('menu_dashboard') }}
-        </v-btn> -->
+        </v-btn>
         <v-btn color="primary" to="/" v-if='!$store.state.denyAccess'>
           <v-icon>mdi-home</v-icon> {{ $t('menu_home') }}
         </v-btn>

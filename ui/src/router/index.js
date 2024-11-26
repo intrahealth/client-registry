@@ -4,6 +4,7 @@ import Home from "../views/Home.vue";
 import Client from "../views/Client.vue";
 import Review from "../views/Review.vue";
 import AutoMatches from "../views/AutoMatches.vue";
+import Dashboard from "../views/Dashboard.vue";
 import AuditLogs from "../views/AuditLogs.vue";
 import Resolve from "../views/Resolve.vue";
 import AddUser from "../views/AddUser.vue";
@@ -44,6 +45,11 @@ const routes = [{
     path: "/resolve/:clientId?",
     name: "resolve",
     component: Resolve
+  },
+  {
+    path: "/dashboard",
+    name: "dashboard",
+    component: Dashboard
   },
   {
     path : "/logs",
