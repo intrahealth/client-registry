@@ -1,4 +1,4 @@
-# Open Client Registry 
+# Open Client Registry
 
 ![builds](https://github.com/intrahealth/client-registry/workflows/build/badge.svg) ![tests](https://github.com/intrahealth/client-registry/workflows/test/badge.svg) ![docs](https://github.com/intrahealth/client-registry/workflows/docs/badge.svg) ![compose](https://github.com/intrahealth/client-registry/workflows/compose/badge.svg) ![e2e](https://github.com/intrahealth/client-registry/workflows/e2e/badge.svg)
 
