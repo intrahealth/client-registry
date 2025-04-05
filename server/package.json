@@ -34,7 +34,7 @@
     "lodash": ">=4.17.21",
     "metaphone": "^1.0.6",
     "minimist": ">=1.2.2",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "nanoid": "^3.1.22",
     "nconf": "^0.10.0",
     "node-cache": "^5.1.2",
