@@ -102,9 +102,9 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
           resource.gender = 'male';
         }
         if ( birthDate.match( /\d{8,8}/ ) ) {
-          const birthMoment = moment( birthDate );
-          if ( birthMoment.isValid() ) {
-            resource.birthDate = birthMoment.format("YYYY-MM-DD");
+          var dobFormatted = birthDate.replace(/(\d{4})(\d{2})(\d{2})/g, '$1-$2-$3');
+          if (dobFormatted) {
+            resource.birthDate = dobFormatted;
           }
         }
         resource.identifier = [
@@ -115,13 +115,13 @@ fs.createReadStream(path.resolve(__dirname, '', csvFile))
         ];
         if (nationalID) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/nationalid',
+            system: 'http://clientregistry.org/cr/nationalid',
             value: nationalID,
           });
         }
         if (ARTNumb) {
           resource.identifier.push({
-            system: 'http://clientregistry.org/artnumber',
+            system: 'http://clientregistry.org/cr/artnumber',
             value: ARTNumb,
           });
         }

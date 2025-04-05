@@ -68,7 +68,7 @@
         "displayName": "Internal ID"
       },
       "nationalid": {
-        "uri": "http://health.go.ug/cr/natioanlid",
+        "uri": "http://health.go.ug/cr/nationalid",
         "displayName": "National ID"
       },
       "artnumber": {
