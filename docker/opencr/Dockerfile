@@ -1,9 +1,12 @@
-FROM node:16-slim
+FROM node:18-slim
 
 RUN mkdir -p /var/log
-ARG branch=master
-RUN apt-get -qq update && apt-get install -y -qq git && apt-get install -y --no-install-recommends wget
-RUN git clone --branch ${branch} https://github.com/intrahealth/client-registry /src/
+ARG branch=main
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends git wget ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+RUN git clone --branch ${branch} https://github.com/DIGI-UW/client-registry-fork /src/
 
 WORKDIR /src/server
 RUN npm install

@@ -745,10 +745,10 @@ const addPatient = (clientID, patientsBundle, callback) => {
         const existLinkPromise = new Promise((resolve) => {
           if (currentLinks.length > 0) {
             for (const entry of currentLinks) {
-              const exist = entry.resource.link.find((link) => {
+              const exist = entry.resource?.link?.find((link) => {
                 return link.other.reference === 'Patient/' + patient.id;
               });
-              if (entry.resource.link && entry.resource.link.length === 1 && exist) {
+              if (entry.resource?.link && entry.resource?.link?.length === 1 && exist) {
                 goldenRecord = entry.resource;
               }
             }

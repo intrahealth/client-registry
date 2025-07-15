@@ -1,6 +1,6 @@
 {
   "name": "client-registry",
-  "version": "1.0.0",
+  "version": "4.0.6",
   "description": "Client Registry",
   "main": "app.js",
   "scripts": {

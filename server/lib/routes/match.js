@@ -467,6 +467,7 @@ router.post('/resolve-match-issue', async(req, res) => {
     });
   } else {
     if(removeFlag) {
+        if(flagType !== 'autoMatches'){
       let parameters = {
         resourceType: 'Parameters',
         parameter: [{
@@ -511,6 +512,7 @@ router.post('/resolve-match-issue', async(req, res) => {
         logger.error('An error has occured while removing conflict match tag');
         return res.status(500).send();
       });
+    } else {
 
       parameters = {
         resourceType: 'Parameters',
@@ -534,7 +536,7 @@ router.post('/resolve-match-issue', async(req, res) => {
         logger.error('An error has occured while removing auto match tag');
         return res.status(500).send();
       });
-
+    }
       fhirWrapper.getResource({
         resource: 'Patient',
         id: resolvingFrom,
