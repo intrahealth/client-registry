@@ -589,7 +589,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
       let existsAutoMatches = false;
       for(const auto of FHIRAutoMatched.entry) {
         let isCurrentLink = currentLinks.find((currentLink) => {
-          return auto.resource.link.find((link) => {
+          return auto.resource.link && auto.resource.link.find((link) => {
             return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
           });
         });
@@ -623,7 +623,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
       let existsPotentialMatches = false;
       for(const potential of FHIRPotentialMatches.entry) {
         let isCurrentLink = currentLinks.find((currentLink) => {
-          return potential.resource.link.find((link) => {
+          return potential.resource.link && potential.resource.link.find((link) => {
             return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
           });
         });
@@ -682,7 +682,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
       let existsConflictMatches = false;
       for(const conflict of FHIRConflictsMatches.entry) {
         let isCurrentLink = currentLinks.find((currentLink) => {
-          return conflict.resource.link.find((link) => {
+          return conflict.resource.link && conflict.resource.link.find((link) => {
             return link.other.reference === currentLink.resource.resourceType + "/" + currentLink.resource.id;
           });
         });
@@ -745,7 +745,7 @@ const addPatient = (clientID, patientsBundle, callback) => {
         const existLinkPromise = new Promise((resolve) => {
           if (currentLinks.length > 0) {
             for (const entry of currentLinks) {
-              const exist = entry.resource.link.find((link) => {
+              const exist = entry.resource.link && entry.resource.link.find((link) => {
                 return link.other.reference === 'Patient/' + patient.id;
               });
               if (entry.resource.link && entry.resource.link.length === 1 && exist) {
