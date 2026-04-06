@@ -46,13 +46,20 @@ const updateConfigFile = (path, newValue, callback) => {
   config.set(pathString, newValue);
   logger.info('Updating config file');
   const configFile = `${__dirname}/../../config/config_${env}.json`;
-  const configData = require(configFile);
+  let configData;
+  try {
+    configData = require(configFile);
+  } catch (err) {
+    logger.warn('Could not read config file for update, in-memory config is still current: ' + err.message);
+    return callback();
+  }
   setNestedKey(configData, path, newValue, () => {
     fs.writeFile(configFile, JSON.stringify(configData, 0, 2), (err) => {
       if (err) {
-        throw err;
+        logger.warn('Could not write config file (read-only filesystem?), in-memory config is still current: ' + err.message);
+      } else {
+        logger.info('Done updating config file');
       }
-      logger.info('Done updating config file');
       return callback();
     });
   });
