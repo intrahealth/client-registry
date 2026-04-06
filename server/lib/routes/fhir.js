@@ -202,7 +202,7 @@ router.post('/', (req, res) => {
   async.parallel({
     otherResources: (callback) => {
       if(otherResources.entry.length === 0) {
-        return callback(null, {});
+        return callback(null, {code: 200});
       }
       fhirWrapper.create(otherResources, (code, err, response, body) => {
         return callback(null, {code, err, response, body});
@@ -210,7 +210,7 @@ router.post('/', (req, res) => {
     },
     patients: (callback) => {
       if(patients.length === 0) {
-        return callback(null, {});
+        return callback(null, {code: 200, responseBundle: {entry: []}, responseHeaders: {}, operationSummary: []});
       }
       let patientsBundle = {
         entry: patients
